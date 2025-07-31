@@ -2,7 +2,7 @@ import { LeadStatus } from "@prisma/client"
 
 export interface Lead {
   id: number
-  legacyLeadId: bigint
+  legacyLeadId: string | null
   campaignId: number
   email: string | null
   phone: string | null

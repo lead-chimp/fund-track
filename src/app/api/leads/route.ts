@@ -9,6 +9,8 @@ import { logger } from '@/lib/logger';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const startTime = Date.now();
@@ -122,8 +124,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     limit,
   });
 
+  // Convert BigInt values to strings for JSON serialization
+  const serializedLeads = leads.map(lead => ({
+    ...lead,
+    legacyLeadId: lead.legacyLeadId ? lead.legacyLeadId.toString() : null,
+  }));
+
   return NextResponse.json({
-    leads,
+    leads: serializedLeads,
     pagination: {
       page,
       limit,

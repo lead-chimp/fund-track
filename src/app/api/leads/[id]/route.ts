@@ -87,7 +87,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ lead });
+    // Convert BigInt values to strings for JSON serialization
+    const serializedLead = {
+      ...lead,
+      legacyLeadId: lead.legacyLeadId ? lead.legacyLeadId.toString() : null,
+    };
+
+    return NextResponse.json({ lead: serializedLead });
   } catch (error) {
     console.error('Error fetching lead:', error);
     return NextResponse.json(
@@ -166,8 +172,14 @@ export async function PUT(
       // If only status was being updated, return the result from status service
       if (firstName === undefined && lastName === undefined && email === undefined &&
         phone === undefined && businessName === undefined) {
+        // Convert BigInt values to strings for JSON serialization
+        const serializedLead = statusChangeResult.lead ? {
+          ...statusChangeResult.lead,
+          legacyLeadId: statusChangeResult.lead.legacyLeadId ? statusChangeResult.lead.legacyLeadId.toString() : null,
+        } : null;
+
         return NextResponse.json({
-          lead: statusChangeResult.lead,
+          lead: serializedLead,
           followUpsCancelled: statusChangeResult.followUpsCancelled,
           staffNotificationSent: statusChangeResult.staffNotificationSent
         });
@@ -232,11 +244,23 @@ export async function PUT(
         },
       });
 
-      return NextResponse.json({ lead: updatedLead });
+      // Convert BigInt values to strings for JSON serialization
+      const serializedLead = {
+        ...updatedLead,
+        legacyLeadId: updatedLead.legacyLeadId ? updatedLead.legacyLeadId.toString() : null,
+      };
+
+      return NextResponse.json({ lead: serializedLead });
     }
 
     // If no updates were made, return the existing lead
-    return NextResponse.json({ lead: existingLead });
+    // Convert BigInt values to strings for JSON serialization
+    const serializedExistingLead = {
+      ...existingLead,
+      legacyLeadId: existingLead.legacyLeadId ? existingLead.legacyLeadId.toString() : null,
+    };
+
+    return NextResponse.json({ lead: serializedExistingLead });
   } catch (error) {
     console.error('Error updating lead:', error);
     return NextResponse.json(
