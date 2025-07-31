@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // App Router is enabled by default in Next.js 13+
-  
-  // Enable standalone output for Docker
-  output: 'standalone',
-  
+
+  // Only use standalone output in production
+  ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
+
+  // Ensure API routes are not statically exported
+  trailingSlash: false,
+
   // Security headers for production
   async headers() {
     return [
@@ -80,7 +83,7 @@ const nextConfig = {
   // Optimize for production
   poweredByHeader: false,
   compress: true,
-  
+
   // Environment variables validation
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
