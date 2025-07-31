@@ -30,6 +30,22 @@ const customJestConfig = {
       statements: 80,
     },
   },
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/coverage/',
+    '/tests/',
+    '/prisma/',
+    '/__mocks__/',
+    '/src/types/',
+    '.d.ts',
+    'jest.config.js',
+    'jest.setup.js',
+    'next.config.mjs',
+    'tailwind.config.ts',
+    'postcss.config.js',
+    'playwright.config.ts'
+  ],
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

@@ -87,28 +87,30 @@ jest.mock('mailgun.js', () => {
   }))
 })
 
-jest.mock('backblaze-b2', () => ({
-  authorize: jest.fn().mockResolvedValue({
-    data: {
-      authorizationToken: 'mock-auth-token',
-      apiUrl: 'https://api.backblaze.com',
-      downloadUrl: 'https://f000.backblaze.com',
-    },
-  }),
-  uploadFile: jest.fn().mockResolvedValue({
-    data: {
-      fileId: 'mock-file-id',
-      fileName: 'mock-file-name',
-      contentLength: 1024,
-    },
-  }),
-  downloadFileById: jest.fn().mockResolvedValue({
-    data: Buffer.from('mock file content'),
-  }),
-  deleteFileVersion: jest.fn().mockResolvedValue({
-    data: { fileId: 'mock-file-id' },
-  }),
-}))
+jest.mock('backblaze-b2', () => {
+  return jest.fn().mockImplementation(() => ({
+    authorize: jest.fn().mockResolvedValue({
+      data: {
+        authorizationToken: 'mock-auth-token',
+        apiUrl: 'https://api.backblaze.com',
+        downloadUrl: 'https://f000.backblaze.com',
+      },
+    }),
+    uploadFile: jest.fn().mockResolvedValue({
+      data: {
+        fileId: 'mock-file-id',
+        fileName: 'mock-file-name',
+        contentLength: 1024,
+      },
+    }),
+    downloadFileById: jest.fn().mockResolvedValue({
+      data: Buffer.from('mock file content'),
+    }),
+    deleteFileVersion: jest.fn().mockResolvedValue({
+      data: { fileId: 'mock-file-id' },
+    }),
+  }))
+})
 
 // Mock MS SQL Server
 jest.mock('mssql', () => ({

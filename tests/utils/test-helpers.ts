@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-export function createMockRequest(url: string, options: RequestInit = {}) {
+export function createMockRequest(url: string, options: Omit<RequestInit, 'signal'> & { signal?: AbortSignal } = {}) {
   return new NextRequest(url, {
     method: 'GET',
     ...options,
@@ -53,7 +53,7 @@ export function createMockSession(overrides = {}) {
     user: {
       id: 1,
       email: 'test@example.com',
-      role: 'admin',
+      role: 'ADMIN',
       ...overrides
     },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()

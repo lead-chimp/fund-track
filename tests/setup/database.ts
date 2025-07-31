@@ -46,7 +46,7 @@ export const testDataFactory = {
   user: (overrides = {}) => ({
     email: 'test@example.com',
     passwordHash: '$2b$12$test.hash',
-    role: 'user' as const,
+    role: 'USER' as const,
     ...overrides,
   }),
 

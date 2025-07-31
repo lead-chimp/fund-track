@@ -209,7 +209,7 @@ describe('FollowUpScheduler', () => {
 
       expect(mockNotificationService.sendEmail).toHaveBeenCalledWith({
         to: 'test@example.com',
-        subject: 'Quick Reminder: Complete Your Merchant Funding Application',
+        subject: 'Quick Reminder: Complete Your Fund Track Application',
         text: expect.stringContaining('Hi John Doe'),
         html: expect.stringContaining('Hi John Doe'),
         leadId: 1,
