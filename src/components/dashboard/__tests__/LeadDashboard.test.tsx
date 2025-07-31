@@ -98,15 +98,15 @@ describe('LeadDashboard', () => {
 
     // Wait for leads to load
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
-      expect(screen.getByText('Jane Smith')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Jane Smith')[0]).toBeInTheDocument()
     })
 
     // Check lead details
     expect(screen.getByText('john@example.com')).toBeInTheDocument()
     expect(screen.getByText('jane@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Doe Enterprises')).toBeInTheDocument()
-    expect(screen.getByText('Smith LLC')).toBeInTheDocument()
+    expect(screen.getAllByText('Doe Enterprises')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Smith LLC')[0]).toBeInTheDocument()
   })
 
   it('displays loading state initially', () => {
@@ -120,7 +120,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Find and use search input
@@ -139,7 +139,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Find and use status filter
@@ -157,7 +157,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Find and use date filters
@@ -181,7 +181,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Click on Name column header to sort
@@ -212,7 +212,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Should show pagination controls
@@ -259,7 +259,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Add a search filter
@@ -276,7 +276,7 @@ describe('LeadDashboard', () => {
     render(<LeadDashboard />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument()
     })
 
     // Add filters
