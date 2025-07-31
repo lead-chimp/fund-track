@@ -332,12 +332,12 @@ export class FollowUpScheduler {
   private getFollowUpMessages(followUpType: FollowupType, leadName: string, intakeUrl: string) {
     const baseMessages = {
       [FollowupType.THREE_HOUR]: {
-        emailSubject: 'Quick Reminder: Complete Your Merchant Funding Application',
+        emailSubject: 'Quick Reminder: Complete Your Fund Track Application',
         urgency: 'We wanted to follow up quickly',
         timeframe: 'just a few hours ago'
       },
       [FollowupType.NINE_HOUR]: {
-        emailSubject: 'Don\'t Miss Out: Your Merchant Funding Application',
+        emailSubject: 'Don\'t Miss Out: Your Fund Track Application',
         urgency: 'We noticed you haven\'t completed',
         timeframe: 'earlier today'
       },
@@ -347,7 +347,7 @@ export class FollowUpScheduler {
         timeframe: 'yesterday'
       },
       [FollowupType.SEVENTY_TWO_H]: {
-        emailSubject: 'Last Chance: Your Merchant Funding Application Expires Soon',
+        emailSubject: 'Last Chance: Your Fund Track Application Expires Soon',
         urgency: 'This is your final reminder',
         timeframe: 'a few days ago'
       }
@@ -368,7 +368,7 @@ Don't miss this opportunity to secure funding for your business. The application
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Merchant Funding Team`,
+Fund Track Team`,
       emailHtml: `
         <h2>${message.emailSubject}</h2>
         <p>Hi ${leadName},</p>
@@ -376,7 +376,7 @@ Merchant Funding Team`,
         <p><a href="${intakeUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
         <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
         <p>If you have any questions, please don't hesitate to contact us.</p>
-        <p>Best regards,<br>Merchant Funding Team</p>
+        <p>Best regards,<br>Fund Track Team</p>
       `,
       smsText: `Hi ${leadName}! ${message.urgency} your merchant funding application. Complete it now: ${intakeUrl}`
     };

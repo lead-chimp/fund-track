@@ -32,7 +32,7 @@ export async function sendIntakeNotification(
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: 'Complete Your Merchant Funding Application',
+      subject: 'Complete Your Fund Track Application',
       text: `Hi ${fullName},
 
 Thank you for your interest in merchant funding${businessText}. To complete your application, please click the link below:
@@ -47,10 +47,10 @@ This secure link will allow you to:
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Merchant Funding Team`,
+Fund Track Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
+          <h2 style="color: #333;">Complete Your Fund Track Application</h2>
           <p>Hi ${fullName},</p>
           <p>Thank you for your interest in merchant funding${businessText}. To complete your application, please click the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -63,7 +63,7 @@ Merchant Funding Team`,
             <li>Complete your application</li>
           </ul>
           <p>If you have any questions, please don't hesitate to contact us.</p>
-          <p>Best regards,<br>Merchant Funding Team</p>
+          <p>Best regards,<br>Fund Track Team</p>
         </div>
       `,
       leadId,
@@ -125,7 +125,7 @@ export async function sendFollowUpNotification(
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: 'Reminder: Complete Your Merchant Funding Application',
+      subject: 'Reminder: Complete Your Fund Track Application',
       text: `Hi ${fullName},
 
 ${followUpMessage}
@@ -135,7 +135,7 @@ Complete your application here: ${intakeUrl}
 This will only take a few minutes and you can save your progress at any time.
 
 Best regards,
-Merchant Funding Team`,
+Fund Track Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Reminder: Complete Your Application</h2>
@@ -145,7 +145,7 @@ Merchant Funding Team`,
             <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>
           </div>
           <p>This will only take a few minutes and you can save your progress at any time.</p>
-          <p>Best regards,<br>Merchant Funding Team</p>
+          <p>Best regards,<br>Fund Track Team</p>
         </div>
       `,
       leadId,
