@@ -288,7 +288,7 @@ async function main() {
         leadId: leads[0].id, // New lead
         type: NotificationType.EMAIL,
         recipient: 'john.doe@example.com',
-        subject: 'Complete Your Merchant Funding Application',
+        subject: 'Complete Your Fund Track Application',
         content: 'Thank you for your interest in merchant funding. Please complete your application at: http://localhost:3000/application/token_new_lead_001',
         status: NotificationStatus.SENT,
         externalId: 'mailgun_msg_001',
@@ -313,7 +313,7 @@ async function main() {
         leadId: leads[1].id, // Pending lead
         type: NotificationType.EMAIL,
         recipient: 'jane.smith@example.com',
-        subject: 'Reminder: Complete Your Merchant Funding Application',
+        subject: 'Reminder: Complete Your Fund Track Application',
         content: 'This is a friendly reminder to complete your merchant funding application.',
         status: NotificationStatus.SENT,
         externalId: 'mailgun_msg_002',

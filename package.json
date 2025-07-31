@@ -1,5 +1,5 @@
 {
-  "name": "merchant-funding-app",
+  "name": "fund-track",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,11 +14,20 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test && npm run test:integration && npm run test:e2e",
+    "test:ci": "npm run test:coverage && npm run test:integration",
+    "test:coverage:open": "npm run test:coverage && open coverage/lcov-report/index.html",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:prod": "node scripts/migrate-production.js",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "deploy:prod": "./scripts/deploy-production.sh",
+    "backup:db": "./scripts/backup-database.sh",
+    "restore:db": "./scripts/disaster-recovery.sh",
+    "health:check": "curl -f http://localhost:3000/api/health || exit 1",
+    "security:audit": "npm audit --audit-level moderate",
+    "security:fix": "npm audit fix"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

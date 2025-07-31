@@ -1,6 +1,6 @@
-# Merchant Funding App
+# Fund Track App
 
-An internal web application for managing leads and automating intake workflows for Merchant Funding.
+An internal web application for managing leads and automating intake workflows for Fund Track.
 
 ## Features
 

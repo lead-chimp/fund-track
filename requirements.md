@@ -1,8 +1,8 @@
-# Merchant Funding App — Requirements Document
+# Fund Track App — Requirements Document
 
 ## Overview
 
-This project involves building an internal web application for Merchant Funding staff to manage lead intake, process documents, and track application statuses. Leads will be polled from a legacy database, and the platform will offer file uploads, notes, and administrative control over each lead’s progress.
+This project involves building an internal web application for Fund Track staff to manage lead intake, process documents, and track application statuses. Leads will be polled from a legacy database, and the platform will offer file uploads, notes, and administrative control over each lead’s progress.
 
 ---
 
@@ -12,7 +12,7 @@ This project involves building an internal web application for Merchant Funding 
 - Leads are stored in a legacy MS SQL Server database:
   - **Database**: `LeadData2`
   - **Table**: `Leads`
-  - **Key field**: `CampaignID` identifies Merchant Funding leads
+  - **Key field**: `CampaignID` identifies Fund Track leads
 
 ### 1.2 Method
 - System will **poll** the `Leads` table periodically to fetch new leads.

@@ -1,6 +1,6 @@
 # Database Setup Guide
 
-This guide explains how to set up the PostgreSQL database and Prisma ORM for the Merchant Funding App.
+This guide explains how to set up the PostgreSQL database and Prisma ORM for the Fund Track App.
 
 ## Prerequisites
 
