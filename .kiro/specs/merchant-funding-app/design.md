@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Merchant Funding App is a Next.js web application with PostgreSQL database that provides lead management capabilities for internal staff and a public intake workflow for prospects. The system integrates with legacy MS SQL Server for lead import, Backblaze B2 for file storage, Twilio for SMS, and MailGun for email notifications.
+The Fund Track App is a Next.js web application with PostgreSQL database that provides lead management capabilities for internal staff and a public intake workflow for prospects. The system integrates with legacy MS SQL Server for lead import, Backblaze B2 for file storage, Twilio for SMS, and MailGun for email notifications.
 
 The architecture follows a clean separation between the staff management interface and public intake workflow, with automated background processes handling lead polling and follow-up communications.
 

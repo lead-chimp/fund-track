@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Merchant Funding App is an internal web application designed to streamline lead management for Merchant Funding staff. The system will automatically poll leads from a legacy MS SQL Server database, provide automated intake workflows with email/SMS notifications, enable document uploads to Backblaze B2, and offer comprehensive lead tracking capabilities. The application will be built using Next.js with PostgreSQL and will support both staff management and prospect intake workflows.
+The Fund Track App is an internal web application designed to streamline lead management for Fund Track staff. The system will automatically poll leads from a legacy MS SQL Server database, provide automated intake workflows with email/SMS notifications, enable document uploads to Backblaze B2, and offer comprehensive lead tracking capabilities. The application will be built using Next.js with PostgreSQL and will support both staff management and prospect intake workflows.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ The Merchant Funding App is an internal web application designed to streamline l
 
 #### Acceptance Criteria
 
-1. WHEN the system polls the LeadData2.Leads table THEN it SHALL retrieve leads WHERE CampaignID identifies Merchant Funding leads
+1. WHEN the system polls the LeadData2.Leads table THEN it SHALL retrieve leads WHERE CampaignID identifies Fund Track leads
 2. WHEN new leads are imported THEN the system SHALL NOT modify or flag records in the legacy database
 3. WHEN leads are processed THEN the system SHALL store them in the PostgreSQL database with all relevant contact information
 4. WHEN polling occurs THEN the system SHALL run automatically at regular intervals without manual intervention
