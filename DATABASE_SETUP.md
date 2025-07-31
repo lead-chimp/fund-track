@@ -17,7 +17,7 @@ This guide explains how to set up the PostgreSQL database and Prisma ORM for the
 
 2. Update the `DATABASE_URL` in `.env.local`:
    ```
-   DATABASE_URL="postgresql://username:password@localhost:5432/merchant_funding_app"
+   DATABASE_URL="postgresql://username:password@localhost:5432/fund_track_app"
    ```
 
 ## Database Setup Steps

@@ -147,7 +147,7 @@ Set these environment variables for automated backups:
 ENABLE_AUTOMATED_BACKUPS=true
 BACKUP_SCHEDULE="0 2 * * *"  # Daily at 2 AM
 BACKUP_RETENTION_DAYS=30
-BACKUP_STORAGE_BUCKET=merchant-funding-backups-prod
+BACKUP_STORAGE_BUCKET=fund-track-backups-prod
 ```
 
 ## Security
