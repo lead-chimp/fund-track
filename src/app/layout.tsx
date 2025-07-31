@@ -8,8 +8,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Merchant Funding App',
-  description: 'Internal lead management system for Merchant Funding',
+  title: 'Fund Track App',
+  description: 'Internal lead management system for Fund Track',
 }
 
 export default function RootLayout({

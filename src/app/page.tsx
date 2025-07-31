@@ -31,10 +31,10 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Merchant Funding App
+          Fund Track App
         </h1>
         <p className="text-lg text-gray-600 mb-8">
-          Internal lead management system for Merchant Funding staff
+          Internal lead management system for Fund Track staff
         </p>
         
         <div className="space-y-4">

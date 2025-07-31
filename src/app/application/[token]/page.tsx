@@ -25,7 +25,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Merchant Funding Application
+                Fund Track Application
               </h1>
               <p className="text-gray-600">
                 Complete your application in two simple steps
