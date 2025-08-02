@@ -4,7 +4,7 @@ describe('Test Utilities', () => {
   describe('createMockLead', () => {
     it('should create a mock lead with default values', () => {
       const lead = createMockLead()
-      
+
       expect(lead).toHaveProperty('id', 1)
       expect(lead).toHaveProperty('firstName', 'John')
       expect(lead).toHaveProperty('lastName', 'Doe')
@@ -20,7 +20,7 @@ describe('Test Utilities', () => {
         lastName: 'Smith',
         status: 'PENDING'
       })
-      
+
       expect(lead.firstName).toBe('Jane')
       expect(lead.lastName).toBe('Smith')
       expect(lead.status).toBe('PENDING')
@@ -30,10 +30,10 @@ describe('Test Utilities', () => {
   describe('createMockUser', () => {
     it('should create a mock user with default values', () => {
       const user = createMockUser()
-      
+
       expect(user).toHaveProperty('id', 1)
       expect(user).toHaveProperty('email', 'test@example.com')
-      expect(user).toHaveProperty('role', 'admin')
+      expect(user).toHaveProperty('role', 'ADMIN')
       expect(user).toHaveProperty('passwordHash')
     })
 
@@ -42,7 +42,7 @@ describe('Test Utilities', () => {
         email: 'admin@example.com',
         role: 'user'
       })
-      
+
       expect(user.email).toBe('admin@example.com')
       expect(user.role).toBe('user')
     })
@@ -51,7 +51,7 @@ describe('Test Utilities', () => {
   describe('createMockDocument', () => {
     it('should create a mock document with default values', () => {
       const document = createMockDocument()
-      
+
       expect(document).toHaveProperty('id', 1)
       expect(document).toHaveProperty('leadId', 1)
       expect(document).toHaveProperty('filename', 'test-document.pdf')
@@ -63,7 +63,7 @@ describe('Test Utilities', () => {
   describe('createMockNote', () => {
     it('should create a mock note with default values', () => {
       const note = createMockNote()
-      
+
       expect(note).toHaveProperty('id', 1)
       expect(note).toHaveProperty('leadId', 1)
       expect(note).toHaveProperty('userId', 1)

@@ -326,10 +326,27 @@ describe('createLeadPoller', () => {
     });
 
     it('should throw error if campaign IDs are not configured', () => {
-        delete process.env.MERCHANT_FUNDING_CAMPAIGN_IDS;
+        // Store original value
+        const originalValue = process.env.MERCHANT_FUNDING_CAMPAIGN_IDS;
+        
+        try {
+            // Set to empty string to simulate missing env var
+            process.env.MERCHANT_FUNDING_CAMPAIGN_IDS = '';
+            
+            // Clear module cache to ensure fresh import
+            jest.resetModules();
+            
+            // Import fresh module
+            const { createLeadPoller } = require('../LeadPoller');
 
-        const { createLeadPoller } = require('../LeadPoller');
-
-        expect(() => createLeadPoller()).toThrow('MERCHANT_FUNDING_CAMPAIGN_IDS environment variable is required');
+            expect(() => createLeadPoller()).toThrow('MERCHANT_FUNDING_CAMPAIGN_IDS environment variable is required');
+        } finally {
+            // Restore original value
+            if (originalValue) {
+                process.env.MERCHANT_FUNDING_CAMPAIGN_IDS = originalValue;
+            }
+            // Reset modules again to restore normal state
+            jest.resetModules();
+        }
     });
 });

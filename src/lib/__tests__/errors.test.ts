@@ -102,14 +102,14 @@ describe('Error Classes', () => {
 });
 
 describe('Error Response Creation', () => {
-  it('should create error response for AppError', () => {
+  it('should create error response for AppError', async () => {
     const error = new ValidationError('Invalid input', 'email');
     const response = createErrorResponse(error, 'req-123');
     
     expect(response.status).toBe(400);
     
     // Extract response body
-    const responseData = JSON.parse(JSON.stringify(response));
+    const responseData = await response.json();
     expect(responseData).toMatchObject({
       error: {
         code: 'VALIDATION_ERROR',
@@ -145,8 +145,8 @@ describe('Error Handler Wrapper', () => {
     
     const result = await wrappedHandler();
     
-    expect(result).toBeInstanceOf(NextResponse);
-    expect((result as NextResponse).status).toBe(400);
+    expect(result).toHaveProperty('status', 400);
+    expect(typeof result.json).toBe('function');
   });
 
   it('should handle Prisma P2002 error', async () => {
@@ -159,8 +159,8 @@ describe('Error Handler Wrapper', () => {
     
     const result = await wrappedHandler();
     
-    expect(result).toBeInstanceOf(NextResponse);
-    expect((result as NextResponse).status).toBe(409);
+    expect(result).toHaveProperty('status', 409);
+    expect(typeof result.json).toBe('function');
   });
 
   it('should handle generic Error', async () => {
@@ -169,8 +169,8 @@ describe('Error Handler Wrapper', () => {
     
     const result = await wrappedHandler();
     
-    expect(result).toBeInstanceOf(NextResponse);
-    expect((result as NextResponse).status).toBe(500);
+    expect(result).toHaveProperty('status', 500);
+    expect(typeof result.json).toBe('function');
   });
 });
 

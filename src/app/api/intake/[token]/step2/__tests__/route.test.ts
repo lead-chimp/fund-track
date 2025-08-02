@@ -29,7 +29,7 @@ import { prisma } from '@/lib/prisma';
 
 const mockTokenService = TokenService as jest.Mocked<typeof TokenService>;
 const mockFileUploadService = fileUploadService as jest.Mocked<typeof fileUploadService>;
-const mockDocumentCreate = prisma.document.create as jest.MockedFunction<typeof prisma.document.create>;
+const { prisma: mockPrisma } = jest.requireMock('@/lib/prisma');
 
 describe('/api/intake/[token]/step2', () => {
   const mockIntakeSession = {
@@ -69,7 +69,7 @@ describe('/api/intake/[token]/step2', () => {
     });
 
     // Mock database document creation
-    mockDocumentCreate.mockResolvedValue({
+    mockPrisma.document.create.mockResolvedValue({
       id: 1,
       leadId: 1,
       filename: 'test-file.pdf',

@@ -69,6 +69,7 @@ describe('/api/leads/[id] GET', () => {
       lastName: 'Doe',
       email: 'john@example.com',
       status: LeadStatus.NEW,
+      legacyLeadId: null,
       notes: [
         {
           id: 1,
@@ -112,6 +113,18 @@ describe('/api/leads/[id] GET', () => {
             },
           },
           orderBy: { uploadedAt: 'desc' },
+        },
+        statusHistory: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
         },
         _count: {
           select: {
@@ -227,6 +240,7 @@ describe('/api/leads/[id] PUT', () => {
       ...existingLead,
       status: LeadStatus.IN_PROGRESS,
       firstName: 'Jane',
+      legacyLeadId: null,
       notes: [],
       documents: [],
       _count: { notes: 0, documents: 0, followupQueue: 0 },
@@ -234,6 +248,14 @@ describe('/api/leads/[id] PUT', () => {
 
     mockPrisma.lead.findUnique.mockResolvedValue(existingLead as any);
     mockPrisma.lead.update.mockResolvedValue(updatedLead as any);
+    
+    // Mock the status service for status changes
+    mockLeadStatusService.changeLeadStatus.mockResolvedValue({
+      success: true,
+      lead: updatedLead,
+      followUpsCancelled: false,
+      staffNotificationSent: false,
+    });
 
     const request = new NextRequest('http://localhost:3000/api/leads/1', {
       method: 'PUT',
@@ -336,6 +358,7 @@ describe('/api/leads/[id] PUT', () => {
         status: LeadStatus.NEW,
         firstName: 'John',
         lastName: 'Doe',
+        legacyLeadId: null,
       };
 
       const updatedLead = {

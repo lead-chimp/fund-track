@@ -20,7 +20,18 @@ jest.mock('@/lib/prisma', () => ({
         },
     },
 }));
-jest.mock('@/services/FileUploadService');
+jest.mock('@/services/FileUploadService', () => ({
+    fileUploadService: {
+        uploadFile: jest.fn(),
+        deleteFile: jest.fn(),
+    },
+}));
+jest.mock('@/lib/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+    },
+}));
 
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
 const mockFileUploadService = fileUploadService as jest.Mocked<typeof fileUploadService>;
@@ -110,7 +121,7 @@ describe('/api/leads/[id]/files', () => {
                 'application/pdf',
                 1
             );
-            expect(mockPrisma.document.create as jest.Mock).toHaveBeenCalledWith({
+            expect(mockPrisma.document.create).toHaveBeenCalledWith({
                 data: {
                     leadId: 1,
                     filename: 'test-file.pdf',

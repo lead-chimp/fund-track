@@ -14,11 +14,7 @@ jest.mock('@/lib/prisma', () => ({
 }));
 
 const mockTokenService = TokenService as jest.Mocked<typeof TokenService>;
-const mockPrisma = {
-  lead: {
-    update: jest.fn(),
-  },
-} as any;
+const { prisma: mockPrisma } = jest.requireMock('@/lib/prisma');
 
 describe('/api/intake/[token]/save', () => {
   const mockIntakeSession = {

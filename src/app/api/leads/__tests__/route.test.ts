@@ -25,7 +25,8 @@ describe('/api/leads GET', () => {
     const data = await response.json();
 
     expect(response.status).toBe(401);
-    expect(data.error).toBe('Unauthorized');
+    expect(data.error.code).toBe('AUTHENTICATION_ERROR');
+    expect(data.error.message).toBe('Authentication required');
   });
 
   it('should return leads with default pagination', async () => {
@@ -38,6 +39,7 @@ describe('/api/leads GET', () => {
         lastName: 'Doe',
         email: 'john@example.com',
         status: LeadStatus.NEW,
+        legacyLeadId: null,
         _count: { notes: 2, documents: 1 },
       },
     ];
@@ -192,7 +194,8 @@ describe('/api/leads GET', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe('Invalid pagination parameters');
+    expect(data.error.code).toBe('VALIDATION_ERROR');
+    expect(data.error.message).toBe('Invalid pagination parameters');
   });
 
   it('should handle database errors', async () => {
@@ -204,6 +207,7 @@ describe('/api/leads GET', () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Internal server error');
+    expect(data.error.code).toBe('DATABASE_ERROR');
+    expect(data.error.message).toContain('Database operation failed');
   });
 });
