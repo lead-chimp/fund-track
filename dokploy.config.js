@@ -5,10 +5,16 @@ module.exports = {
     // Environment variables for build time
     env: {
       SKIP_ENV_VALIDATION: 'true',
-      DATABASE_URL: 'postgresql://placeholder:placeholder@placeholder:5432/placeholder'
+      DATABASE_URL: 'postgresql://placeholder:placeholder@placeholder:5432/placeholder',
+      PRISMA_CLI_BINARY_TARGETS: 'linux-musl,native',
+      NODE_ENV: 'production'
     },
-    // Build command
-    command: 'npm run build'
+    // Build commands for Railpack
+    commands: [
+      'npm ci',
+      'npx prisma generate',
+      'npm run build'
+    ]
   },
   
   // Runtime configuration
