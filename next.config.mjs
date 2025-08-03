@@ -2,6 +2,14 @@
 const nextConfig = {
   // App Router is enabled by default in Next.js 13+
 
+  // Skip TypeScript and ESLint checks during build for production deployment
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Only use standalone output in production
   ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
 

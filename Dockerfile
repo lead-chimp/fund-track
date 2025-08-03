@@ -32,12 +32,6 @@ ENV PRISMA_CLI_TELEMETRY_DISABLED=1
 # Generate Prisma client without database connection
 RUN npx prisma generate
 
-# Verify Prisma client was generated correctly
-RUN ls -la node_modules/.prisma/client/
-RUN ls -la src/components/auth/
-RUN ls -la src/components/dashboard/
-RUN ls -la src/lib/
-
 # Build the application
 RUN npm run build
 
