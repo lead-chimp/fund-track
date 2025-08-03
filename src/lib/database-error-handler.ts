@@ -242,12 +242,14 @@ export async function checkDatabaseHealth(): Promise<{
   error?: string;
 }> {
   try {
-    // Skip health check during build time
+    // Skip health check during build time or when database is not available
     if (process.env.SKIP_ENV_VALIDATION === 'true' || 
-        process.env.DATABASE_URL?.includes('placeholder')) {
+        process.env.DATABASE_URL?.includes('placeholder') ||
+        process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL ||
+        typeof window !== 'undefined') { // Client-side check
       return {
         healthy: false,
-        error: 'Build time - database not available',
+        error: 'Build time or client-side - database not available',
       };
     }
     

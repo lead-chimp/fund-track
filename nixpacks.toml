@@ -1,0 +1,15 @@
+[variables]
+SKIP_ENV_VALIDATION = "true"
+DATABASE_URL = "postgresql://placeholder:placeholder@placeholder:5432/placeholder"
+
+[phases.setup]
+nixPkgs = ["nodejs_18", "npm"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run db:generate", "npm run build"]
+
+[start]
+cmd = "npm start"

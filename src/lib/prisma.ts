@@ -6,9 +6,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 // Check if we're in a build environment or if DATABASE_URL is a placeholder
-const isBuildTime = process.env.NODE_ENV === 'production' && 
-  (process.env.DATABASE_URL?.includes('placeholder') || 
-   process.env.SKIP_ENV_VALIDATION === 'true');
+const isBuildTime = process.env.SKIP_ENV_VALIDATION === 'true' ||
+  process.env.DATABASE_URL?.includes('placeholder') ||
+  !process.env.DATABASE_URL ||
+  typeof window !== 'undefined'; // Client-side check
 
 // Enhanced Prisma client with logging and error handling
 export const prisma =
@@ -50,7 +51,7 @@ export async function checkPrismaConnection(): Promise<boolean> {
     if (isBuildTime) {
       return false;
     }
-    
+
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
