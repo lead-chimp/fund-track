@@ -19,7 +19,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
+# Set a placeholder DATABASE_URL for build time to avoid connection attempts
+ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
+ENV NODE_ENV="production"
+ENV SKIP_ENV_VALIDATION="true"
+
+# Generate Prisma client without database connection
 RUN npx prisma generate
 
 # Build the application
@@ -59,8 +64,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 RUN mkdir -p /app/logs /app/backups
 RUN chown nextjs:nodejs /app/logs /app/backups
 
-# Install PostgreSQL client for backups
-RUN apk add --no-cache postgresql-client
+# Install PostgreSQL client for backups and curl for health checks
+RUN apk add --no-cache postgresql-client curl
+
+# Make entrypoint script executable
+RUN chmod +x /app/scripts/docker-entrypoint.sh
 
 USER nextjs
 
@@ -70,7 +78,9 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
+# Use entrypoint script to handle database setup
+ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
