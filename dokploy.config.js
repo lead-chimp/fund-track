@@ -4,37 +4,43 @@ module.exports = {
   build: {
     // Environment variables for build time
     env: {
-      SKIP_ENV_VALIDATION: 'true',
-      DATABASE_URL: 'postgresql://placeholder:placeholder@placeholder:5432/placeholder',
-      PRISMA_CLI_BINARY_TARGETS: 'linux-musl,native',
-      NODE_ENV: 'production'
+      SKIP_ENV_VALIDATION: "true",
+      DATABASE_URL:
+        "postgresql://placeholder:placeholder@placeholder:5432/placeholder",
+      PRISMA_CLI_BINARY_TARGETS: "linux-musl,native",
+      NODE_ENV: "production",
     },
     // Build commands for Railpack
-    commands: [
-      'npm ci',
-      'npx prisma generate',
-      'npm run build'
-    ]
+    commands: ["npm ci", "npx prisma generate", "npm run build"],
   },
-  
+
+  // Deployment hooks
+  hooks: {
+    // Post-deploy hook - runs after successful deployment
+    postDeploy: "node /app/scripts/deploy-migrate.js",
+
+    // Pre-start hook - runs before application starts
+    preStart: "/app/scripts/pre-start.sh",
+  },
+
   // Runtime configuration
   runtime: {
     // Port configuration
     port: 3000,
-    
+
     // Health check endpoints
     healthCheck: {
-      path: '/api/health',
+      path: "/api/health",
       interval: 30000,
       timeout: 5000,
-      retries: 3
+      retries: 3,
     },
-    
+
     // Readiness probe
     readinessProbe: {
-      path: '/api/health/ready',
+      path: "/api/health/ready",
       initialDelaySeconds: 10,
-      periodSeconds: 10
-    }
-  }
+      periodSeconds: 10,
+    },
+  },
 };

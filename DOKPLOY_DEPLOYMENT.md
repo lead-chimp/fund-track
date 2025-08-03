@@ -116,39 +116,130 @@ cmd = "npm start"
 
 ## Database Migration
 
-Database migrations run automatically during application startup. However, if you need to run them manually:
+Database migrations and seeding are now fully automated during deployment. The system provides multiple approaches:
+
+### Automated Migration (Recommended)
+
+The application now includes automated migration scripts that run during deployment:
+
+1. **Pre-start Hook**: Runs migrations before the app starts
+2. **Post-deploy Hook**: Runs after successful deployment
+3. **Docker Entrypoint**: Handles migrations in containerized environments
+
+#### Configuration
+
+Set these environment variables in Dokploy for automated migration control:
+
+```bash
+# Force database seeding (usually only for initial deployment)
+FORCE_SEED=true
+
+# Skip migration validation (for emergency deployments)
+SKIP_MIGRATION_CHECK=false
+```
+
+#### Available Scripts
+
+```bash
+# Automated deployment migration (recommended)
+npm run db:migrate:deploy
+
+# Force seeding (useful for initial setup)
+npm run db:seed:force
+
+# Traditional production migration with backup
+npm run db:migrate:prod
+```
+
+### Manual Migration (Fallback)
+
+If automated migration fails, you can run migrations manually:
 
 ```bash
 # For manual migration after deployment
 dokploy exec your-app-name -- npx prisma migrate deploy
 
+# Run the automated migration script manually
+dokploy exec your-app-name -- node /app/scripts/deploy-migrate.js
+
+# Force seeding
+dokploy exec your-app-name -- node /app/scripts/deploy-migrate.js --seed
+
 # For debugging migration issues
 dokploy exec your-app-name -- /app/scripts/debug-migrations.sh
 
-# Alternative: using the production migration script
+# Alternative: using the production migration script with backup
 dokploy exec your-app-name -- npm run db:migrate:prod
 ```
 
 ### Migration Troubleshooting
 
-If migrations fail during deployment, check:
+The automated migration system includes comprehensive error handling and logging:
 
-1. **Migration files are present**: The migration files should be copied during the Docker build
-2. **Database connectivity**: Ensure DATABASE_URL is correctly set in runtime environment
-3. **Migration permissions**: Check that the nextjs user has access to migration files
+#### Common Issues and Solutions
 
-Debug commands:
+1. **Database Connection Timeouts**
+
+   - The system waits up to 2 minutes for database connectivity
+   - Check DATABASE_URL environment variable
+   - Verify database server is running and accessible
+
+2. **Migration Lock Issues**
+
+   ```bash
+   # Clear migration locks if needed
+   dokploy exec your-app-name -- npx prisma migrate reset --force
+   ```
+
+3. **Seeding Failures**
+
+   - Seeding failures don't stop deployment (by design)
+   - Check logs for seeding issues: `dokploy logs your-app-name`
+   - Manually run seeding: `dokploy exec your-app-name -- npm run db:seed:force`
+
+4. **Permission Issues**
+   - Ensure nextjs user has access to migration files
+   - Check file permissions in container
+
+#### Debug Commands
 
 ```bash
 # Check if migration files exist in the container
 dokploy exec your-app-name -- ls -la /app/prisma/migrations/
 
+# View migration logs
+dokploy exec your-app-name -- cat /app/logs/deploy-migrate.log
+
+# Test database connectivity
+dokploy exec your-app-name -- npx prisma db execute --stdin <<< "SELECT 1;"
+
 # Run the debug script
 dokploy exec your-app-name -- /app/scripts/debug-migrations.sh
 
-# Check logs for migration errors
+# Check container logs for migration errors
 dokploy logs your-app-name
 ```
+
+#### Migration Workflow
+
+The automated migration system follows this workflow:
+
+1. **Database Readiness Check**: Waits for database to be available
+2. **Prisma Client Generation**: Ensures client is compatible with schema
+3. **Migration Deployment**: Applies pending migrations
+4. **Optional Seeding**: Seeds database if FORCE_SEED=true
+5. **Verification**: Confirms successful deployment
+6. **Application Startup**: Starts the Next.js application
+
+#### Logs and Monitoring
+
+Migration logs are stored in `/app/logs/deploy-migrate.log` and include:
+
+- Timestamp for each operation
+- Success/failure status
+- Detailed error messages
+- Retry attempts
+- Database connectivity checks
 
 ## Monitoring
 

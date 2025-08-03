@@ -17,4 +17,4 @@ cmds = [
 ]
 
 [phases.start]
-cmd = "npm start"
+cmd = "./scripts/docker-entrypoint.sh npm start"

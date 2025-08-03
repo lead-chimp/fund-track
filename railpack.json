@@ -13,13 +13,10 @@
       "cmds": ["npm ci"]
     },
     "build": {
-      "cmds": [
-        "npx prisma generate",
-        "npm run build"
-      ]
+      "cmds": ["npx prisma generate", "npm run build"]
     }
   },
   "start": {
-    "cmd": "npm start"
+    "cmd": "./scripts/docker-entrypoint.sh npm start"
   }
 }
