@@ -116,18 +116,18 @@ cmd = "npm start"
 
 ## Database Migration for Dokploy
 
-Database migrations are fully automated and run during application startup via Railpack. The migration process is integrated into the deployment workflow without requiring Docker configuration.
+Database migrations are fully automated and run via Dokploy's postDeploy hook after successful application deployment. The migration process is integrated into the deployment workflow and will fail the deployment if critical migration errors occur.
 
 ### How It Works
 
-When your application starts through Railpack, the following happens automatically:
+After your application is successfully deployed through Railpack, the postDeploy hook executes:
 
 1. **Database Connectivity Check** - Waits up to 2 minutes for database availability
 2. **Prisma Client Generation** - Ensures client matches current schema
 3. **Migration Deployment** - Applies pending migrations via `prisma migrate deploy`
 4. **Optional Seeding** - Seeds database if `FORCE_SEED=true` environment variable is set
 5. **Verification** - Confirms successful database setup
-6. **Application Start** - Launches Next.js application
+6. **Deployment Completion** - Marks deployment as successful or failed based on migration results
 
 ### Environment Variables for Migration Control
 
@@ -222,14 +222,16 @@ dokploy logs your-app-name
 
 #### Migration Workflow
 
-The automated migration system follows this workflow:
+The automated migration system follows this workflow via postDeploy hook:
 
-1. **Database Readiness Check**: Waits for database to be available
-2. **Prisma Client Generation**: Ensures client is compatible with schema
-3. **Migration Deployment**: Applies pending migrations
-4. **Optional Seeding**: Seeds database if FORCE_SEED=true
-5. **Verification**: Confirms successful deployment
-6. **Application Startup**: Starts the Next.js application
+1. **Application Deployment**: Railpack builds and starts the Next.js application
+2. **PostDeploy Hook Trigger**: Dokploy executes the migration script after successful deployment
+3. **Database Readiness Check**: Waits for database to be available
+4. **Prisma Client Generation**: Ensures client is compatible with schema
+5. **Migration Deployment**: Applies pending migrations
+6. **Optional Seeding**: Seeds database if FORCE_SEED=true
+7. **Verification**: Confirms successful deployment
+8. **Deployment Status**: Marks deployment as successful or failed based on migration results
 
 #### Logs and Monitoring
 

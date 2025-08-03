@@ -14,9 +14,9 @@ module.exports = {
     commands: ["npm ci", "npx prisma generate", "npm run build"],
   },
 
-  // Deployment hooks (optional - migrations run via start command)
+  // Deployment hooks - migrations run after successful deployment
   hooks: {
-    // Post-deploy hook - alternative way to run migrations
+    // Post-deploy hook - runs migrations after app deployment
     postDeploy: "node scripts/dokploy-migrate.js",
   },
 

@@ -152,13 +152,14 @@ async function verifyDeployment() {
 
 // Main deployment function
 async function main() {
-  log("🚀 Starting Dokploy deployment migration process");
+  log("🚀 Starting Dokploy postDeploy migration process");
   log("=".repeat(60));
 
   try {
     // Skip migrations if explicitly disabled (emergency flag)
     if (process.env.SKIP_MIGRATION_CHECK === "true") {
       log("⚠️ SKIP_MIGRATION_CHECK is enabled - skipping all migration steps");
+      log("ℹ️ PostDeploy hook completed without running migrations");
       return;
     }
 
@@ -177,16 +178,18 @@ async function main() {
     // Verify deployment
     await verifyDeployment();
 
-    log("🎉 Dokploy deployment migration completed successfully!");
+    log("🎉 Dokploy postDeploy migration completed successfully!");
+    log("ℹ️ Application is now ready with updated database schema");
     log("=".repeat(60));
   } catch (error) {
-    log(`💥 Deployment migration failed: ${error.message}`, "ERROR");
+    log(`💥 PostDeploy migration failed: ${error.message}`, "ERROR");
+    log("🚨 This will cause the deployment to fail", "ERROR");
     log("=".repeat(60));
 
-    // For Dokploy deployments, we want to fail fast on critical errors
-    // but allow the application to start if only seeding failed
+    // For postDeploy hooks, we need to fail the deployment on critical migration errors
+    // Only allow seeding failures to pass
     if (error.message.includes("seeding") || error.message.includes("seed")) {
-      log("ℹ️ Only seeding failed - allowing application to start");
+      log("ℹ️ Only seeding failed - deployment can continue");
       process.exit(0);
     }
 
@@ -196,7 +199,9 @@ async function main() {
     log("   3. Check migration files exist in prisma/migrations/");
     log("   4. Review logs: cat ./logs/dokploy-migrate.log");
     log("   5. Manual migration: npx prisma migrate deploy");
+    log("   6. Check Dokploy deployment logs for hook execution");
 
+    // Exit with error code to fail the deployment if migrations fail
     process.exit(1);
   }
 }

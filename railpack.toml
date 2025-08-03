@@ -17,4 +17,4 @@ cmds = [
 ]
 
 [phases.start]
-cmd = "node scripts/dokploy-migrate.js && npm start"
+cmd = "npm start"
