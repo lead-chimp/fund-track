@@ -34,18 +34,39 @@ if [ $attempt -gt $max_attempts ]; then
     exit 1
 fi
 
+# Check if migration files exist
+if [ ! -d "/app/prisma/migrations" ]; then
+    echo "❌ ERROR: Migration files not found in /app/prisma/migrations"
+    echo "📁 Available files in /app/prisma:"
+    ls -la /app/prisma/ || echo "Prisma directory not found"
+    exit 1
+fi
+
 # Run database migrations
 echo "🔄 Running database migrations..."
+echo "📁 Migration files found:"
+ls -la /app/prisma/migrations/
+
 if npx prisma migrate deploy; then
     echo "✅ Database migrations completed successfully"
 else
     echo "❌ ERROR: Database migrations failed"
+    echo "🔍 Debugging info:"
+    echo "Current directory: $(pwd)"
+    echo "Prisma directory contents:"
+    ls -la /app/prisma/
+    echo "Migration directory contents:"
+    ls -la /app/prisma/migrations/ || echo "Migration directory not accessible"
     exit 1
 fi
 
 # Generate Prisma client (in case it's needed)
 echo "🔧 Generating Prisma client..."
-npx prisma generate
+if npx prisma generate; then
+    echo "✅ Prisma client generated successfully"
+else
+    echo "❌ WARNING: Prisma client generation failed, but continuing..."
+fi
 
 echo "🎉 Database setup completed successfully"
 
