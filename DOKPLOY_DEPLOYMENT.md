@@ -1,8 +1,36 @@
 # Dokploy Deployment Guide
 
-This guide explains how to deploy the Fund Track application using Dokploy with Nixpacks.
+This guide explains how to deploy the Fund Track application using Dokploy with Railpack.
 
 ## Build Configuration
+
+### Railpack Configuration
+
+Dokploy uses Railpack for builds. The application includes both `railpack.toml` and `railpack.json` configurations:
+
+**railpack.toml:**
+```toml
+[variables]
+SKIP_ENV_VALIDATION = "true"
+DATABASE_URL = "postgresql://placeholder:placeholder@placeholder:5432/placeholder"
+PRISMA_CLI_BINARY_TARGETS = "linux-musl,native"
+NODE_ENV = "production"
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = [
+  "npx prisma generate",
+  "npm run build"
+]
+
+[phases.start]
+cmd = "npm start"
+```
 
 ### Environment Variables for Build
 
@@ -11,13 +39,22 @@ Set these environment variables in your Dokploy build configuration:
 ```bash
 SKIP_ENV_VALIDATION=true
 DATABASE_URL=postgresql://placeholder:placeholder@placeholder:5432/placeholder
+PRISMA_CLI_BINARY_TARGETS=linux-musl,native
+NODE_ENV=production
 ```
 
-### Build Command
+### Build Commands
 
-Dokploy should use the following build command:
+Railpack will automatically run:
+1. `npm ci` - Install dependencies
+2. `npx prisma generate` - Generate Prisma client
+3. `npm run build` - Build the Next.js application
+
+### Manual Build Script
+
+If needed, you can use the provided build script:
 ```bash
-npm run build
+./scripts/railpack-build.sh
 ```
 
 ## Runtime Configuration
@@ -75,10 +112,37 @@ cmd = "npm start"
 
 ## Database Migration
 
-After deployment, run database migrations:
+Database migrations run automatically during container startup via the docker-entrypoint.sh script. However, if you need to run them manually:
 
 ```bash
-npm run db:migrate:prod
+# For manual migration after deployment
+dokploy exec your-app-name -- npx prisma migrate deploy
+
+# For debugging migration issues
+dokploy exec your-app-name -- /app/scripts/debug-migrations.sh
+
+# Alternative: using the production migration script
+dokploy exec your-app-name -- npm run db:migrate:prod
+```
+
+### Migration Troubleshooting
+
+If migrations fail during deployment, check:
+
+1. **Migration files are present**: The migration files should be copied during the Docker build
+2. **Database connectivity**: Ensure DATABASE_URL is correctly set in runtime environment
+3. **Migration permissions**: Check that the nextjs user has access to migration files
+
+Debug commands:
+```bash
+# Check if migration files exist in the container
+dokploy exec your-app-name -- ls -la /app/prisma/migrations/
+
+# Run the debug script
+dokploy exec your-app-name -- /app/scripts/debug-migrations.sh
+
+# Check logs for migration errors
+dokploy logs your-app-name
 ```
 
 ## Monitoring
