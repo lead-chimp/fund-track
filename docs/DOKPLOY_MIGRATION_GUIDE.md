@@ -72,11 +72,12 @@ dokploy exec your-app-name -- cat logs/dokploy-migrate.log
 ### Common Issues
 
 - **Database timeout**: Check DATABASE_URL is correct and database is accessible
-- **Migration locks**: Usually resolve automatically with retry logic  
+- **Migration locks**: Usually resolve automatically with retry logic
 - **Seeding failures**: Won't stop deployment, check logs for details
 - **Shell syntax errors**: Fixed in latest version - uses compatible shell commands
 
 ### Recent Fixes
+
 - **Fixed**: Shell compatibility issues with `<<<` syntax that caused "redirection unexpected" errors
 - **Improved**: Now uses `npx prisma migrate status` for database connectivity checks (more reliable)
 

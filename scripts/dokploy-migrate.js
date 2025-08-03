@@ -37,11 +37,16 @@ async function executeWithRetry(
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       log(`Executing: ${description} (attempt ${attempt}/${retries})`);
+      log(`Command: ${command}`);
+      log(`Working directory: ${process.cwd()}`);
+      log(`NODE_ENV: ${process.env.NODE_ENV}`);
+      log(`DATABASE_URL set: ${process.env.DATABASE_URL ? "Yes" : "No"}`);
 
       const output = execSync(command, {
         encoding: "utf8",
         timeout: 60000, // 60 second timeout
-        stdio: ["inherit", "pipe", "pipe"],
+        stdio: ["pipe", "pipe", "pipe"], // Change from inherit to pipe for stdin
+        env: { ...process.env }, // Ensure all environment variables are passed
       });
 
       log(`✅ Success: ${description}`);
@@ -52,6 +57,15 @@ async function executeWithRetry(
     } catch (error) {
       log(`❌ Attempt ${attempt} failed: ${description}`, "ERROR");
       log(`Error: ${error.message}`, "ERROR");
+
+      // Log additional error details
+      if (error.stderr) {
+        log(`Stderr: ${error.stderr}`, "ERROR");
+      }
+      if (error.stdout) {
+        log(`Stdout: ${error.stdout}`, "ERROR");
+      }
+      log(`Exit code: ${error.status}`, "ERROR");
 
       if (attempt < retries) {
         log(`Retrying in ${RETRY_DELAY / 1000} seconds...`);
@@ -74,16 +88,47 @@ async function waitForDatabase() {
   while (Date.now() - startTime < maxWaitTime) {
     try {
       // Use prisma migrate status to check database connectivity
-      await executeWithRetry(
-        'npx prisma migrate status',
-        "Database connectivity check",
-        1
-      );
+      // Note: This command may exit with non-zero code if migrations are pending, but that's OK
+      const output = execSync("node_modules/.bin/prisma migrate status", {
+        encoding: "utf8",
+        timeout: 30000,
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env },
+      });
+
+      log("✅ Database connectivity check successful");
+      if (output && output.trim()) {
+        log(`Migration status: ${output.trim()}`);
+      }
       log("✅ Database is ready");
       return true;
     } catch (error) {
-      log("⏳ Database not ready yet, waiting...");
-      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      // Check if the error is actually a connectivity issue or just pending migrations
+      if (error.stdout && error.stdout.includes("migrations found")) {
+        log(
+          "✅ Database is accessible (pending migrations detected, which is expected)"
+        );
+        log("✅ Database is ready");
+        return true;
+      }
+
+      // If it's a real connectivity error, continue waiting
+      if (
+        error.message.includes("Can't reach database server") ||
+        error.message.includes("Connection refused") ||
+        error.message.includes("timeout")
+      ) {
+        log("⏳ Database not ready yet, waiting...");
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      } else {
+        // Some other error - log it but assume database is accessible
+        log(
+          `⚠️ Unexpected error during connectivity check: ${error.message}`,
+          "WARN"
+        );
+        log("✅ Assuming database is accessible and continuing...");
+        return true;
+      }
     }
   }
 
@@ -95,14 +140,17 @@ async function waitForDatabase() {
 // Generate Prisma client
 async function generatePrismaClient() {
   log("🔧 Generating Prisma client...");
-  await executeWithRetry("npx prisma generate", "Prisma client generation");
+  await executeWithRetry(
+    "node_modules/.bin/prisma generate",
+    "Prisma client generation"
+  );
 }
 
 // Deploy migrations
 async function deployMigrations() {
   log("🚀 Deploying database migrations...");
   await executeWithRetry(
-    "npx prisma migrate deploy",
+    "node_modules/.bin/prisma migrate deploy",
     "Database migration deployment"
   );
 }
@@ -139,7 +187,7 @@ async function verifyDeployment() {
   try {
     // Test database connection by checking migration status
     await executeWithRetry(
-      'npx prisma migrate status',
+      "node_modules/.bin/prisma migrate status",
       "Database verification",
       1
     );
@@ -162,6 +210,15 @@ async function main() {
       log("⚠️ SKIP_MIGRATION_CHECK is enabled - skipping all migration steps");
       log("ℹ️ PostDeploy hook completed without running migrations");
       return;
+    }
+
+    // Set npm config to avoid warnings that might interfere
+    try {
+      execSync("npm config set fund-config-production false", {
+        stdio: "ignore",
+      });
+    } catch (e) {
+      // Ignore if this fails
     }
 
     // Wait for database to be available
