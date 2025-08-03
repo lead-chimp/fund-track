@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LeadStatus } from '@prisma/client';
 
 interface StatusHistoryItem {
@@ -58,11 +58,7 @@ export default function StatusHistorySection({
   const [reason, setReason] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    fetchStatusInfo();
-  }, [leadId]);
-
-  const fetchStatusInfo = async () => {
+  const fetchStatusInfo = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/leads/${leadId}/status`);
@@ -80,7 +76,11 @@ export default function StatusHistorySection({
     } finally {
       setLoading(false);
     }
-  };
+  }, [leadId]);
+
+  useEffect(() => {
+    fetchStatusInfo();
+  }, [fetchStatusInfo]);
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;

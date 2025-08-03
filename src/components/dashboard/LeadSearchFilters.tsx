@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { LeadFilters } from "./types"
 
 interface LeadSearchFiltersProps {
@@ -50,12 +50,14 @@ export function LeadSearchFilters({
         clearTimeout(timeout)
       }
     }
-  }, [localFilters.search])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localFilters.search]) // Only depend on search term for debouncing
 
   // Immediate update for non-search filters
   useEffect(() => {
     onFiltersChange(localFilters)
-  }, [localFilters.status, localFilters.dateFrom, localFilters.dateTo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localFilters.status, localFilters.dateFrom, localFilters.dateTo]) // Only depend on non-search filters
 
   const handleInputChange = (field: keyof LeadFilters, value: string) => {
     setLocalFilters(prev => ({
