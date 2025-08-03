@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "SKIP_ENV_VALIDATION=true next build",
+    "build": "npx prisma generate && SKIP_ENV_VALIDATION=true next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
