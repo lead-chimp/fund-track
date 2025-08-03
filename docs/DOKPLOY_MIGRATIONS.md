@@ -34,12 +34,14 @@ The `scripts/dokploy-migrate.js` script automatically handles database migration
 
 ### Railpack Configuration
 
-The migration is configured in `railpack.toml`:
+The migration is configured in `railpack.toml` (single configuration file):
 
 ```toml
 [phases.start]
 cmd = "node scripts/dokploy-migrate.js && npm start"
 ```
+
+**Note**: We use only `railpack.toml` to avoid configuration conflicts. The `railpack.json` file has been removed.
 
 ### Environment Variables
 

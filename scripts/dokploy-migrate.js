@@ -28,6 +28,31 @@ function log(message, level = "INFO") {
   fs.appendFileSync(LOG_FILE, logMessage + "\n");
 }
 
+// Log environment information for debugging
+function logEnvironmentInfo() {
+  log("🔍 Environment Information:");
+  log(`   Working Directory: ${process.cwd()}`);
+  log(`   NODE_ENV: ${process.env.NODE_ENV || 'undefined'}`);
+  log(`   DATABASE_URL set: ${process.env.DATABASE_URL ? 'Yes' : 'No'}`);
+  log(`   Script executed from: ${__filename}`);
+  log(`   Process arguments: ${process.argv.join(' ')}`);
+  
+  // Check if we're in a Dokploy environment
+  const dokployEnvVars = [
+    'DOKPLOY_PROJECT_NAME',
+    'DOKPLOY_APPLICATION_NAME', 
+    'CI',
+    'DOCKER_BUILDKIT'
+  ];
+  
+  const detectedEnvVars = dokployEnvVars.filter(envVar => process.env[envVar]);
+  if (detectedEnvVars.length > 0) {
+    log(`   Detected environment variables: ${detectedEnvVars.join(', ')}`);
+  } else {
+    log("   No Dokploy-specific environment variables detected");
+  }
+}
+
 // Execute command with retry logic
 async function executeWithRetry(
   command,
@@ -203,6 +228,9 @@ async function verifyDeployment() {
 async function main() {
   log("🚀 Starting Dokploy postDeploy migration process");
   log("=".repeat(60));
+
+  // Log environment information for debugging
+  logEnvironmentInfo();
 
   try {
     // Skip migrations if explicitly disabled (emergency flag)

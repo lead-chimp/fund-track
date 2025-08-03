@@ -25,6 +25,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:force": "FORCE_SEED=true tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "validate:dokploy": "node scripts/validate-dokploy-setup.js",
     "deploy:prod": "./scripts/deploy-production.sh",
     "backup:db": "./scripts/backup-database.sh",
     "restore:db": "./scripts/disaster-recovery.sh",

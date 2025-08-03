@@ -14,11 +14,8 @@ module.exports = {
     commands: ["npm ci", "npx prisma generate", "npm run build"],
   },
 
-  // Deployment hooks - migrations run after successful deployment
-  hooks: {
-    // Post-deploy hook - runs migrations after app deployment
-    postDeploy: "node scripts/dokploy-migrate.js",
-  },
+  // Note: Database migrations are handled in railpack.toml start phase
+  // This ensures migrations run BEFORE the application starts
 
   // Runtime configuration
   runtime: {
