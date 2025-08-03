@@ -9,6 +9,7 @@ This guide explains how to deploy the Fund Track application using Dokploy with 
 Dokploy uses Railpack for builds. The application includes both `railpack.toml` and `railpack.json` configurations:
 
 **railpack.toml:**
+
 ```toml
 [variables]
 SKIP_ENV_VALIDATION = "true"
@@ -46,6 +47,7 @@ NODE_ENV=production
 ### Build Commands
 
 Railpack will automatically run:
+
 1. `npm ci` - Install dependencies
 2. `npx prisma generate` - Generate Prisma client
 3. `npm run build` - Build the Next.js application
@@ -53,6 +55,7 @@ Railpack will automatically run:
 ### Manual Build Script
 
 If needed, you can use the provided build script:
+
 ```bash
 ./scripts/railpack-build.sh
 ```
@@ -87,6 +90,7 @@ Configure health checks in Dokploy:
 ### Database Connection Error During Build
 
 If you see errors like:
+
 ```
 Can't reach database server at merchant-funding-fundtrackdb-ghvfoz:5432
 Invalid prisma.$queryRaw() invocation
@@ -112,7 +116,7 @@ cmd = "npm start"
 
 ## Database Migration
 
-Database migrations run automatically during container startup via the docker-entrypoint.sh script. However, if you need to run them manually:
+Database migrations run automatically during application startup. However, if you need to run them manually:
 
 ```bash
 # For manual migration after deployment
@@ -134,6 +138,7 @@ If migrations fail during deployment, check:
 3. **Migration permissions**: Check that the nextjs user has access to migration files
 
 Debug commands:
+
 ```bash
 # Check if migration files exist in the container
 dokploy exec your-app-name -- ls -la /app/prisma/migrations/

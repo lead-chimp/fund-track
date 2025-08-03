@@ -5,6 +5,7 @@ This guide covers the complete setup and configuration of Dokploy for hosting th
 ## What is Dokploy?
 
 Dokploy is a modern deployment platform that simplifies Docker-based application deployments with:
+
 - Web-based dashboard for management
 - Git integration for automated deployments
 - Built-in SSL certificate management
@@ -32,14 +33,10 @@ sudo apt update && sudo apt upgrade -y
 ### 2. Install Required Dependencies
 
 ```bash
-# Install Docker
+# Install Docker (required by Dokploy for managing services)
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker $USER
-
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
 
 # Install Node.js (for CLI tools)
 curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
@@ -98,6 +95,7 @@ sudo systemctl status dokploy
 ### 1. Admin Account Setup
 
 1. **Create Admin User:**
+
    - Username: Choose a secure username
    - Email: admin@merchantfunding.com
    - Password: Use a strong password
@@ -111,6 +109,7 @@ sudo systemctl status dokploy
 ### 2. Domain Configuration
 
 1. **Primary Domain Setup:**
+
    - Navigate to Settings → Domains
    - Add your primary domain: `dokploy.merchantfunding.com`
    - Configure DNS A record to point to your server IP
@@ -124,6 +123,7 @@ sudo systemctl status dokploy
 ### 3. Git Integration
 
 1. **GitHub Integration:**
+
    - Go to Settings → Git Providers
    - Add GitHub provider
    - Generate and add GitHub personal access token
@@ -139,6 +139,7 @@ sudo systemctl status dokploy
 ### 1. PostgreSQL Service Setup
 
 1. **Create PostgreSQL Service:**
+
    - Navigate to Services → Create Service
    - Select PostgreSQL from templates
    - Configure service settings:
@@ -149,6 +150,7 @@ sudo systemctl status dokploy
      - Version: PostgreSQL 15
 
 2. **Database Configuration:**
+
    - Memory limit: 1GB (adjust based on server resources)
    - Storage: 10GB (adjust based on data requirements)
    - Backup schedule: Daily at 2 AM
@@ -175,19 +177,20 @@ sudo systemctl status dokploy
 ### 1. Create Application
 
 1. **New Application:**
+
    - Navigate to Applications → Create Application
    - Application name: `fund-track-app`
-   - Deployment type: Docker
+   - Deployment type: Railpack
    - Git repository: Your Fund Track App repository
    - Branch: `main`
 
 2. **Build Configuration:**
    - Build context: `/`
-   - Dockerfile path: `./Dockerfile`
+   - Railpack configuration: `railpack.toml`
    - Build arguments: (if needed)
    - Auto-deploy on push: Enable
 
-**Important Note**: The Dockerfile has been updated to handle database connection issues during build. It uses a placeholder DATABASE_URL during build time and sets up the database connection when the container starts. See `docs/DOKPLOY_TROUBLESHOOTING.md` for details.
+**Important Note**: The application uses Railpack for builds which handles the database connection properly during build time. The `dokploy.config.js` file contains the build and runtime configuration. See `DOKPLOY_DEPLOYMENT.md` for details.
 
 ### 2. Environment Variables
 
@@ -235,6 +238,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 3. Domain and SSL
 
 1. **Application Domain:**
+
    - Navigate to your application settings
    - Go to Domains tab
    - Add domain: `processing.merchantfunding.com`
@@ -252,6 +256,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 1. Access Control
 
 1. **User Management:**
+
    - Create additional users if needed
    - Assign appropriate roles and permissions
    - Enable 2FA for all users
@@ -266,6 +271,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 2. Network Security
 
 1. **Firewall Rules:**
+
    ```bash
    # Restrict Dokploy dashboard access (optional)
    sudo ufw delete allow 3000
@@ -280,6 +286,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 3. Backup Security
 
 1. **Backup Encryption:**
+
    - Enable encryption for database backups
    - Secure backup storage location
    - Regular backup integrity checks
@@ -294,6 +301,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 1. System Monitoring
 
 1. **Resource Monitoring:**
+
    - CPU usage alerts (> 80%)
    - Memory usage alerts (> 90%)
    - Disk space alerts (> 85%)
@@ -308,6 +316,7 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 2. Notification Setup
 
 1. **Email Notifications:**
+
    - Configure SMTP settings
    - Set up alert recipients
    - Test notification delivery
@@ -322,13 +331,14 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 1. Dokploy Updates
 
 1. **Update Process:**
+
    ```bash
    # Check for updates
    dokploy version --check
-   
+
    # Update Dokploy
    curl -sSL https://dokploy.com/update.sh | sh
-   
+
    # Restart services
    sudo systemctl restart dokploy
    ```
@@ -341,13 +351,14 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 2. System Maintenance
 
 1. **Regular Tasks:**
+
    ```bash
    # System updates
    sudo apt update && sudo apt upgrade -y
-   
+
    # Docker cleanup
    docker system prune -f
-   
+
    # Log rotation
    sudo logrotate -f /etc/logrotate.conf
    ```
@@ -363,18 +374,20 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 1. Common Issues
 
 1. **Dokploy Won't Start:**
+
    ```bash
    # Check service status
    sudo systemctl status dokploy
-   
+
    # Check logs
    sudo journalctl -u dokploy -f
-   
+
    # Restart service
    sudo systemctl restart dokploy
    ```
 
 2. **SSL Certificate Issues:**
+
    - Verify DNS records
    - Check domain accessibility
    - Review certificate logs
@@ -389,22 +402,24 @@ ENABLE_AUTOMATED_BACKUPS=true
 ### 2. Log Analysis
 
 1. **Dokploy Logs:**
+
    ```bash
    # System logs
    sudo journalctl -u dokploy -f
-   
+
    # Application logs
    dokploy logs fund-track-app --follow
-   
+
    # Service logs
    dokploy logs postgres-prod --follow
    ```
 
 2. **Docker Logs:**
+
    ```bash
    # Container logs
    docker logs dokploy-container-name
-   
+
    # System events
    docker events --filter container=dokploy
    ```
@@ -501,6 +516,7 @@ If you encounter issues during deployment, especially database connection proble
 **📖 [Dokploy Troubleshooting Guide](./DOKPLOY_TROUBLESHOOTING.md)**
 
 Common issues covered:
+
 - Database connection errors during build
 - Migration failures
 - Health check issues

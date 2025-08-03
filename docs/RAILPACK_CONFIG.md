@@ -9,12 +9,15 @@ Dokploy uses Railpack (successor to Nixpacks) for building applications. This pr
 ## Configuration Files
 
 ### railpack.toml
+
 Primary configuration file for Railpack with build phases and environment variables.
 
-### railpack.json 
+### railpack.json
+
 Alternative JSON format configuration (both are included for compatibility).
 
 ### dokploy.config.js
+
 Dokploy-specific configuration with build commands and runtime settings.
 
 ## Key Features
@@ -29,7 +32,7 @@ Dokploy-specific configuration with build commands and runtime settings.
 
 1. **Setup Phase**: Install Node.js 20 and npm
 2. **Install Phase**: Run `npm ci`
-3. **Build Phase**: 
+3. **Build Phase**:
    - Generate Prisma client
    - Build Next.js application
 4. **Start Phase**: Run the application with migrations
@@ -52,12 +55,14 @@ If deployment fails:
 ## Environment Variables
 
 ### Build Time
+
 - `SKIP_ENV_VALIDATION=true`
 - `DATABASE_URL=postgresql://placeholder:...` (placeholder for build)
 - `PRISMA_CLI_BINARY_TARGETS=linux-musl,native`
 - `NODE_ENV=production`
 
 ### Runtime
+
 - Real `DATABASE_URL` from Dokploy environment
 - `NEXTAUTH_SECRET` and other app-specific variables
 
@@ -75,4 +80,3 @@ Common issues and solutions:
 - `scripts/railpack-build.sh` - Manual build script
 - `scripts/debug-migrations.sh` - Runtime debugging
 - `scripts/validate-deployment.sh` - Pre-deployment validation
-- `scripts/docker-entrypoint.sh` - Container startup script

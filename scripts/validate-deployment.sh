@@ -12,11 +12,10 @@ echo "\n📁 Checking required files..."
 files_to_check=(
     "package.json"
     "prisma/schema.prisma"
-    "scripts/docker-entrypoint.sh"
     "scripts/debug-migrations.sh"
     "scripts/railpack-build.sh"
-    "Dockerfile"
     "dokploy.config.js"
+    "railpack.toml"
 )
 
 for file in "${files_to_check[@]}"; do
@@ -42,10 +41,9 @@ fi
 # Check script permissions
 echo "\n🔧 Checking script permissions..."
 scripts=(
-    "scripts/docker-entrypoint.sh"
     "scripts/debug-migrations.sh"
-    "scripts/deploy-production.sh"
     "scripts/migrate-production.js"
+    "scripts/railpack-build.sh"
 )
 
 for script in "${scripts[@]}"; do
@@ -68,20 +66,6 @@ if grep -q "npx prisma generate" package.json; then
     echo "✅ Build script includes Prisma generation"
 else
     echo "❌ Build script missing Prisma generation"
-fi
-
-# Check Dockerfile
-echo "\n🐳 Checking Dockerfile configuration..."
-if grep -q "COPY.*prisma.*prisma" Dockerfile; then
-    echo "✅ Dockerfile copies Prisma files"
-else
-    echo "❌ Dockerfile may not copy Prisma files correctly"
-fi
-
-if grep -q "docker-entrypoint.sh" Dockerfile; then
-    echo "✅ Dockerfile uses entrypoint script"
-else
-    echo "❌ Dockerfile missing entrypoint script"
 fi
 
 # Check railpack configuration

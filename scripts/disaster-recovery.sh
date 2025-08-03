@@ -166,11 +166,8 @@ restore_database() {
     log "   Database: $DB_NAME"
     log "   User: $DB_USER"
     
-    # Stop application services (if running in containers)
-    if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
-        log "🛑 Stopping application services..."
-        docker-compose stop app || true
-    fi
+    # Note: If running on Dokploy, you may need to stop the application manually
+    # through the Dokploy dashboard during critical recovery operations
     
     # Restore database
     log "🔄 Restoring database..."
@@ -193,11 +190,7 @@ restore_database() {
             log "⚠️  Database migrations failed, but restoration was successful"
         fi
         
-        # Restart application services
-        if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
-            log "🚀 Restarting application services..."
-            docker-compose start app || true
-        fi
+        # Note: If stopped manually, restart your application through Dokploy dashboard
         
         log "🎉 Database restoration completed successfully!"
         log "💡 Pre-restore backup saved at: $pre_restore_backup"
