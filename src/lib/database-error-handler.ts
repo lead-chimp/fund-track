@@ -4,6 +4,7 @@
  */
 
 import { PrismaClientKnownRequestError, PrismaClientUnknownRequestError } from '@prisma/client/runtime/library';
+import type { PrismaClient } from '@prisma/client';
 import { logger } from './logger';
 import { DatabaseError, ConflictError, NotFoundError, ValidationError } from './errors';
 
@@ -224,7 +225,7 @@ export async function executeDatabaseOperation<T>(
   } catch (error) {
     const duration = Date.now() - startTime;
     const transformedError = transformPrismaError(error, operationName);
-    
+
     logger.database(operationName, tableName, duration, transformedError, {
       originalError: error instanceof Error ? error.message : String(error),
     });
@@ -243,37 +244,37 @@ export async function checkDatabaseHealth(): Promise<{
 }> {
   try {
     // Skip health check during build time or when database is not available
-    if (process.env.SKIP_ENV_VALIDATION === 'true' || 
-        process.env.DATABASE_URL?.includes('placeholder') ||
-        process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL ||
-        typeof window !== 'undefined') { // Client-side check
+    if (process.env.SKIP_ENV_VALIDATION === 'true' ||
+      process.env.DATABASE_URL?.includes('placeholder') ||
+      process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL ||
+      typeof window !== 'undefined') { // Client-side check
       return {
         healthy: false,
         error: 'Build time or client-side - database not available',
       };
     }
-    
+
     const startTime = Date.now();
-    
+
     // Import prisma here to avoid circular dependencies
     const { prisma } = await import('./prisma');
-    
+
     // Simple query to check connection
     await prisma.$queryRaw`SELECT 1`;
-    
+
     const latency = Date.now() - startTime;
-    
+
     logger.debug('Database health check passed', { latency });
-    
+
     return {
       healthy: true,
       latency,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     logger.error('Database health check failed', error as Error);
-    
+
     return {
       healthy: false,
       error: errorMessage,
@@ -298,15 +299,15 @@ export async function closeDatabaseConnection(): Promise<void> {
  * Database transaction wrapper with error handling
  */
 export async function withDatabaseTransaction<T>(
-  operation: (tx: any) => Promise<T>,
+  operation: (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => Promise<T>,
   operationName: string = 'transaction'
 ): Promise<T> {
   return executeDatabaseOperation(async () => {
     const { prisma } = await import('./prisma');
-    
+
     return prisma.$transaction(async (tx) => {
       logger.debug(`Starting database transaction: ${operationName}`);
-      
+
       try {
         const result = await operation(tx);
         logger.debug(`Database transaction completed: ${operationName}`);
