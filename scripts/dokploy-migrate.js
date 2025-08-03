@@ -73,8 +73,9 @@ async function waitForDatabase() {
 
   while (Date.now() - startTime < maxWaitTime) {
     try {
+      // Use prisma migrate status to check database connectivity
       await executeWithRetry(
-        'npx prisma db execute --stdin <<< "SELECT 1;"',
+        'npx prisma migrate status',
         "Database connectivity check",
         1
       );
@@ -136,9 +137,9 @@ async function verifyDeployment() {
   log("✅ Verifying deployment...");
 
   try {
-    // Test database connection with a simple query
+    // Test database connection by checking migration status
     await executeWithRetry(
-      'npx prisma db execute --stdin <<< "SELECT 1 as test;"',
+      'npx prisma migrate status',
       "Database verification",
       1
     );

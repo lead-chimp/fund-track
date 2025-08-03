@@ -72,14 +72,19 @@ dokploy exec your-app-name -- cat logs/dokploy-migrate.log
 ### Common Issues
 
 - **Database timeout**: Check DATABASE_URL is correct and database is accessible
-- **Migration locks**: Usually resolve automatically with retry logic
+- **Migration locks**: Usually resolve automatically with retry logic  
 - **Seeding failures**: Won't stop deployment, check logs for details
+- **Shell syntax errors**: Fixed in latest version - uses compatible shell commands
+
+### Recent Fixes
+- **Fixed**: Shell compatibility issues with `<<<` syntax that caused "redirection unexpected" errors
+- **Improved**: Now uses `npx prisma migrate status` for database connectivity checks (more reliable)
 
 ### Debug Steps
 
 1. Check Dokploy application logs: `dokploy logs your-app-name`
 2. Check migration logs: `dokploy exec your-app-name -- cat logs/dokploy-migrate.log`
-3. Test database connection: `dokploy exec your-app-name -- npx prisma db execute --stdin <<< "SELECT 1;"`
+3. Test database connection: `dokploy exec your-app-name -- npx prisma migrate status`
 
 ## What's Different from Docker
 
