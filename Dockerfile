@@ -19,13 +19,21 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set a placeholder DATABASE_URL for build time to avoid connection attempts
+# CRITICAL: Completely override any DATABASE_URL from build environment
+# This prevents Dokploy from passing the real DATABASE_URL during build
+ARG DATABASE_URL
 ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
 ENV NODE_ENV="production"
 ENV SKIP_ENV_VALIDATION="true"
+# Prevent Prisma from attempting any database connections during build
+ENV PRISMA_CLI_BINARY_TARGETS="native"
+# Disable Prisma CLI telemetry and validation during build
+ENV PRISMA_CLI_TELEMETRY_DISABLED=1
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
 
 # Generate Prisma client without database connection
-RUN npx prisma generate
+# Skip validation and engine generation during build
+RUN npx prisma generate --skip-validate
 
 # Build the application
 RUN npm run build
