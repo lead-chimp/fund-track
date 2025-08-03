@@ -242,6 +242,15 @@ export async function checkDatabaseHealth(): Promise<{
   error?: string;
 }> {
   try {
+    // Skip health check during build time
+    if (process.env.SKIP_ENV_VALIDATION === 'true' || 
+        process.env.DATABASE_URL?.includes('placeholder')) {
+      return {
+        healthy: false,
+        error: 'Build time - database not available',
+      };
+    }
+    
     const startTime = Date.now();
     
     // Import prisma here to avoid circular dependencies
