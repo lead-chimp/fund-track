@@ -147,7 +147,7 @@ async function sendToErrorTrackingService(errorMetric: ErrorMetric) {
 export function getPerformanceMetrics() {
   const metrics: Record<string, any> = {};
   
-  for (const [name, data] of metricsStore.entries()) {
+  Array.from(metricsStore.entries()).forEach(([name, data]) => {
     metrics[name] = {
       count: data.count,
       averageTime: Math.round(data.totalTime / data.count),
@@ -155,7 +155,7 @@ export function getPerformanceMetrics() {
       maxTime: data.maxTime,
       lastUpdated: new Date(data.lastUpdated).toISOString(),
     };
-  }
+  });
   
   return metrics;
 }
@@ -166,13 +166,13 @@ export function getPerformanceMetrics() {
 export function getErrorMetrics() {
   const errors: Record<string, any> = {};
   
-  for (const [name, data] of errorStore.entries()) {
+  Array.from(errorStore.entries()).forEach(([name, data]) => {
     errors[name] = {
       count: data.count,
       lastOccurred: new Date(data.lastOccurred).toISOString(),
       lastError: data.lastError,
     };
-  }
+  });
   
   return errors;
 }
@@ -232,18 +232,18 @@ export function cleanupMetrics() {
   const maxAge = 24 * 60 * 60 * 1000; // 24 hours
   
   // Clean up performance metrics
-  for (const [name, data] of metricsStore.entries()) {
+  Array.from(metricsStore.entries()).forEach(([name, data]) => {
     if (now - data.lastUpdated > maxAge) {
       metricsStore.delete(name);
     }
-  }
+  });
   
   // Clean up error metrics
-  for (const [name, data] of errorStore.entries()) {
+  Array.from(errorStore.entries()).forEach(([name, data]) => {
     if (now - data.lastOccurred > maxAge) {
       errorStore.delete(name);
     }
-  }
+  });
   
   logger.info('Metrics cleanup completed', {
     performanceMetrics: metricsStore.size,
