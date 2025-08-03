@@ -6,7 +6,7 @@ FROM node:22-alpine AS base
 # Rebuild the source code only when needed
 FROM base AS builder
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Copy package files first
@@ -24,8 +24,8 @@ ARG DATABASE_URL
 ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
 ENV NODE_ENV="production"
 ENV SKIP_ENV_VALIDATION="true"
-# Prevent Prisma from attempting any database connections during build
-ENV PRISMA_CLI_BINARY_TARGETS="native"
+# Set correct binary target for Alpine Linux
+ENV PRISMA_CLI_BINARY_TARGETS="linux-musl"
 # Disable Prisma CLI telemetry and validation during build
 ENV PRISMA_CLI_TELEMETRY_DISABLED=1
 
