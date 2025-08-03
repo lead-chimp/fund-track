@@ -67,13 +67,13 @@ async function checkDiskUsage() {
   try {
     const fs = await import('fs/promises');
     const stats = await fs.statfs('./');
-    const free = stats.free;
-    const total = stats.size;
+    const free = stats.bavail * stats.bsize; // Available blocks * block size
+    const total = stats.blocks * stats.bsize; // Total blocks * block size
     const used = total - free;
     const percentage = (used / total) * 100;
     
     return {
-      status: percentage > 90 ? 'unhealthy' : 'healthy' as const,
+      status: (percentage > 90 ? 'unhealthy' : 'healthy') as 'healthy' | 'unhealthy',
       usage: {
         free: Math.round(free / 1024 / 1024 / 1024), // GB
         total: Math.round(total / 1024 / 1024 / 1024), // GB
@@ -82,7 +82,7 @@ async function checkDiskUsage() {
     };
   } catch (error) {
     return {
-      status: 'unhealthy' as const,
+      status: 'unhealthy' as 'healthy' | 'unhealthy',
       error: 'Unable to check disk usage',
     };
   }
@@ -90,10 +90,14 @@ async function checkDiskUsage() {
 
 // Check external services (simplified checks)
 async function checkExternalServices() {
-  const services = {
-    twilio: { status: 'unknown' as const },
-    mailgun: { status: 'unknown' as const },
-    backblaze: { status: 'unknown' as const },
+  const services: {
+    twilio: { status: 'healthy' | 'unhealthy' | 'unknown'; latency?: number };
+    mailgun: { status: 'healthy' | 'unhealthy' | 'unknown' };
+    backblaze: { status: 'healthy' | 'unhealthy' | 'unknown' };
+  } = {
+    twilio: { status: 'unknown' },
+    mailgun: { status: 'unknown' },
+    backblaze: { status: 'unknown' },
   };
 
   // Only perform detailed checks if enabled
