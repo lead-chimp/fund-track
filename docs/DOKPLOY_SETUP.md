@@ -42,7 +42,7 @@ sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Install Node.js (for CLI tools)
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 sudo apt-get install -y nodejs
 
 # Install Git
@@ -186,6 +186,8 @@ sudo systemctl status dokploy
    - Dockerfile path: `./Dockerfile`
    - Build arguments: (if needed)
    - Auto-deploy on push: Enable
+
+**Important Note**: The Dockerfile has been updated to handle database connection issues during build. It uses a placeholder DATABASE_URL during build time and sets up the database connection when the container starts. See `docs/DOKPLOY_TROUBLESHOOTING.md` for details.
 
 ### 2. Environment Variables
 
@@ -491,3 +493,16 @@ dokploy restart fund-track-app
 - **Training Programs:** Available for teams
 
 This completes the Dokploy setup guide. Follow these steps to have a fully functional Dokploy instance ready to deploy your Fund Track App.
+
+## Troubleshooting
+
+If you encounter issues during deployment, especially database connection problems during the build process, refer to the comprehensive troubleshooting guide:
+
+**📖 [Dokploy Troubleshooting Guide](./DOKPLOY_TROUBLESHOOTING.md)**
+
+Common issues covered:
+- Database connection errors during build
+- Migration failures
+- Health check issues
+- Performance optimization
+- Security considerations
