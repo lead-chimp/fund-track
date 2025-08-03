@@ -180,8 +180,8 @@ sudo systemctl restart postgresql
 # Create dedicated user for the application
 sudo adduser --system --group --home /opt/fund-track fund-track
 
-# Create application directories
-sudo mkdir -p /opt/fund-track/{test,prod}
+# Create application directories with versioned deployment structure
+sudo mkdir -p /opt/fund-track/{test,prod/releases,prod/shared,prod/backups}
 sudo chown -R fund-track:fund-track /opt/fund-track
 ```
 
@@ -195,8 +195,11 @@ sudo -u fund-track bash
 cd /opt/fund-track/test
 git clone https://github.com/your-org/fund-track-app.git .
 
-# Clone repository for production environment
+# For production, we'll use versioned deployments (initial setup)
 cd /opt/fund-track/prod
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+mkdir -p "releases/$TIMESTAMP"
+cd "releases/$TIMESTAMP"
 git clone https://github.com/your-org/fund-track-app.git .
 ```
 
@@ -267,17 +270,18 @@ npm run db:seed
 ### 4. Production Environment Setup
 
 ```bash
-# Switch to production directory
-cd /opt/fund-track/prod
+# Switch to production directory (current release)
+cd /opt/fund-track/prod/releases/$(ls -t /opt/fund-track/prod/releases | head -1)
 
 # Install dependencies
 npm ci --only=production
 
-# Create environment file
-cp .env.example .env.production
+# Create shared environment file
+mkdir -p /opt/fund-track/prod/shared
+cp .env.example /opt/fund-track/prod/shared/.env.production
 ```
 
-**Production Environment Variables (.env.production):**
+**Production Environment Variables (/opt/fund-track/prod/shared/.env.production):**
 ```bash
 # Core Application
 NODE_ENV=production
@@ -319,11 +323,18 @@ ENABLE_AUTOMATED_BACKUPS=true
 ```
 
 ```bash
+# Link shared environment file
+ln -sf /opt/fund-track/prod/shared/.env.production .env.production
+
 # Build application
 npm run build
 
 # Run database migrations
 npm run db:migrate
+
+# Create current symlink for initial deployment
+cd /opt/fund-track/prod
+ln -sf "releases/$(ls -t releases | head -1)" current
 ```
 
 ## Process Management with PM2
@@ -362,7 +373,7 @@ module.exports = {
     },
     {
       name: 'fund-track-prod',
-      cwd: '/opt/fund-track/prod',
+      cwd: '/opt/fund-track/prod/current',
       script: 'npm',
       args: 'start',
       env_file: '.env.production',
@@ -667,18 +678,33 @@ set -e
 
 echo "Starting production deployment..."
 
-# Change to production directory
-cd /opt/fund-track/prod
+DEPLOY_TO="/opt/fund-track/prod"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+RELEASE_DIR="$DEPLOY_TO/releases/$TIMESTAMP"
+CURRENT_DIR="$DEPLOY_TO/current"
 
 # Create backup
 echo "Creating backup..."
-pg_dump -h localhost -U fund_track_prod_user fund_track_prod > /opt/fund-track/backups/backup-$(date +%Y%m%d-%H%M%S).sql
+pg_dump -h localhost -U fund_track_prod_user fund_track_prod > "$DEPLOY_TO/backups/db-$TIMESTAMP.sql"
 
-# Pull latest changes
-git pull origin main
+# Create new release directory
+echo "Creating new release: $TIMESTAMP"
+mkdir -p "$RELEASE_DIR"
+cd "$RELEASE_DIR"
 
-# Install/update dependencies
+# Clone latest code
+git clone https://github.com/your-org/fund-track-app.git .
+git checkout main
+
+# Install dependencies
 npm ci --only=production
+
+# Link shared files
+ln -sf "$DEPLOY_TO/shared/.env.production" "$RELEASE_DIR/.env.production"
+
+# Create shared directories if they don't exist
+mkdir -p "$DEPLOY_TO/shared/uploads"
+ln -sf "$DEPLOY_TO/shared/uploads" "$RELEASE_DIR/public/uploads"
 
 # Run tests
 npm run test
@@ -689,6 +715,10 @@ npm run build
 # Run database migrations
 npm run db:migrate
 
+# Atomic switch to new version
+echo "Switching to new version..."
+ln -sfn "$RELEASE_DIR" "$CURRENT_DIR"
+
 # Restart application with zero downtime
 pm2 reload fund-track-prod
 
@@ -698,30 +728,135 @@ sleep 15
 # Health check
 if curl -f https://processing.merchantfunding.com/api/health; then
     echo "Production deployment successful!"
+    echo "Deployed version: $TIMESTAMP"
     
-    # Clean old backups (keep last 10)
-    cd /opt/fund-track/backups
-    ls -t backup-*.sql | tail -n +11 | xargs -r rm
+    # Keep only last 5 releases
+    cd "$DEPLOY_TO/releases"
+    ls -t | tail -n +6 | xargs -r rm -rf
+    
+    # Clean old database backups (keep last 10)
+    cd "$DEPLOY_TO/backups"
+    ls -t db-*.sql | tail -n +11 | xargs -r rm
 else
     echo "Production deployment failed - health check failed"
-    echo "Rolling back..."
-    git reset --hard HEAD~1
-    npm run build
-    pm2 reload fund-track-prod
+    echo "Rolling back to previous version..."
+    
+    # Get previous version
+    PREVIOUS_VERSION=$(ls -t "$DEPLOY_TO/releases" | sed -n '2p')
+    if [ -n "$PREVIOUS_VERSION" ] && [ "$PREVIOUS_VERSION" != "$TIMESTAMP" ]; then
+        ln -sfn "$DEPLOY_TO/releases/$PREVIOUS_VERSION" "$CURRENT_DIR"
+        pm2 reload fund-track-prod
+        echo "Rolled back to version: $PREVIOUS_VERSION"
+    fi
+    
+    # Remove failed release
+    rm -rf "$RELEASE_DIR"
     exit 1
 fi
 ```
 
-### 3. Make Scripts Executable
+### 3. Rollback Script
+
+```bash
+# Create rollback script
+sudo nano /opt/fund-track/rollback.sh
+```
+
+**Rollback Script:**
+```bash
+#!/bin/bash
+
+set -e
+
+DEPLOY_TO="/opt/fund-track/prod"
+VERSION=${1:-$(ls -t "$DEPLOY_TO/releases" | sed -n '2p')}  # Default to previous version
+
+if [ -z "$VERSION" ]; then
+    echo "No previous version found!"
+    exit 1
+fi
+
+if [ ! -d "$DEPLOY_TO/releases/$VERSION" ]; then
+    echo "Version $VERSION not found!"
+    echo "Available versions:"
+    ls -la "$DEPLOY_TO/releases/"
+    exit 1
+fi
+
+echo "Rolling back to version: $VERSION"
+
+# Atomic switch back
+ln -sfn "$DEPLOY_TO/releases/$VERSION" "$DEPLOY_TO/current"
+
+# Restart application
+pm2 reload fund-track-prod
+
+# Wait for application to start
+sleep 10
+
+# Health check
+if curl -f https://processing.merchantfunding.com/api/health; then
+    echo "Rollback to version $VERSION successful!"
+else
+    echo "Rollback failed - health check failed"
+    exit 1
+fi
+```
+
+### 4. Version Management Script
+
+```bash
+# Create version management script
+sudo nano /opt/fund-track/versions.sh
+```
+
+**Version Management Script:**
+```bash
+#!/bin/bash
+
+DEPLOY_TO="/opt/fund-track/prod"
+
+case "$1" in
+    list)
+        echo "Available versions:"
+        ls -la "$DEPLOY_TO/releases/" | grep "^d" | awk '{print $9, $6, $7, $8}' | grep -v "^\.$\|^\.\.$"
+        echo
+        echo "Current version:"
+        readlink "$DEPLOY_TO/current" | sed 's|.*/||'
+        ;;
+    current)
+        echo "Current version:"
+        readlink "$DEPLOY_TO/current" | sed 's|.*/||'
+        ;;
+    cleanup)
+        echo "Cleaning up old versions (keeping last 5)..."
+        cd "$DEPLOY_TO/releases"
+        ls -t | tail -n +6 | xargs -r rm -rf
+        echo "Cleanup complete"
+        ;;
+    *)
+        echo "Usage: $0 {list|current|cleanup}"
+        echo "  list    - Show all available versions"
+        echo "  current - Show current active version"
+        echo "  cleanup - Remove old versions (keep last 5)"
+        exit 1
+        ;;
+esac
+```
+
+### 5. Make Scripts Executable
 
 ```bash
 # Make scripts executable
 sudo chmod +x /opt/fund-track/deploy-test.sh
 sudo chmod +x /opt/fund-track/deploy-prod.sh
+sudo chmod +x /opt/fund-track/rollback.sh
+sudo chmod +x /opt/fund-track/versions.sh
 
-# Create backup directory
+# Ensure backup directories exist
 sudo mkdir -p /opt/fund-track/backups
-sudo chown fund-track:fund-track /opt/fund-track/backups
+sudo mkdir -p /opt/fund-track/prod/shared
+sudo chown -R fund-track:fund-track /opt/fund-track
 ```
 
 ## Monitoring and Logging
@@ -923,8 +1058,8 @@ sudo -u postgres psql -c "DROP DATABASE fund_track_prod;"
 sudo -u postgres psql -c "CREATE DATABASE fund_track_prod;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE fund_track_prod TO fund_track_prod_user;"
 
-# Restore from backup
-gunzip -c /opt/fund-track/backups/prod-backup-YYYYMMDD-HHMMSS.sql.gz | sudo -u postgres psql fund_track_prod
+# Restore from backup (use timestamped backup)
+gunzip -c /opt/fund-track/prod/backups/db-YYYYMMDD-HHMMSS.sql.gz | sudo -u postgres psql fund_track_prod
 
 # Start application
 pm2 start fund-track-prod
@@ -1102,7 +1237,31 @@ sudo -u postgres psql -d fund_track_prod -c "
 SELECT pg_size_pretty(pg_database_size('fund_track_prod'));"
 ```
 
-## Deployment Checklist
+## Deployment and Rollback Procedures
+
+### Quick Commands
+
+```bash
+# Deploy new version
+./deploy-prod.sh
+
+# Rollback to previous version
+./rollback.sh
+
+# Rollback to specific version
+./rollback.sh 20250203-143022
+
+# List available versions
+./versions.sh list
+
+# Show current version
+./versions.sh current
+
+# Clean up old versions
+./versions.sh cleanup
+```
+
+### Deployment Checklist
 
 ### Test Environment Deployment
 
@@ -1117,17 +1276,30 @@ SELECT pg_size_pretty(pg_database_size('fund_track_prod'));"
 
 ### Production Environment Deployment
 
-- [ ] Create database backup
-- [ ] Pull latest code from main branch
+- [ ] Create database backup with timestamp
+- [ ] Create new versioned release directory
+- [ ] Clone latest code from main branch
 - [ ] Install/update dependencies (production only)
+- [ ] Link shared configuration files
 - [ ] Run tests
 - [ ] Build application
 - [ ] Run database migrations
+- [ ] Atomic switch to new version (symlink)
 - [ ] Restart application with zero downtime
 - [ ] Verify health check
 - [ ] Test key functionality
 - [ ] Monitor for errors
-- [ ] Clean old backups
+- [ ] Clean old releases (keep last 5)
+- [ ] Clean old backups (keep last 10)
+
+### Rollback Checklist
+
+- [ ] Identify target version for rollback
+- [ ] Execute rollback script
+- [ ] Verify health check passes
+- [ ] Test key functionality
+- [ ] Monitor application logs
+- [ ] Consider database rollback if needed
 
 ## Support and Documentation
 
@@ -1142,12 +1314,20 @@ SELECT pg_size_pretty(pg_database_size('fund_track_prod'));"
 
 - PM2 config: `/opt/fund-track/ecosystem.config.js`
 - Nginx configs: `/etc/nginx/sites-available/fund-track-*`
-- Environment files: `/opt/fund-track/*/.*env*`
+- Test environment file: `/opt/fund-track/test/.env.test`
+- Production environment file: `/opt/fund-track/prod/shared/.env.production`
 - PostgreSQL config: `/etc/postgresql/15/main/postgresql.conf`
 
 ### 3. Useful Commands
 
 ```bash
+# Deployment and rollback
+./deploy-prod.sh                    # Deploy new version
+./rollback.sh                       # Rollback to previous version
+./rollback.sh 20250203-143022      # Rollback to specific version
+./versions.sh list                  # List all versions
+./versions.sh current               # Show current version
+
 # PM2 management
 pm2 status
 pm2 restart fund-track-prod
@@ -1169,6 +1349,10 @@ pg_dump -h localhost -U fund_track_prod_user fund_track_prod > backup.sql
 sudo nginx -t
 sudo systemctl reload nginx
 sudo tail -f /var/log/nginx/fund-track-prod-access.log
+
+# Version management
+ls -la /opt/fund-track/prod/releases/     # List all releases
+readlink /opt/fund-track/prod/current     # Show current symlink target
 ```
 
-This manual deployment guide provides a comprehensive approach to deploying the Fund Track App on Debian servers with separate test and production environments. Follow the procedures carefully and maintain regular backups and monitoring.
+This manual deployment guide provides a comprehensive approach to deploying the Fund Track App on Debian servers with separate test and production environments. The production environment uses versioned deployments with symlinks for instant rollbacks and zero-downtime deployments. Follow the procedures carefully and maintain regular backups and monitoring.
