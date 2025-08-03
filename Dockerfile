@@ -1,7 +1,7 @@
 # Production Dockerfile for Fund Track App
 
-# Use official Node.js runtime as base image
-FROM node:18-alpine AS base
+# Use official Node.js runtime as base image - matching development version
+FROM node:22.18.0-alpine AS base
 
 # Rebuild the source code only when needed
 FROM base AS builder
