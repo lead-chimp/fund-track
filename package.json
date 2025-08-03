@@ -21,6 +21,7 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "node scripts/migrate-production.js",
     "db:migrate:deploy": "node scripts/deploy-migrate.js",
+    "db:migrate:dokploy": "node scripts/dokploy-migrate.js",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:force": "FORCE_SEED=true tsx prisma/seed.ts",
     "db:studio": "prisma studio",

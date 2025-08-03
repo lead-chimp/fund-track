@@ -34,13 +34,13 @@ Ensure your Dokploy app is configured with:
 
 Verify these files are in your repository:
 
-- [ ] `scripts/deploy-migrate.js` - Main migration script
-- [ ] `scripts/docker-entrypoint.sh` - Container startup script
-- [ ] `scripts/pre-start.sh` - Pre-start hook
-- [ ] `dokploy.config.js` - Deployment configuration
-- [ ] `railpack.toml` - Build configuration
+- [ ] `scripts/dokploy-migrate.js` - Dokploy-specific migration script
+- [ ] `railpack.toml` - Railpack build configuration
+- [ ] `railpack.json` - Alternative Railpack configuration
+- [ ] `dokploy.config.js` - Deployment configuration (optional)
 - [ ] `prisma/migrations/` - Migration files directory
 - [ ] `prisma/seed.ts` - Database seeding script
+- [ ] `package.json` - Updated with migration scripts
 
 ## Deployment Process
 

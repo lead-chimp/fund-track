@@ -17,6 +17,6 @@
     }
   },
   "start": {
-    "cmd": "./scripts/docker-entrypoint.sh npm start"
+    "cmd": "node scripts/dokploy-migrate.js && npm start"
   }
 }

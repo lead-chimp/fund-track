@@ -14,13 +14,10 @@ module.exports = {
     commands: ["npm ci", "npx prisma generate", "npm run build"],
   },
 
-  // Deployment hooks
+  // Deployment hooks (optional - migrations run via start command)
   hooks: {
-    // Post-deploy hook - runs after successful deployment
-    postDeploy: "node /app/scripts/deploy-migrate.js",
-
-    // Pre-start hook - runs before application starts
-    preStart: "/app/scripts/pre-start.sh",
+    // Post-deploy hook - alternative way to run migrations
+    postDeploy: "node scripts/dokploy-migrate.js",
   },
 
   // Runtime configuration

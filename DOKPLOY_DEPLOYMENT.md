@@ -114,62 +114,62 @@ cmds = ["npm ci", "SKIP_ENV_VALIDATION=true npm run build"]
 cmd = "npm start"
 ```
 
-## Database Migration
+## Database Migration for Dokploy
 
-Database migrations and seeding are now fully automated during deployment. The system provides multiple approaches:
+Database migrations are fully automated and run during application startup via Railpack. The migration process is integrated into the deployment workflow without requiring Docker configuration.
 
-### Automated Migration (Recommended)
+### How It Works
 
-The application now includes automated migration scripts that run during deployment:
+When your application starts through Railpack, the following happens automatically:
 
-1. **Pre-start Hook**: Runs migrations before the app starts
-2. **Post-deploy Hook**: Runs after successful deployment
-3. **Docker Entrypoint**: Handles migrations in containerized environments
+1. **Database Connectivity Check** - Waits up to 2 minutes for database availability
+2. **Prisma Client Generation** - Ensures client matches current schema
+3. **Migration Deployment** - Applies pending migrations via `prisma migrate deploy`
+4. **Optional Seeding** - Seeds database if `FORCE_SEED=true` environment variable is set
+5. **Verification** - Confirms successful database setup
+6. **Application Start** - Launches Next.js application
 
-#### Configuration
+### Environment Variables for Migration Control
 
-Set these environment variables in Dokploy for automated migration control:
+Set these in your Dokploy application environment:
 
 ```bash
-# Force database seeding (usually only for initial deployment)
-FORCE_SEED=true
+# Database seeding control (set to true for initial deployment)
+FORCE_SEED=false
 
-# Skip migration validation (for emergency deployments)
+# Emergency skip flag (use only if migrations are causing deployment failures)
 SKIP_MIGRATION_CHECK=false
 ```
 
-#### Available Scripts
+### Available Scripts
 
 ```bash
-# Automated deployment migration (recommended)
-npm run db:migrate:deploy
+# Dokploy-specific migration script (used automatically)
+npm run db:migrate:dokploy
 
-# Force seeding (useful for initial setup)
+# Force seeding (useful for initial setup or data refresh)
 npm run db:seed:force
 
-# Traditional production migration with backup
+# Traditional production migration with backup (manual use)
 npm run db:migrate:prod
 ```
 
-### Manual Migration (Fallback)
+### Manual Migration Commands
 
-If automated migration fails, you can run migrations manually:
+If you need to run migrations manually after deployment:
 
 ```bash
-# For manual migration after deployment
+# Via Dokploy exec - automated migration script
+dokploy exec your-app-name -- npm run db:migrate:dokploy
+
+# Direct Prisma migration deployment
 dokploy exec your-app-name -- npx prisma migrate deploy
 
-# Run the automated migration script manually
-dokploy exec your-app-name -- node /app/scripts/deploy-migrate.js
+# Force database seeding
+dokploy exec your-app-name -- npm run db:seed:force
 
-# Force seeding
-dokploy exec your-app-name -- node /app/scripts/deploy-migrate.js --seed
-
-# For debugging migration issues
-dokploy exec your-app-name -- /app/scripts/debug-migrations.sh
-
-# Alternative: using the production migration script with backup
-dokploy exec your-app-name -- npm run db:migrate:prod
+# Check migration status
+dokploy exec your-app-name -- npx prisma migrate status
 ```
 
 ### Migration Troubleshooting
