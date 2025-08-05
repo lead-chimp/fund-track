@@ -85,7 +85,7 @@ const nextConfig = {
               value: 'http',
             },
           ],
-          destination: 'https://processing.merchantfunding.com/:path*',
+          destination: 'https://fund-track.merchantfunding.com/:path*',
           permanent: true,
         },
       ];
