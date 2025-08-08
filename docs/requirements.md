@@ -85,7 +85,7 @@ The internal web app should have a dashboard with the following capabilities:
 ## 9. Domain & Hosting
 
 - App will be hosted on internal custom servers
-- **Domain**: `processing.MerchantFunding.com`
+- **Domain**: `fund-track.MerchantFunding.com`
 
 ---
 
