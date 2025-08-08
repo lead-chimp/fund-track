@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && SKIP_ENV_VALIDATION=true next build",
+    "build": "SKIP_ENV_VALIDATION=true next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
@@ -20,12 +20,10 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "prisma migrate deploy",
-
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:force": "FORCE_SEED=true tsx prisma/seed.ts",
+    "db:seed:prod": "tsx prisma/seed-production.ts",
     "db:studio": "prisma studio",
-
-
     "backup:db": "echo 'Database backups are handled by Coolify'",
     "restore:db": "echo 'Database restoration is handled by Coolify'",
     "health:check": "curl -f http://localhost:3000/api/health || exit 1",

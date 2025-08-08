@@ -6,6 +6,38 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seed...')
 
+  // Production safety checks
+  const isProduction = process.env.NODE_ENV === 'production'
+  const forceSeeding = process.env.FORCE_SEED === 'true'
+  
+  if (isProduction && !forceSeeding) {
+    console.error('❌ Seeding is disabled in production environment.')
+    console.error('   If you really need to seed in production, use: FORCE_SEED=true npm run db:seed')
+    console.error('   WARNING: This will DELETE ALL existing data!')
+    process.exit(1)
+  }
+
+  // Check if database already has data
+  const existingUsers = await prisma.user.count()
+  const existingLeads = await prisma.lead.count()
+  
+  if ((existingUsers > 0 || existingLeads > 0) && !forceSeeding) {
+    console.error('❌ Database already contains data.')
+    console.error(`   Found ${existingUsers} users and ${existingLeads} leads.`)
+    console.error('   To force seeding (THIS WILL DELETE ALL DATA), use: FORCE_SEED=true npm run db:seed')
+    process.exit(1)
+  }
+
+  if (forceSeeding) {
+    console.log('⚠️  FORCE_SEED enabled - proceeding with data deletion and seeding')
+    if (isProduction) {
+      console.log('⚠️  PRODUCTION ENVIRONMENT - This will delete all production data!')
+      // Add a 5-second delay in production to give time to cancel
+      console.log('⏳ Starting in 5 seconds... Press Ctrl+C to cancel')
+      await new Promise(resolve => setTimeout(resolve, 5000))
+    }
+  }
+
   // Clear existing data in correct order (respecting foreign key constraints)
   await prisma.notificationLog.deleteMany()
   await prisma.followupQueue.deleteMany()
