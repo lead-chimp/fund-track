@@ -36,7 +36,7 @@ The Fund Track App is an internal web application designed to streamline lead ma
 
 #### Acceptance Criteria
 
-1. WHEN a new lead is imported THEN the system SHALL automatically send email and SMS with intake link to processing.merchantfunding.com/application/:token
+1. WHEN a new lead is imported THEN the system SHALL automatically send email and SMS with intake link to fund-track.merchantfunding.com/application/:token
 2. WHEN a prospect accesses the intake link THEN the system SHALL display Step 1 with pre-filled information from the lead data
 3. WHEN Step 1 is completed THEN the system SHALL advance to Step 2 for document upload
 4. WHEN Step 2 requires documents THEN the system SHALL allow upload of exactly 3 statements to Backblaze B2
