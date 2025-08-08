@@ -8,7 +8,7 @@ let winstonLogger: any = null;
 if (!isBrowser) {
   try {
     winston = require('winston');
-    
+
     // Custom log levels for application-specific logging
     const customLevels = {
       levels: {
@@ -44,9 +44,8 @@ if (!isBrowser) {
       winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
       winston.format.errors({ stack: true }),
       winston.format.printf(
-        (info: any) => `${info.timestamp} ${info.level}: ${info.message}${
-          info.context ? ` ${JSON.stringify(info.context)}` : ''
-        }${info.stack ? `\n${info.stack}` : ''}`
+        (info: any) => `${info.timestamp} ${info.level}: ${info.message}${info.context ? ` ${JSON.stringify(info.context)}` : ''
+          }${info.stack ? `\n${info.stack}` : ''}`
       )
     );
 
@@ -94,7 +93,7 @@ if (!isBrowser) {
       winstonLogger.exceptions.handle(
         new winston.transports.File({ filename: 'logs/exceptions.log' })
       );
-      
+
       winstonLogger.rejections.handle(
         new winston.transports.File({ filename: 'logs/rejections.log' })
       );
@@ -125,7 +124,7 @@ class Logger {
     const contextStr = context ? ` ${JSON.stringify(context)}` : '';
     const errorStr = error ? `\nError: ${error.message}\nStack: ${error.stack}` : '';
     const logMessage = `[${timestamp}] ${level.toUpperCase()}: ${message}${contextStr}${errorStr}`;
-    
+
     switch (level) {
       case 'error':
         console.error(logMessage);
@@ -151,7 +150,7 @@ class Logger {
     }
 
     const logData: any = { message, context };
-    
+
     if (error instanceof Error) {
       logData.error = {
         name: error.name,
@@ -318,7 +317,7 @@ class Logger {
   child(defaultContext: Record<string, any>): Logger {
     const childLogger = new Logger();
     const originalMethods = ['error', 'warn', 'info', 'http', 'debug'];
-    
+
     originalMethods.forEach(method => {
       const originalMethod = childLogger[method as keyof Logger] as Function;
       (childLogger as any)[method] = (message: string, ...args: any[]) => {
