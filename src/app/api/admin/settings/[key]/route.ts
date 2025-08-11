@@ -44,37 +44,49 @@ export async function PUT(
   { params }: { params: { key: string } }
 ) {
   try {
+    console.log(`[Settings API] PUT request for key: ${params.key}`);
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== UserRole.ADMIN) {
+      console.log('[Settings API] Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
       );
     }
 
+    console.log(`[Settings API] Authenticated user: ${session.user.email} (ID: ${session.user.id})`);
+
     const body = await request.json();
     const { value } = body;
 
+    console.log(`[Settings API] Updating ${params.key} to: ${value}`);
+
     if (value === undefined) {
+      console.log('[Settings API] Missing value in request');
       return NextResponse.json(
         { error: 'Value is required' },
         { status: 400 }
       );
     }
 
+    const userId = session.user.id ? parseInt(session.user.id) : undefined;
+
     const updatedSetting = await systemSettingsService.updateSetting(
       params.key,
       value,
-      parseInt(session.user.id)
+      userId && !isNaN(userId) ? userId : undefined
     );
+
+    console.log(`[Settings API] Successfully updated: ${updatedSetting.key} = ${updatedSetting.value}`);
 
     return NextResponse.json({ 
       message: 'Setting updated successfully',
       setting: updatedSetting 
     });
   } catch (error) {
-    console.error('Error updating system setting:', error);
+    console.error('[Settings API] Error updating system setting:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update setting' },
       { status: 500 }
@@ -100,9 +112,11 @@ export async function POST(
     const { action } = body;
 
     if (action === 'reset') {
+      const userId = session.user.id ? parseInt(session.user.id) : undefined;
+
       const resetSetting = await systemSettingsService.resetSetting(
         params.key,
-        parseInt(session.user.id)
+        userId && !isNaN(userId) ? userId : undefined
       );
 
       return NextResponse.json({ 

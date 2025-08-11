@@ -68,9 +68,11 @@ export async function PUT(request: NextRequest) {
             }
         }
 
+        const userId = session.user.id ? parseInt(session.user.id) : undefined;
+
         const updatedSettings = await systemSettingsService.updateSettings(
             updates,
-            parseInt(session.user.id)
+            userId && !isNaN(userId) ? userId : undefined
         );
 
         return NextResponse.json({

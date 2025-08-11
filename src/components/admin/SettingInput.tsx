@@ -22,6 +22,12 @@ export function SettingInput({ setting, onUpdate, isUpdating, error }: SettingIn
   const handleChange = (newValue: string) => {
     setValue(newValue);
     setHasChanges(newValue !== setting.value);
+    
+    // For boolean settings, save immediately (toggles should be instant)
+    if (setting.type === SystemSettingType.BOOLEAN && newValue !== setting.value) {
+      onUpdate(newValue);
+      setHasChanges(false);
+    }
   };
 
   const handleSave = () => {
