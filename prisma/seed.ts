@@ -9,7 +9,7 @@ async function main() {
   // Production safety checks
   const isProduction = process.env.NODE_ENV === 'production'
   const forceSeeding = process.env.FORCE_SEED === 'true'
-  
+
   if (isProduction && !forceSeeding) {
     console.error('❌ Seeding is disabled in production environment.')
     console.error('   If you really need to seed in production, use: FORCE_SEED=true npm run db:seed')
@@ -20,7 +20,7 @@ async function main() {
   // Check if database already has data
   const existingUsers = await prisma.user.count()
   const existingLeads = await prisma.lead.count()
-  
+
   if ((existingUsers > 0 || existingLeads > 0) && !forceSeeding) {
     console.error('❌ Database already contains data.')
     console.error(`   Found ${existingUsers} users and ${existingLeads} leads.`)
@@ -90,7 +90,7 @@ async function main() {
         firstName: 'John',
         lastName: 'Doe',
         businessName: 'Doe Enterprises LLC',
-        status: LeadStatus.NEW,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_new_lead_001',
         importedAt: new Date(),
       },
@@ -106,7 +106,7 @@ async function main() {
         firstName: 'Jane',
         lastName: 'Smith',
         businessName: 'Smith & Associates',
-        status: LeadStatus.PENDING,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_pending_lead_002',
         importedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       },
@@ -122,7 +122,7 @@ async function main() {
         firstName: 'Mike',
         lastName: 'Johnson',
         businessName: 'Johnson Construction Inc',
-        status: LeadStatus.IN_PROGRESS,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_inprogress_lead_003',
         intakeCompletedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
         importedAt: new Date(Date.now() - 25 * 60 * 60 * 1000), // 25 hours ago
@@ -156,7 +156,7 @@ async function main() {
         firstName: 'Bob',
         lastName: 'Brown',
         businessName: 'Brown Manufacturing',
-        status: LeadStatus.REJECTED,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_rejected_lead_005',
         intakeCompletedAt: new Date(Date.now() - 96 * 60 * 60 * 1000), // 4 days ago
         importedAt: new Date(Date.now() - 120 * 60 * 60 * 1000), // 5 days ago
@@ -173,9 +173,25 @@ async function main() {
         firstName: 'Alice',
         lastName: 'Green',
         businessName: null,
-        status: LeadStatus.NEW,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_individual_lead_006',
         importedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      },
+    }),
+
+    // Arda Basoglu lead
+    prisma.lead.create({
+      data: {
+        legacyLeadId: 1007,
+        campaignId: 123,
+        email: 'ardabasoglu@gmail.com',
+        phone: '+15326666815',
+        firstName: 'Arda',
+        lastName: 'Basoglu',
+        businessName: 'TWB',
+        status: LeadStatus.NEW,
+        intakeToken: 'token_arda_lead_007',
+        importedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
       },
     }),
   ])
