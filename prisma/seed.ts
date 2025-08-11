@@ -1,5 +1,6 @@
 import { PrismaClient, UserRole, LeadStatus, FollowupType, FollowupStatus, NotificationType, NotificationStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+import { seedSystemSettings } from './seeds/system-settings'
 
 const prisma = new PrismaClient()
 
@@ -43,7 +44,9 @@ async function main() {
   await prisma.followupQueue.deleteMany()
   await prisma.document.deleteMany()
   await prisma.leadNote.deleteMany()
+  await prisma.leadStatusHistory.deleteMany()
   await prisma.lead.deleteMany()
+  await prisma.systemSetting.deleteMany()
   await prisma.user.deleteMany()
 
   console.log('🧹 Cleared existing data')
@@ -384,6 +387,9 @@ async function main() {
 
   console.log('📧 Created sample notification logs')
 
+  // Seed system settings
+  await seedSystemSettings()
+
   // Print summary
   const userCount = await prisma.user.count()
   const leadCount = await prisma.lead.count()
@@ -391,6 +397,7 @@ async function main() {
   const documentCount = await prisma.document.count()
   const followupCount = await prisma.followupQueue.count()
   const notificationCount = await prisma.notificationLog.count()
+  const systemSettingCount = await prisma.systemSetting.count()
 
   console.log('\n✅ Database seeded successfully!')
   console.log(`📊 Summary:`)
@@ -400,6 +407,7 @@ async function main() {
   console.log(`   Documents: ${documentCount}`)
   console.log(`   Follow-ups: ${followupCount}`)
   console.log(`   Notifications: ${notificationCount}`)
+  console.log(`   System Settings: ${systemSettingCount}`)
   console.log('\n🔐 Test Credentials:')
   console.log('   Admin: admin@merchantfunding.com / admin123')
   console.log('   User: user@merchantfunding.com / user123')

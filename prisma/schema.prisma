@@ -23,6 +23,7 @@ model User {
   leadNotes         LeadNote[]
   documents         Document[]
   statusChanges     LeadStatusHistory[]
+  systemSettings    SystemSetting[]
 
   @@map("users")
 }
@@ -138,6 +139,24 @@ model LeadStatusHistory {
   @@map("lead_status_history")
 }
 
+model SystemSetting {
+  id           Int                @id @default(autoincrement())
+  key          String             @unique
+  value        String
+  type         SystemSettingType
+  category     SystemSettingCategory
+  description  String
+  defaultValue String             @map("default_value")
+  updatedBy    Int?               @map("updated_by")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  user User? @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_settings")
+}
+
 // Enums
 enum UserRole {
   ADMIN @map("admin")
@@ -186,4 +205,19 @@ enum NotificationStatus {
   FAILED  @map("failed")
 
   @@map("notification_status")
+}
+
+enum SystemSettingType {
+  BOOLEAN @map("boolean")
+  STRING  @map("string")
+  NUMBER  @map("number")
+  JSON    @map("json")
+
+  @@map("system_setting_type")
+}
+
+enum SystemSettingCategory {
+  NOTIFICATIONS    @map("notifications")
+
+  @@map("system_setting_category")
 }

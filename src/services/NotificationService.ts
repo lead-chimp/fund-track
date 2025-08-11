@@ -3,6 +3,7 @@ import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import { prisma } from '@/lib/prisma';
 import { NotificationType, NotificationStatus } from '@prisma/client';
+import { getNotificationSettings } from './SystemSettingsService';
 
 // Types for notification requests
 export interface EmailNotification {
@@ -90,6 +91,28 @@ export class NotificationService {
    * Send email notification with retry logic
    */
   async sendEmail(notification: EmailNotification): Promise<NotificationResult> {
+    // Check if email notifications are enabled
+    const settings = await getNotificationSettings();
+    if (!settings.emailEnabled) {
+      // Create notification log entry as skipped
+      await prisma.notificationLog.create({
+        data: {
+          leadId: notification.leadId,
+          type: NotificationType.EMAIL,
+          recipient: notification.to,
+          subject: notification.subject,
+          content: notification.text,
+          status: NotificationStatus.FAILED,
+          errorMessage: 'Email notifications are disabled',
+        },
+      });
+
+      return {
+        success: false,
+        error: 'Email notifications are disabled',
+      };
+    }
+
     this.initializeClients();
     // Create notification log entry
     const logEntry = await prisma.notificationLog.create({
@@ -104,6 +127,10 @@ export class NotificationService {
     });
 
     try {
+      // Update retry config from settings
+      this.config.retryConfig.maxRetries = settings.retryAttempts;
+      this.config.retryConfig.baseDelay = settings.retryDelay;
+
       const result = await this.executeWithRetry(
         () => this.sendEmailInternal(notification),
         'email'
@@ -141,6 +168,27 @@ export class NotificationService {
    * Send SMS notification with retry logic
    */
   async sendSMS(notification: SMSNotification): Promise<NotificationResult> {
+    // Check if SMS notifications are enabled
+    const settings = await getNotificationSettings();
+    if (!settings.smsEnabled) {
+      // Create notification log entry as skipped
+      await prisma.notificationLog.create({
+        data: {
+          leadId: notification.leadId,
+          type: NotificationType.SMS,
+          recipient: notification.to,
+          content: notification.message,
+          status: NotificationStatus.FAILED,
+          errorMessage: 'SMS notifications are disabled',
+        },
+      });
+
+      return {
+        success: false,
+        error: 'SMS notifications are disabled',
+      };
+    }
+
     this.initializeClients();
     // Create notification log entry
     const logEntry = await prisma.notificationLog.create({
@@ -154,6 +202,10 @@ export class NotificationService {
     });
 
     try {
+      // Update retry config from settings
+      this.config.retryConfig.maxRetries = settings.retryAttempts;
+      this.config.retryConfig.baseDelay = settings.retryDelay;
+
       const result = await this.executeWithRetry(
         () => this.sendSMSInternal(notification),
         'sms'
@@ -242,13 +294,13 @@ export class NotificationService {
     operationType: string
   ): Promise<T> {
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= this.config.retryConfig.maxRetries; attempt++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
-        
+
         // Don't retry on the last attempt
         if (attempt === this.config.retryConfig.maxRetries) {
           break;
@@ -281,20 +333,32 @@ export class NotificationService {
   /**
    * Validate configuration on startup
    */
-  validateConfiguration(): boolean {
-    const requiredEnvVars = [
-      'TWILIO_ACCOUNT_SID',
-      'TWILIO_AUTH_TOKEN',
-      'TWILIO_PHONE_NUMBER',
+  async validateConfiguration(): Promise<boolean> {
+    const requiredEmailVars = [
       'MAILGUN_API_KEY',
       'MAILGUN_DOMAIN',
       'MAILGUN_FROM_EMAIL',
     ];
 
-    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-    
-    if (missingVars.length > 0) {
-      console.error('Missing required environment variables:', missingVars);
+    const requiredSmsVars = [
+      'TWILIO_ACCOUNT_SID',
+      'TWILIO_AUTH_TOKEN',
+      'TWILIO_PHONE_NUMBER',
+    ];
+
+    const missingEmailVars = requiredEmailVars.filter(varName => !process.env[varName]);
+
+    // Check SMS settings from database
+    const settings = await getNotificationSettings();
+    const missingSmsVars = settings.smsEnabled ? requiredSmsVars.filter(varName => !process.env[varName]) : [];
+
+    if (missingEmailVars.length > 0) {
+      console.error('Missing required email environment variables:', missingEmailVars);
+      return false;
+    }
+
+    if (missingSmsVars.length > 0) {
+      console.error('Missing required SMS environment variables (SMS is enabled):', missingSmsVars);
       return false;
     }
 
