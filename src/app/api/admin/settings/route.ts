@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest) {
 
         const updatedSettings = await systemSettingsService.updateSettings(
             updates,
-            session.user.id
+            parseInt(session.user.id)
         );
 
         return NextResponse.json({

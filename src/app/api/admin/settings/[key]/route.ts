@@ -66,7 +66,7 @@ export async function PUT(
     const updatedSetting = await systemSettingsService.updateSetting(
       params.key,
       value,
-      session.user.id
+      parseInt(session.user.id)
     );
 
     return NextResponse.json({ 
@@ -102,7 +102,7 @@ export async function POST(
     if (action === 'reset') {
       const resetSetting = await systemSettingsService.resetSetting(
         params.key,
-        session.user.id
+        parseInt(session.user.id)
       );
 
       return NextResponse.json({ 
