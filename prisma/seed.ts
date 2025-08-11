@@ -189,7 +189,7 @@ async function main() {
         firstName: 'Arda',
         lastName: 'Basoglu',
         businessName: 'TWB',
-        status: LeadStatus.NEW,
+        status: LeadStatus.COMPLETED,
         intakeToken: 'token_arda_lead_007',
         importedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
       },
