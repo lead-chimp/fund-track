@@ -97,7 +97,7 @@ export class SystemSettingsService {
   async updateSetting(
     key: string,
     value: string,
-    updatedBy: number
+    updatedBy?: number
   ): Promise<SystemSetting> {
     // Validate the setting exists
     const existingSetting = await this.getSettingRaw(key);
@@ -129,7 +129,7 @@ export class SystemSettingsService {
    */
   async updateSettings(
     updates: Array<{ key: string; value: string }>,
-    updatedBy: number
+    updatedBy?: number
   ): Promise<SystemSetting[]> {
     const results: SystemSetting[] = [];
 
@@ -168,7 +168,7 @@ export class SystemSettingsService {
   /**
    * Reset setting to default value
    */
-  async resetSetting(key: string, updatedBy: number): Promise<SystemSetting> {
+  async resetSetting(key: string, updatedBy?: number): Promise<SystemSetting> {
     const setting = await this.getSettingRaw(key);
     if (!setting) {
       throw new Error(`Setting '${key}' not found`);
@@ -182,7 +182,7 @@ export class SystemSettingsService {
    */
   async resetCategorySettings(
     category: SystemSettingCategory,
-    updatedBy: number
+    updatedBy?: number
   ): Promise<SystemSetting[]> {
     const settings = await this.getSettingsByCategory(category);
     const updates = settings.map(setting => ({
