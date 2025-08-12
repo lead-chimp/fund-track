@@ -106,7 +106,7 @@ The seed script creates:
 
 ### Test Credentials
 
-- **Admin**: admin@merchantfunding.com / admin123
+- **Admin**: ardabasoglu@gmail.com / admin123
 - **User**: user@merchantfunding.com / user123
 - **Sales**: sales@merchantfunding.com / user123
 

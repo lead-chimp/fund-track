@@ -123,6 +123,6 @@ console.log('2. Update DATABASE_URL in .env.local');
 console.log('3. Run: npm run db:push');
 console.log('4. Run: npm run db:seed');
 console.log('5. Start development server: npm run dev');
-console.log('6. Test login with: admin@merchantfunding.com / admin123');
+console.log('6. Test login with: ardabasoglu@gmail.com / admin123');
 
 console.log('\n✨ Authentication system implementation is COMPLETE!');

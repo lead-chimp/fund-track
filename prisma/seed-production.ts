@@ -39,7 +39,7 @@ async function main() {
 
   // Create only essential admin user
   const adminPassword = process.env.ADMIN_PASSWORD || 'ChangeMe123!'
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@merchantfunding.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'ardabasoglu@gmail.com'
   
   if (adminPassword === 'ChangeMe123!') {
     console.error('❌ Please set ADMIN_PASSWORD environment variable')

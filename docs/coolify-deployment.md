@@ -103,7 +103,7 @@ npm run db:generate
 npm run db:seed
 
 # Production seeding - creates only essential admin user
-ADMIN_EMAIL=admin@merchantfunding.com ADMIN_PASSWORD=secure_password FORCE_SEED=true npm run db:seed:prod
+ADMIN_EMAIL=ardabasoglu@gmail.com ADMIN_PASSWORD=secure_password FORCE_SEED=true npm run db:seed:prod
 
 # Force full seeding (DANGEROUS - deletes all data)
 FORCE_SEED=true npm run db:seed:force
@@ -208,7 +208,7 @@ Configure monitoring:
 Enable Metrics: true
 Enable Alerts: true
 Alert Channels:
-  - Email: admin@merchantfunding.com
+  - Email: ardabasoglu@gmail.com
   - Slack: #fund-track-alerts (if configured)
 
 Alert Rules:

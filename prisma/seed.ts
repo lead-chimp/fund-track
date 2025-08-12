@@ -57,7 +57,7 @@ async function main() {
 
   const adminUser = await prisma.user.create({
     data: {
-      email: 'admin@merchantfunding.com',
+      email: 'ardabasoglu@gmail.com',
       passwordHash: adminPassword,
       role: UserRole.ADMIN,
     },
@@ -409,7 +409,7 @@ async function main() {
   console.log(`   Notifications: ${notificationCount}`)
   console.log(`   System Settings: ${systemSettingCount}`)
   console.log('\n🔐 Test Credentials:')
-  console.log('   Admin: admin@merchantfunding.com / admin123')
+  console.log('   Admin: ardabasoglu@gmail.com / admin123')
   console.log('   User: user@merchantfunding.com / user123')
   console.log('   Sales: sales@merchantfunding.com / user123')
 }

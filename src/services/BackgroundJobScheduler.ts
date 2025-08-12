@@ -114,7 +114,7 @@ export class BackgroundJobScheduler {
         await prisma.notificationLog.create({
           data: {
             type: 'EMAIL',
-            recipient: process.env.ADMIN_EMAIL || 'admin@merchantfunding.com',
+            recipient: process.env.ADMIN_EMAIL || 'ardabasoglu@gmail.com',
             subject: 'Lead Polling Job Failed',
             content: `Lead polling job failed at ${new Date().toISOString()}: ${error instanceof Error ? error.message : 'Unknown error'}`,
             status: 'FAILED',
