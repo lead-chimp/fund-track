@@ -86,9 +86,9 @@ export function LeadSearchFilters({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
         {/* Search Input */}
-        <div className="lg:col-span-2">
+        <div className="flex-1 lg:min-w-0">
           <label htmlFor="search" className="block text-sm font-medium text-gray-700">
             Search
           </label>
@@ -124,7 +124,7 @@ export function LeadSearchFilters({
         </div>
 
         {/* Status Filter */}
-        <div>
+        <div className="lg:w-40">
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
           </label>
@@ -144,7 +144,7 @@ export function LeadSearchFilters({
         </div>
 
         {/* Date From */}
-        <div>
+        <div className="lg:w-36">
           <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700">
             Date From
           </label>
@@ -159,7 +159,7 @@ export function LeadSearchFilters({
         </div>
 
         {/* Date To */}
-        <div>
+        <div className="lg:w-36">
           <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700">
             Date To
           </label>
