@@ -28,12 +28,6 @@
 - Responsive design patterns
 - Custom primary/secondary color schemes
 
-## Testing
-- **Jest** - Unit testing with 80% coverage threshold
-- **@testing-library/react** - Component testing
-- **Playwright** - End-to-end testing
-- **jsdom** test environment
-
 ## Development Tools
 - **TypeScript** with strict mode
 - **ESLint** with Next.js config
@@ -56,16 +50,6 @@ npm run db:migrate      # Run development migrations
 npm run db:migrate:prod # Deploy production migrations
 npm run db:seed         # Seed database
 npm run db:studio       # Open Prisma Studio
-```
-
-### Testing
-```bash
-npm run test            # Run unit tests
-npm run test:watch      # Run tests in watch mode
-npm run test:coverage   # Run with coverage report
-npm run test:integration # Run integration tests
-npm run test:e2e        # Run Playwright e2e tests
-npm run test:all        # Run all test suites
 ```
 
 ### Production

@@ -6,9 +6,7 @@
 ├── src/                    # Main application source code
 ├── prisma/                 # Database schema and migrations
 ├── docs/                   # Documentation and deployment guides
-├── tests/                  # Test files and fixtures
 ├── scripts/                # Utility and deployment scripts
-├── coverage/               # Test coverage reports
 └── logs/                   # Application logs
 ```
 
@@ -38,7 +36,6 @@ src/app/
 
 ### Components (`src/components/`)
 - **Reusable UI components** organized by feature
-- **Test files** in `__tests__/` subdirectories
 
 ```
 src/components/
@@ -90,7 +87,6 @@ src/lib/
 ### Component Organization
 - Feature-based component grouping
 - Shared components at root level
-- Test files co-located with components
 - TypeScript interfaces in separate `types.ts` files
 
 ### Database Layer
@@ -98,12 +94,6 @@ src/lib/
 - Migration files in `prisma/migrations/`
 - Seed data in `prisma/seed.ts`
 - Database error handling abstraction
-
-### Testing Structure
-- Unit tests: `**/__tests__/**/*.test.ts(x)`
-- Integration tests: `jest.integration.config.js`
-- E2E tests: `tests/e2e/` with Playwright
-- Test utilities: `src/lib/__tests__/test-utils.tsx`
 
 ## File Naming Conventions
 - **Components**: PascalCase (e.g., `LeadDashboard.tsx`)

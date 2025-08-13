@@ -52,13 +52,9 @@ CREATE TABLE Leads (
 
 ## Usage
 
-### Basic Connection Test
+### Basic Connection
 
-Test your legacy database connection:
-
-```bash
-npx tsx scripts/test-legacy-db.ts
-```
+Connect to your legacy database using the LeadPoller service.
 
 ### Manual Lead Polling
 
@@ -212,17 +208,12 @@ Enable detailed logging by setting the log level:
 console.log('Debug mode enabled');
 ```
 
-## Testing
+## Monitoring
 
-Run the test suite:
-
-```bash
-npm test -- --testPathPatterns=LeadPoller.test.ts
-```
-
-The tests cover:
-- Connection handling
-- Data transformation
+Monitor the LeadPoller service through:
+- Application logs via Winston
+- Database connection status
+- Lead import metrics
 - Error scenarios
 - Duplicate detection
 - Batch processing
