@@ -14,9 +14,7 @@ const nextConfig = {
   ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
 
   // Ensure API routes don't try to connect to database during build
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-  },
+  serverExternalPackages: ['@prisma/client'],
 
   // Ensure API routes are not statically exported
   trailingSlash: false,
