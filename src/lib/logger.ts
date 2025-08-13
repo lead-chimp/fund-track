@@ -59,24 +59,8 @@ if (!isBrowser) {
       })
     );
 
-    // Add file transports in production (server-side only)
-    if (process.env.NODE_ENV === 'production') {
-      transports.push(
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          format: logFormat,
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          format: logFormat,
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        })
-      );
-    }
+    // File logging disabled - using console only for containerized environments
+    // This is the recommended approach for Docker/Coolify deployments
 
     // Create the logger instance
     winstonLogger = winston.createLogger({
@@ -91,11 +75,11 @@ if (!isBrowser) {
     // Handle uncaught exceptions and unhandled rejections (server-side only)
     if (process.env.NODE_ENV === 'production') {
       winstonLogger.exceptions.handle(
-        new winston.transports.File({ filename: 'logs/exceptions.log' })
+        new winston.transports.Console({ format: logFormat })
       );
 
       winstonLogger.rejections.handle(
-        new winston.transports.File({ filename: 'logs/rejections.log' })
+        new winston.transports.Console({ format: logFormat })
       );
     }
   } catch (error) {
