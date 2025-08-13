@@ -19,7 +19,8 @@
     "restore:db": "echo 'Database restoration is handled by Coolify'",
     "health:check": "curl -f http://localhost:3000/api/health || exit 1",
     "security:audit": "npm audit --audit-level moderate",
-    "security:fix": "npm audit fix"
+    "security:fix": "npm audit fix",
+    "test:mailgun": "tsx test/test-mailgun.ts"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
