@@ -10,7 +10,7 @@
 import { notificationService } from '../src/services/NotificationService';
 import type { EmailNotification } from '../src/services/NotificationService';
 
-// Test email configuration - UPDATE THIS EMAIL ADDRESS
+// Test email configuration
 const TEST_EMAIL = 'ardabasoglu@gmail.com';
 
 // Generate test intake URL
@@ -235,7 +235,7 @@ function getTestName(testNumber: number): string {
     '72-Hour Final Follow-up',
     'General Follow-up Reminder'
   ];
-  
+
   return testNames[testNumber - 1] || `Test ${testNumber}`;
 }
 
@@ -243,10 +243,10 @@ async function runMailgunTests() {
   console.log('🚀 Fund Track - MailGun Integration Test');
   console.log('=========================================\n');
 
-  // Check if test email was updated
-  if (TEST_EMAIL === 'your-test-email@example.com') {
-    console.error('❌ Please update TEST_EMAIL constant in this script before running.');
-    console.error('   Current value: your-test-email@example.com\n');
+  // Validate test email format
+  if (!TEST_EMAIL || !TEST_EMAIL.includes('@')) {
+    console.error('❌ Please set a valid TEST_EMAIL constant in this script before running.');
+    console.error(`   Current value: ${TEST_EMAIL}\n`);
     process.exit(1);
   }
 
@@ -273,7 +273,7 @@ async function runMailgunTests() {
     for (let i = 0; i < testNotifications.length; i++) {
       const notification = testNotifications[i];
       const testName = getTestName(i + 1);
-      
+
       console.log(`📧 Test ${i + 1}/${testNotifications.length}: ${testName}`);
       console.log(`   Subject: ${notification.subject}`);
 
@@ -307,7 +307,7 @@ async function runMailgunTests() {
     console.log(`   ✅ Successful: ${testResults.successful}`);
     console.log(`   ❌ Failed: ${testResults.failed}`);
     console.log(`   📧 Total Tests: ${testNotifications.length}`);
-    
+
     if (testResults.errors.length > 0) {
       console.log('\n❌ Errors encountered:');
       testResults.errors.forEach((error, index) => {
