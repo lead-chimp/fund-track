@@ -34,10 +34,10 @@ class LegacyDatabase {
     this.config = {
       ...config,
       options: {
-        encrypt: true,
-        trustServerCertificate: true,
-        requestTimeout: 30000,
-        connectionTimeout: 15000,
+        encrypt: config.options?.encrypt ?? false,
+        trustServerCertificate: config.options?.trustServerCertificate ?? true,
+        requestTimeout: config.options?.requestTimeout ?? 30000,
+        connectionTimeout: config.options?.connectionTimeout ?? 15000,
         ...config.options,
       },
     };
