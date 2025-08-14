@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { checkDatabaseHealth } from '@/lib/database-error-handler';
 import { logger } from '@/lib/logger';
+import { withPerformanceMonitoring, trackError } from '@/lib/monitoring';
 
 interface HealthStatus {
   status: 'healthy' | 'unhealthy' | 'degraded';
@@ -146,7 +147,7 @@ async function checkExternalServices() {
   return services;
 }
 
-export async function GET() {
+async function healthCheckHandler() {
   const startTime = Date.now();
   
   try {
@@ -224,10 +225,28 @@ export async function GET() {
     const statusCode = overallStatus === 'healthy' ? 200 : 
                       overallStatus === 'degraded' ? 200 : 503;
     
+    // Log health check completion
+    logger.info(`Health check completed: ${overallStatus}`, {
+      duration,
+      dbLatency: dbHealth.latency,
+      memoryUsage: memoryPercentage,
+      diskUsage: diskHealth.usage?.percentage,
+    });
+    
     return NextResponse.json(healthStatus, { status: statusCode });
     
   } catch (error) {
     logger.error('Health check failed', error as Error);
+    
+    // Track error locally
+    trackError({
+      name: 'health_check_failed',
+      error: error as Error,
+      timestamp: Date.now(),
+      metadata: {
+        duration: Date.now() - startTime,
+      },
+    });
     
     const errorStatus: HealthStatus = {
       status: 'unhealthy',
@@ -270,3 +289,6 @@ export async function GET() {
     return NextResponse.json(errorStatus, { status: 503 });
   }
 }
+
+// Export the wrapped handler with performance monitoring
+export const GET = withPerformanceMonitoring('health_check', healthCheckHandler);

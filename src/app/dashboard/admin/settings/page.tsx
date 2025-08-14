@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { SystemSetting, SystemSettingCategory } from '@prisma/client';
 import { SettingsCard } from '@/components/admin/SettingsCard';
 import { SettingsAuditLog } from '@/components/admin/SettingsAuditLog';
+import { ConnectivityCheck } from '@/components/admin/ConnectivityCheck';
 
 const CATEGORY_LABELS = {
   [SystemSettingCategory.NOTIFICATIONS]: 'Notifications',
+  [SystemSettingCategory.CONNECTIVITY]: 'Connectivity',
 };
 
 export default function AdminSettingsPage() {
@@ -24,11 +26,11 @@ export default function AdminSettingsPage() {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/settings');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch settings');
       }
-      
+
       const data = await response.json();
       setSettings(data.settings);
     } catch (err) {
@@ -41,7 +43,7 @@ export default function AdminSettingsPage() {
   const handleSettingUpdate = async (key: string, value: string) => {
     try {
       console.log(`[Settings UI] Updating ${key} to: ${value}`);
-      
+
       const response = await fetch(`/api/admin/settings/${key}`, {
         method: 'PUT',
         headers: {
@@ -177,11 +179,10 @@ export default function AdminSettingsPage() {
               <button
                 key={category}
                 onClick={() => setActiveTab(category as SystemSettingCategory)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === category
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === category
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 {label}
                 <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
@@ -194,12 +195,16 @@ export default function AdminSettingsPage() {
 
         {/* Settings Content */}
         <div className="space-y-6">
-          <SettingsCard
-            category={activeTab}
-            settings={getSettingsByCategory(activeTab)}
-            onUpdate={handleSettingUpdate}
-            onReset={handleSettingReset}
-          />
+          {activeTab === SystemSettingCategory.CONNECTIVITY ? (
+            <ConnectivityCheck />
+          ) : (
+            <SettingsCard
+              category={activeTab}
+              settings={getSettingsByCategory(activeTab)}
+              onUpdate={handleSettingUpdate}
+              onReset={handleSettingReset}
+            />
+          )}
         </div>
       </div>
     </div>

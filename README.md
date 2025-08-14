@@ -18,6 +18,8 @@ An internal web application for managing leads and automating intake workflows f
 - **Authentication**: NextAuth.js
 - **File Storage**: Backblaze B2
 - **Notifications**: Twilio (SMS), MailGun (Email)
+- **Monitoring**: Local error tracking and performance monitoring
+- **Logging**: Winston for structured logging
 - **Styling**: Tailwind CSS
 
 ## Getting Started
@@ -72,6 +74,43 @@ src/
 ├── services/            # Business logic and external integrations
 └── types/               # TypeScript type definitions
 ```
+
+## Monitoring and Error Tracking
+
+The application includes comprehensive monitoring and error tracking:
+
+### Local Monitoring
+
+- **Error Tracking**: Local error logging and tracking
+- **Performance Monitoring**: API route performance tracking
+- **User Context**: User information attached to error reports
+- **Custom Breadcrumbs**: Detailed operation tracking
+
+### Usage Examples
+
+```typescript
+import { trackError, trackPerformance } from '@/lib/monitoring';
+
+// Track custom errors (logged locally)
+trackError({
+  name: 'custom_error',
+  error: new Error('Something went wrong'),
+  timestamp: Date.now(),
+  context: { userId: '123', action: 'data_processing' }
+});
+
+// Wrap API handlers with performance monitoring
+export const GET = withPerformanceMonitoring('api_handler_name', async () => {
+  // Your API logic here
+});
+```
+
+### Health Checks
+
+- **Endpoint**: `/api/health` - Comprehensive health status
+- **Database**: Connection and query performance
+- **Memory**: Usage monitoring and alerts
+- **External Services**: Twilio, MailGun, Backblaze status
 
 ## Development
 

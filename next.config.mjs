@@ -102,4 +102,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-// Dummy comment

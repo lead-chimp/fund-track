@@ -7,7 +7,7 @@ import { initializeServer } from '@/lib/server-init';
 export function ServerInitializer() {
   // Initialize server services
   initializeServer();
-  
+
   // This component doesn't render anything
   return null;
 }

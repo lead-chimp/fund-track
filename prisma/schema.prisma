@@ -218,6 +218,7 @@ enum SystemSettingType {
 
 enum SystemSettingCategory {
   NOTIFICATIONS    @map("notifications")
+  CONNECTIVITY     @map("connectivity")
 
   @@map("system_setting_category")
 }
