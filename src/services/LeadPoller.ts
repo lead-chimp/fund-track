@@ -46,53 +46,78 @@ export class LeadPoller {
     };
 
     try {
-      console.log('Starting lead polling process...');
+      console.log('🔄 Starting lead polling process...', {
+        campaignIds: this.config.campaignIds,
+        batchSize: this.config.batchSize,
+        maxRetries: this.config.maxRetries
+      });
 
       // Connect to legacy database
+      console.log('📡 Connecting to legacy database...');
       await this.legacyDb.connect();
+      console.log('✅ Successfully connected to legacy database');
 
       // Get leads from legacy database
+      console.log('🔍 Fetching leads from legacy database...');
       const legacyLeads = await this.fetchLeadsFromLegacy();
       result.totalProcessed = legacyLeads.length;
 
-      console.log(`Found ${legacyLeads.length} leads in legacy database`);
+      console.log(`📊 Found ${legacyLeads.length} leads in legacy database for campaigns: ${this.config.campaignIds.join(', ')}`);
+
+      if (legacyLeads.length === 0) {
+        console.log('ℹ️ No leads found to process');
+        return result;
+      }
 
       // Process leads in batches
       const batches = this.createBatches(legacyLeads, this.config.batchSize!);
+      console.log(`📦 Processing ${batches.length} batches of up to ${this.config.batchSize} leads each`);
 
-      for (const batch of batches) {
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        console.log(`🔄 Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`);
+        
         try {
           const batchResult = await this.processBatch(batch);
           result.newLeads += batchResult.newLeads;
           result.duplicatesSkipped += batchResult.duplicatesSkipped;
           result.errors.push(...batchResult.errors);
+          
+          console.log(`✅ Batch ${i + 1} completed:`, {
+            newLeads: batchResult.newLeads,
+            duplicatesSkipped: batchResult.duplicatesSkipped,
+            errors: batchResult.errors.length
+          });
         } catch (error) {
-          const errorMessage = `Batch processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          console.error(errorMessage);
+          const errorMessage = `Batch ${i + 1} processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.error(`❌ ${errorMessage}`);
           result.errors.push(errorMessage);
         }
       }
 
       result.processingTime = Date.now() - startTime;
 
-      console.log(`Lead polling completed:`, {
+      console.log(`🎉 Lead polling completed successfully:`, {
         totalProcessed: result.totalProcessed,
         newLeads: result.newLeads,
         duplicatesSkipped: result.duplicatesSkipped,
         errors: result.errors.length,
         processingTime: `${result.processingTime}ms`,
+        averageTimePerLead: result.totalProcessed > 0 ? `${Math.round(result.processingTime / result.totalProcessed)}ms` : 'N/A'
       });
 
       return result;
 
     } catch (error) {
       const errorMessage = `Lead polling failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      console.error(errorMessage);
+      console.error(`💥 ${errorMessage}`);
       result.errors.push(errorMessage);
       result.processingTime = Date.now() - startTime;
       return result;
     } finally {
+      console.log('🔌 Disconnecting from legacy database...');
       await this.legacyDb.disconnect();
+      console.log('✅ Legacy database connection closed');
     }
   }
 
@@ -117,11 +142,35 @@ export class LeadPoller {
       ORDER BY CreatedDate DESC
     `;
 
+    console.log('📋 Executing legacy database query:', {
+      campaignIds: this.config.campaignIds,
+      query: query.replace(/\s+/g, ' ').trim()
+    });
+
     try {
+      const queryStart = Date.now();
       const leads = await this.legacyDb.query<LegacyLead>(query);
+      const queryTime = Date.now() - queryStart;
+      
+      console.log(`⚡ Query executed successfully in ${queryTime}ms, returned ${leads.length} leads`);
+      
+      if (leads.length > 0) {
+        const sampleLead = leads[0];
+        console.log('📄 Sample lead data:', {
+          ID: sampleLead.ID,
+          CampaignID: sampleLead.CampaignID,
+          Email: sampleLead.Email ? '***@***.***' : null,
+          Phone: sampleLead.Phone ? '***-***-****' : null,
+          FirstName: sampleLead.FirstName || null,
+          LastName: sampleLead.LastName || null,
+          BusinessName: sampleLead.BusinessName || null,
+          CreatedDate: sampleLead.CreatedDate
+        });
+      }
+      
       return leads;
     } catch (error) {
-      console.error('Failed to fetch leads from legacy database:', error);
+      console.error('❌ Failed to fetch leads from legacy database:', error);
       throw new Error(`Legacy lead fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -144,20 +193,37 @@ export class LeadPoller {
       errors: [],
     };
 
-    for (const legacyLead of legacyLeads) {
+    console.log(`🔄 Processing batch of ${legacyLeads.length} leads...`);
+    const batchStart = Date.now();
+
+    for (let i = 0; i < legacyLeads.length; i++) {
+      const legacyLead = legacyLeads[i];
+      console.log(`📝 Processing lead ${i + 1}/${legacyLeads.length}: ID ${legacyLead.ID} (Campaign: ${legacyLead.CampaignID})`);
+      
       try {
         const imported = await this.importLead(legacyLead);
         if (imported) {
           result.newLeads++;
+          console.log(`✅ Lead ${legacyLead.ID} imported successfully`);
         } else {
           result.duplicatesSkipped++;
+          console.log(`⏭️ Lead ${legacyLead.ID} already exists, skipped`);
         }
       } catch (error) {
         const errorMessage = `Failed to import lead ${legacyLead.ID}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error(errorMessage);
+        console.error(`❌ ${errorMessage}`);
         result.errors.push(errorMessage);
       }
     }
+
+    const batchTime = Date.now() - batchStart;
+    console.log(`📊 Batch processing completed in ${batchTime}ms:`, {
+      processed: legacyLeads.length,
+      newLeads: result.newLeads,
+      duplicatesSkipped: result.duplicatesSkipped,
+      errors: result.errors.length,
+      averageTimePerLead: `${Math.round(batchTime / legacyLeads.length)}ms`
+    });
 
     return result;
   }
@@ -167,37 +233,58 @@ export class LeadPoller {
    */
   private async importLead(legacyLead: LegacyLead): Promise<boolean> {
     try {
+      console.log(`🔍 Checking for existing lead with legacy ID: ${legacyLead.ID}`);
+      
       // Check if lead already exists
       const existingLead = await prisma.lead.findUnique({
         where: { legacyLeadId: BigInt(legacyLead.ID) },
       });
 
       if (existingLead) {
-        console.log(`Lead ${legacyLead.ID} already exists, skipping`);
+        console.log(`⏭️ Lead ${legacyLead.ID} already exists in database (ID: ${existingLead.id}), skipping import`);
         return false;
       }
 
+      console.log(`🆕 Lead ${legacyLead.ID} is new, proceeding with import...`);
+
       // Transform and create new lead with intake token
       const transformedLead = this.transformLegacyLead(legacyLead);
+      
+      console.log(`🔄 Transformed lead data:`, {
+        legacyLeadId: transformedLead.legacyLeadId.toString(),
+        campaignId: transformedLead.campaignId,
+        email: transformedLead.email ? '***@***.***' : null,
+        phone: transformedLead.phone ? '***-***-****' : null,
+        firstName: transformedLead.firstName,
+        lastName: transformedLead.lastName,
+        businessName: transformedLead.businessName,
+        status: transformedLead.status,
+        intakeToken: transformedLead.intakeToken ? '***' : null
+      });
 
+      const createStart = Date.now();
       const newLead = await prisma.lead.create({
         data: transformedLead,
       });
+      const createTime = Date.now() - createStart;
+
+      console.log(`💾 Lead created in database in ${createTime}ms with ID: ${newLead.id}`);
 
       // Schedule follow-ups for the new lead since it's in PENDING status
+      console.log(`📅 Scheduling follow-ups for lead ${newLead.id}...`);
       try {
         await followUpScheduler.scheduleFollowUpsForLead(newLead.id);
-        console.log(`Successfully scheduled follow-ups for lead ${newLead.id}`);
+        console.log(`✅ Successfully scheduled follow-ups for lead ${newLead.id}`);
       } catch (error) {
-        console.error(`Failed to schedule follow-ups for lead ${newLead.id}:`, error);
+        console.error(`⚠️ Failed to schedule follow-ups for lead ${newLead.id}:`, error);
         // Don't fail the import if follow-up scheduling fails
       }
 
-      console.log(`Successfully imported lead ${legacyLead.ID} with ID ${newLead.id}`);
+      console.log(`🎉 Successfully imported lead ${legacyLead.ID} with new ID ${newLead.id}`);
       return true;
 
     } catch (error) {
-      console.error(`Failed to import lead ${legacyLead.ID}:`, error);
+      console.error(`💥 Failed to import lead ${legacyLead.ID}:`, error);
       throw error;
     }
   }
@@ -206,17 +293,35 @@ export class LeadPoller {
    * Transform legacy lead data to application format
    */
   private transformLegacyLead(legacyLead: LegacyLead): Omit<Lead, 'id' | 'createdAt' | 'updatedAt'> {
+    console.log(`🔄 Transforming legacy lead ${legacyLead.ID}...`);
+    
     // Generate intake token for new leads
     const intakeToken = TokenService.generateToken();
+    console.log(`🎫 Generated intake token for lead ${legacyLead.ID}`);
+    
+    // Sanitize data
+    const sanitizedEmail = this.sanitizeString(legacyLead.Email);
+    const sanitizedPhone = this.sanitizePhone(legacyLead.Phone);
+    const sanitizedFirstName = this.sanitizeString(legacyLead.FirstName);
+    const sanitizedLastName = this.sanitizeString(legacyLead.LastName);
+    const sanitizedBusinessName = this.sanitizeString(legacyLead.BusinessName);
+    
+    console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
+      email: sanitizedEmail ? 'present' : 'null',
+      phone: sanitizedPhone ? 'present' : 'null',
+      firstName: sanitizedFirstName ? 'present' : 'null',
+      lastName: sanitizedLastName ? 'present' : 'null',
+      businessName: sanitizedBusinessName ? 'present' : 'null'
+    });
     
     return {
       legacyLeadId: BigInt(legacyLead.ID),
       campaignId: legacyLead.CampaignID,
-      email: this.sanitizeString(legacyLead.Email),
-      phone: this.sanitizePhone(legacyLead.Phone),
-      firstName: this.sanitizeString(legacyLead.FirstName),
-      lastName: this.sanitizeString(legacyLead.LastName),
-      businessName: this.sanitizeString(legacyLead.BusinessName),
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      firstName: sanitizedFirstName,
+      lastName: sanitizedLastName,
+      businessName: sanitizedBusinessName,
       status: LeadStatus.PENDING, // Set to pending since we're generating intake token
       intakeToken,
       intakeCompletedAt: null,
@@ -273,7 +378,9 @@ export class LeadPoller {
    */
   async getLeadsNeedingIntakeTokens(): Promise<Lead[]> {
     try {
-      return await prisma.lead.findMany({
+      console.log('🔍 Fetching leads that need intake tokens...');
+      
+      const leads = await prisma.lead.findMany({
         where: {
           intakeToken: null,
           status: LeadStatus.NEW,
@@ -282,8 +389,11 @@ export class LeadPoller {
           importedAt: 'desc',
         },
       });
+      
+      console.log(`📊 Found ${leads.length} leads needing intake tokens`);
+      return leads;
     } catch (error) {
-      console.error('Failed to fetch leads needing intake tokens:', error);
+      console.error('❌ Failed to fetch leads needing intake tokens:', error);
       throw error;
     }
   }
@@ -293,6 +403,8 @@ export class LeadPoller {
    */
   async updateLeadWithIntakeToken(leadId: number, intakeToken: string): Promise<void> {
     try {
+      console.log(`🎫 Updating lead ${leadId} with intake token and setting status to PENDING...`);
+      
       await prisma.lead.update({
         where: { id: leadId },
         data: {
@@ -300,8 +412,10 @@ export class LeadPoller {
           status: LeadStatus.PENDING,
         },
       });
+      
+      console.log(`✅ Successfully updated lead ${leadId} with intake token`);
     } catch (error) {
-      console.error(`Failed to update lead ${leadId} with intake token:`, error);
+      console.error(`❌ Failed to update lead ${leadId} with intake token:`, error);
       throw error;
     }
   }
