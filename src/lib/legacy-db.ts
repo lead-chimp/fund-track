@@ -49,11 +49,19 @@ class LegacyDatabase {
         return; // Already connected
       }
 
+      console.log('📡 Connecting to legacy database with config:', {
+        server: this.config.server,
+        database: this.config.database,
+        port: this.config.port,
+        encrypt: this.config.options?.encrypt,
+        trustServerCertificate: this.config.options?.trustServerCertificate,
+      });
+
       this.pool = new sql.ConnectionPool(this.config);
       await this.pool.connect();
-      console.log('Connected to legacy MS SQL Server database');
+      console.log('✅ Connected to legacy MS SQL Server database');
     } catch (error) {
-      console.error('Failed to connect to legacy database:', error);
+      console.error('❌ Failed to connect to legacy database:', error);
       throw new Error(`Legacy database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -77,7 +85,7 @@ class LegacyDatabase {
 
     try {
       const request = this.pool.request();
-      
+
       // Add parameters if provided
       if (parameters) {
         Object.entries(parameters).forEach(([key, value]) => {
@@ -125,6 +133,8 @@ export function getLegacyDatabase(): LegacyDatabase {
         trustServerCertificate: process.env.LEGACY_DB_TRUST_CERT === 'true',
         requestTimeout: process.env.LEGACY_DB_REQUEST_TIMEOUT ? parseInt(process.env.LEGACY_DB_REQUEST_TIMEOUT) : 30000,
         connectionTimeout: process.env.LEGACY_DB_CONNECTION_TIMEOUT ? parseInt(process.env.LEGACY_DB_CONNECTION_TIMEOUT) : 15000,
+        enableArithAbort: true,
+        abortTransactionOnError: true,
       },
     };
 
