@@ -129,17 +129,16 @@ export class LeadPoller {
 
     const query = `
       SELECT 
-        ID,
+        LeadID as ID,
         CampaignID,
         Email,
         Phone,
         FirstName,
         LastName,
-        BusinessName,
-        CreatedDate
+        PostDT as CreatedDate
       FROM Leads 
       WHERE CampaignID IN (${campaignIdList})
-      ORDER BY CreatedDate DESC
+      ORDER BY PostDT DESC
     `;
 
     console.log('📋 Executing legacy database query:', {
@@ -304,14 +303,14 @@ export class LeadPoller {
     const sanitizedPhone = this.sanitizePhone(legacyLead.Phone);
     const sanitizedFirstName = this.sanitizeString(legacyLead.FirstName);
     const sanitizedLastName = this.sanitizeString(legacyLead.LastName);
-    const sanitizedBusinessName = this.sanitizeString(legacyLead.BusinessName);
+    const sanitizedBusinessName = null; // BusinessName not available in legacy schema
     
     console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
       email: sanitizedEmail ? 'present' : 'null',
       phone: sanitizedPhone ? 'present' : 'null',
       firstName: sanitizedFirstName ? 'present' : 'null',
       lastName: sanitizedLastName ? 'present' : 'null',
-      businessName: sanitizedBusinessName ? 'present' : 'null'
+      businessName: 'null (not available in legacy schema)'
     });
     
     return {
