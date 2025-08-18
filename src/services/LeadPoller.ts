@@ -57,15 +57,24 @@ export class LeadPoller {
       await this.legacyDb.connect();
       console.log('✅ Successfully connected to legacy database');
 
+      // Get the latest legacy lead ID we have already imported
+      const latestLead = await prisma.lead.findFirst({
+        orderBy: { legacyLeadId: 'desc' },
+        where: { legacyLeadId: { not: BigInt(0) } },
+      });
+      const maxLegacyId = latestLead ? Number(latestLead.legacyLeadId) : 0;
+      console.log(`📈 Latest legacy lead ID in our database is: ${maxLegacyId}. Fetching new leads since then.`);
+
+
       // Get leads from legacy database
-      console.log('🔍 Fetching leads from legacy database...');
-      const legacyLeads = await this.fetchLeadsFromLegacy();
+      console.log('🔍 Fetching new leads from legacy database...');
+      const legacyLeads = await this.fetchLeadsFromLegacy(maxLegacyId);
       result.totalProcessed = legacyLeads.length;
 
-      console.log(`📊 Found ${legacyLeads.length} leads in legacy database for campaigns: ${this.config.campaignIds.join(', ')}`);
+      console.log(`📊 Found ${legacyLeads.length} new leads in legacy database for campaigns: ${this.config.campaignIds.join(', ')}`);
 
       if (legacyLeads.length === 0) {
-        console.log('ℹ️ No leads found to process');
+        console.log('ℹ️ No new leads found to process');
         return result;
       }
 
@@ -124,7 +133,7 @@ export class LeadPoller {
   /**
    * Fetch leads from legacy database filtered by campaign IDs
    */
-  private async fetchLeadsFromLegacy(): Promise<LegacyLead[]> {
+  private async fetchLeadsFromLegacy(minLeadId: number = 0): Promise<LegacyLead[]> {
     const campaignIdList = this.config.campaignIds.join(',');
 
     const query = `
@@ -137,8 +146,8 @@ export class LeadPoller {
         LastName,
         PostDT as CreatedDate
       FROM Leads 
-      WHERE CampaignID IN (${campaignIdList})
-      ORDER BY PostDT DESC
+      WHERE CampaignID IN (${campaignIdList}) AND LeadID > ${minLeadId}
+      ORDER BY PostDT ASC
     `;
 
     console.log('📋 Executing legacy database query:', {
@@ -188,7 +197,7 @@ export class LeadPoller {
       errors: string[];
     } = {
       newLeads: 0,
-      duplicatesSkipped: 0,
+      duplicatesSkipped: 0, // This will remain 0 as we only fetch new leads
       errors: [],
     };
 
@@ -200,14 +209,9 @@ export class LeadPoller {
       console.log(`📝 Processing lead ${i + 1}/${legacyLeads.length}: ID ${legacyLead.ID} (Campaign: ${legacyLead.CampaignID})`);
       
       try {
-        const imported = await this.importLead(legacyLead);
-        if (imported) {
-          result.newLeads++;
-          console.log(`✅ Lead ${legacyLead.ID} imported successfully`);
-        } else {
-          result.duplicatesSkipped++;
-          console.log(`⏭️ Lead ${legacyLead.ID} already exists, skipped`);
-        }
+        // Since we only fetch new leads, we can import directly
+        await this.importLead(legacyLead);
+        result.newLeads++;
       } catch (error) {
         const errorMessage = `Failed to import lead ${legacyLead.ID}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         console.error(`❌ ${errorMessage}`);
@@ -221,30 +225,18 @@ export class LeadPoller {
       newLeads: result.newLeads,
       duplicatesSkipped: result.duplicatesSkipped,
       errors: result.errors.length,
-      averageTimePerLead: `${Math.round(batchTime / legacyLeads.length)}ms`
+      averageTimePerLead: legacyLeads.length > 0 ? `${Math.round(batchTime / legacyLeads.length)}ms` : 'N/A'
     });
 
     return result;
   }
 
   /**
-   * Import a single lead, avoiding duplicates
+   * Import a single lead. Assumes the lead is new.
    */
-  private async importLead(legacyLead: LegacyLead): Promise<boolean> {
+  private async importLead(legacyLead: LegacyLead): Promise<void> {
     try {
-      console.log(`🔍 Checking for existing lead with legacy ID: ${legacyLead.ID}`);
-      
-      // Check if lead already exists
-      const existingLead = await prisma.lead.findUnique({
-        where: { legacyLeadId: BigInt(legacyLead.ID) },
-      });
-
-      if (existingLead) {
-        console.log(`⏭️ Lead ${legacyLead.ID} already exists in database (ID: ${existingLead.id}), skipping import`);
-        return false;
-      }
-
-      console.log(`🆕 Lead ${legacyLead.ID} is new, proceeding with import...`);
+      console.log(`🆕 Importing new lead ${legacyLead.ID}...`);
 
       // Transform and create new lead with intake token
       const transformedLead = this.transformLegacyLead(legacyLead);
@@ -280,8 +272,6 @@ export class LeadPoller {
       }
 
       console.log(`🎉 Successfully imported lead ${legacyLead.ID} with new ID ${newLead.id}`);
-      return true;
-
     } catch (error) {
       console.error(`💥 Failed to import lead ${legacyLead.ID}:`, error);
       throw error;

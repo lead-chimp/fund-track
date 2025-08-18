@@ -65,7 +65,7 @@ async function main() {
 
   const regularUser = await prisma.user.create({
     data: {
-      email: 'user@merchantfunding.com',
+      email: 'user-001@merchantfunding.com',
       passwordHash: userPassword,
       role: UserRole.USER,
     },
@@ -73,7 +73,7 @@ async function main() {
 
   const salesUser = await prisma.user.create({
     data: {
-      email: 'sales@merchantfunding.com',
+      email: 'user-002@merchantfunding.com',
       passwordHash: userPassword,
       role: UserRole.USER,
     },
@@ -410,8 +410,8 @@ async function main() {
   console.log(`   System Settings: ${systemSettingCount}`)
   console.log('\n🔐 Test Credentials:')
   console.log('   Admin: ardabasoglu@gmail.com / admin123')
-  console.log('   User: user@merchantfunding.com / user123')
-  console.log('   Sales: sales@merchantfunding.com / user123')
+  console.log('   User: user-001@merchantfunding.com / user123')
+  console.log('   Sales: user-002@merchantfunding.com / user123')
 }
 
 main()

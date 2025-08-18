@@ -107,8 +107,8 @@ The seed script creates:
 ### Test Credentials
 
 - **Admin**: ardabasoglu@gmail.com / admin123
-- **User**: user@merchantfunding.com / user123
-- **Sales**: sales@merchantfunding.com / user123
+- **User**: user-001@merchantfunding.com / user123
+- **User**: user-002@merchantfunding.com / user123
 
 ## Useful Commands
 
