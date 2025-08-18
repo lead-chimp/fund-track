@@ -191,23 +191,9 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
   const downloadDocument = async (doc: Document) => {
     try {
-      const response = await fetch(
-        `/api/leads/${leadId}/documents/${doc.id}/download`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to download document");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = doc.originalFilename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Use window.location to trigger the download directly
+      // This will follow the redirect to the signed B2 URL automatically
+      window.location.href = `/api/leads/${leadId}/documents/${doc.id}/download`;
     } catch (err) {
       console.error("Error downloading document:", err);
       alert("Failed to download document");

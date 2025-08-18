@@ -1,11 +1,12 @@
-import { LeadDetailView } from "@/components/dashboard/LeadDetailView"
+import { LeadDetailView } from "@/components/dashboard/LeadDetailView";
 
 interface LeadDetailPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-export default function LeadDetailPage({ params }: LeadDetailPageProps) {
-  return <LeadDetailView leadId={parseInt(params.id)} />
+export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
+  const { id } = await params;
+  return <LeadDetailView leadId={parseInt(id)} />;
 }

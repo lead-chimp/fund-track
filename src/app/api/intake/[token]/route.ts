@@ -1,18 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { TokenService } from '@/services/TokenService';
+import { NextRequest, NextResponse } from "next/server";
+import { TokenService } from "@/services/TokenService";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params;
+    const { token } = await params;
 
     if (!token) {
-      return NextResponse.json(
-        { error: 'Token is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Token is required" }, { status: 400 });
     }
 
     // Validate the token and get intake session data
@@ -20,7 +17,7 @@ export async function GET(
 
     if (!intakeSession) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: "Invalid or expired token" },
         { status: 404 }
       );
     }
@@ -28,13 +25,12 @@ export async function GET(
     // Return the intake session data
     return NextResponse.json({
       success: true,
-      data: intakeSession
+      data: intakeSession,
     });
-
   } catch (error) {
-    console.error('Error retrieving intake session:', error);
+    console.error("Error retrieving intake session:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

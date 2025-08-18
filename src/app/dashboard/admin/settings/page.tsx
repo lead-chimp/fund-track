@@ -42,8 +42,6 @@ export default function AdminSettingsPage() {
 
   const handleSettingUpdate = async (key: string, value: string) => {
     try {
-      console.log(`[Settings UI] Updating ${key} to: ${value}`);
-
       const response = await fetch(`/api/admin/settings/${key}`, {
         method: 'PUT',
         headers: {
@@ -52,20 +50,13 @@ export default function AdminSettingsPage() {
         body: JSON.stringify({ value }),
       });
 
-      console.log(`[Settings UI] Response status: ${response.status}`);
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('[Settings UI] Error response:', errorData);
         throw new Error(errorData.error || 'Failed to update setting');
       }
 
-      const result = await response.json();
-      console.log('[Settings UI] Success response:', result);
-
       // Refresh settings
       await fetchSettings();
-      console.log('[Settings UI] Settings refreshed');
     } catch (err) {
       console.error('[Settings UI] Update failed:', err);
       throw err; // Re-throw to be handled by the component

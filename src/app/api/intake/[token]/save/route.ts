@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { TokenService } from '@/services/TokenService';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { TokenService } from "@/services/TokenService";
+import { prisma } from "@/lib/prisma";
 
 interface SaveProgressData {
   step: number;
@@ -15,16 +15,13 @@ interface SaveProgressData {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params;
+    const { token } = await params;
 
     if (!token) {
-      return NextResponse.json(
-        { error: 'Token is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Token is required" }, { status: 400 });
     }
 
     // Validate the token
@@ -32,7 +29,7 @@ export async function POST(
 
     if (!intakeSession) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: "Invalid or expired token" },
         { status: 404 }
       );
     }
@@ -40,7 +37,7 @@ export async function POST(
     // Check if intake is already completed
     if (intakeSession.isCompleted) {
       return NextResponse.json(
-        { error: 'Intake process has already been completed' },
+        { error: "Intake process has already been completed" },
         { status: 400 }
       );
     }
@@ -50,7 +47,7 @@ export async function POST(
 
     if (!body.step || !body.data) {
       return NextResponse.json(
-        { error: 'Step and data are required' },
+        { error: "Step and data are required" },
         { status: 400 }
       );
     }
@@ -58,14 +55,22 @@ export async function POST(
     // Only handle step 1 for now (step 2 will be implemented in the next task)
     if (body.step === 1) {
       // Validate required fields for step 1
-      const requiredFields: (keyof typeof body.data)[] = ['firstName', 'lastName', 'email', 'phone', 'businessName'];
-      const missingFields = requiredFields.filter(field => !body.data[field]?.trim());
+      const requiredFields: (keyof typeof body.data)[] = [
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "businessName",
+      ];
+      const missingFields = requiredFields.filter(
+        (field) => !body.data[field]?.trim()
+      );
 
       if (missingFields.length > 0) {
         return NextResponse.json(
-          { 
-            error: 'Missing required fields for saving progress',
-            missingFields 
+          {
+            error: "Missing required fields for saving progress",
+            missingFields,
           },
           { status: 400 }
         );
@@ -75,17 +80,17 @@ export async function POST(
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (body.data.email && !emailRegex.test(body.data.email)) {
         return NextResponse.json(
-          { error: 'Invalid email format' },
+          { error: "Invalid email format" },
           { status: 400 }
         );
       }
 
       // Validate phone format
       const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-      const cleanPhone = body.data.phone?.replace(/[\s\-\(\)]/g, '') || '';
+      const cleanPhone = body.data.phone?.replace(/[\s\-\(\)]/g, "") || "";
       if (body.data.phone && !phoneRegex.test(cleanPhone)) {
         return NextResponse.json(
-          { error: 'Invalid phone number format' },
+          { error: "Invalid phone number format" },
           { status: 400 }
         );
       }
@@ -97,7 +102,7 @@ export async function POST(
           firstName: body.data.firstName?.trim(),
           lastName: body.data.lastName?.trim(),
           email: body.data.email?.trim().toLowerCase(),
-          phone: cleanPhone.replace(/^\+/, ''),
+          phone: cleanPhone.replace(/^\+/, ""),
           businessName: body.data.businessName?.trim(),
           updatedAt: new Date(),
         },
@@ -105,23 +110,19 @@ export async function POST(
 
       return NextResponse.json({
         success: true,
-        message: 'Progress saved successfully',
+        message: "Progress saved successfully",
         data: {
           step: body.step,
-          saved: true
-        }
+          saved: true,
+        },
       });
     }
 
-    return NextResponse.json(
-      { error: 'Invalid step number' },
-      { status: 400 }
-    );
-
+    return NextResponse.json({ error: "Invalid step number" }, { status: 400 });
   } catch (error) {
-    console.error('Error saving progress:', error);
+    console.error("Error saving progress:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
