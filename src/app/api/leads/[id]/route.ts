@@ -1,12 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { LeadStatus } from '@prisma/client';
-import { leadStatusService } from '@/services/LeadStatusService';
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const leadId = parseInt(params.id);
+    if (isNaN(leadId)) {
+      return NextResponse.json({ error: "Invalid lead ID" }, { status: 400 });
+    }
+
+    // Check if lead exists
+    const existingLead = await prisma.lead.findUnique({
+      where: { id: leadId },
+    });
+    if (!existingLead) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+
+    // Delete the lead (cascades if foreign keys are set)
+    await prisma.lead.delete({ where: { id: leadId } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting lead:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { LeadStatus } from "@prisma/client";
+import { leadStatusService } from "@/services/LeadStatusService";
 
 // Force dynamic rendering for this route
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface RouteParams {
   params: {
@@ -14,23 +47,17 @@ interface RouteParams {
   };
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const leadId = parseInt(params.id);
     if (isNaN(leadId)) {
-      return NextResponse.json(
-        { error: 'Invalid lead ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid lead ID" }, { status: 400 });
     }
 
     const lead = await prisma.lead.findUnique({
@@ -45,7 +72,7 @@ export async function GET(
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         },
         documents: {
           include: {
@@ -56,7 +83,7 @@ export async function GET(
               },
             },
           },
-          orderBy: { uploadedAt: 'desc' },
+          orderBy: { uploadedAt: "desc" },
         },
         statusHistory: {
           include: {
@@ -67,7 +94,7 @@ export async function GET(
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: 10,
         },
         _count: {
@@ -81,10 +108,7 @@ export async function GET(
     });
 
     if (!lead) {
-      return NextResponse.json(
-        { error: 'Lead not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
 
     // Convert BigInt values to strings for JSON serialization
@@ -95,40 +119,35 @@ export async function GET(
 
     return NextResponse.json({ lead: serializedLead });
   } catch (error) {
-    console.error('Error fetching lead:', error);
+    console.error("Error fetching lead:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const leadId = parseInt(params.id);
     if (isNaN(leadId)) {
-      return NextResponse.json(
-        { error: 'Invalid lead ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid lead ID" }, { status: 400 });
     }
 
     const body = await request.json();
-    const { status, firstName, lastName, email, phone, businessName, reason } = body;
+    const { status, firstName, lastName, email, phone, businessName, reason } =
+      body;
 
     // Validate status if provided
     if (status && !Object.values(LeadStatus).includes(status)) {
       return NextResponse.json(
-        { error: 'Invalid status value' },
+        { error: "Invalid status value" },
         { status: 400 }
       );
     }
@@ -136,7 +155,7 @@ export async function PUT(
     // Validate email format if provided
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: "Invalid email format" },
         { status: 400 }
       );
     }
@@ -147,10 +166,7 @@ export async function PUT(
     });
 
     if (!existingLead) {
-      return NextResponse.json(
-        { error: 'Lead not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
 
     // Handle status change separately with validation and audit logging
@@ -159,7 +175,7 @@ export async function PUT(
         leadId,
         newStatus: status,
         changedBy: parseInt(session.user.id),
-        reason
+        reason,
       });
 
       if (!statusChangeResult.success) {
@@ -170,18 +186,27 @@ export async function PUT(
       }
 
       // If only status was being updated, return the result from status service
-      if (firstName === undefined && lastName === undefined && email === undefined &&
-        phone === undefined && businessName === undefined) {
+      if (
+        firstName === undefined &&
+        lastName === undefined &&
+        email === undefined &&
+        phone === undefined &&
+        businessName === undefined
+      ) {
         // Convert BigInt values to strings for JSON serialization
-        const serializedLead = statusChangeResult.lead ? {
-          ...statusChangeResult.lead,
-          legacyLeadId: statusChangeResult.lead.legacyLeadId ? statusChangeResult.lead.legacyLeadId.toString() : null,
-        } : null;
+        const serializedLead = statusChangeResult.lead
+          ? {
+              ...statusChangeResult.lead,
+              legacyLeadId: statusChangeResult.lead.legacyLeadId
+                ? statusChangeResult.lead.legacyLeadId.toString()
+                : null,
+            }
+          : null;
 
         return NextResponse.json({
           lead: serializedLead,
           followUpsCancelled: statusChangeResult.followUpsCancelled,
-          staffNotificationSent: statusChangeResult.staffNotificationSent
+          staffNotificationSent: statusChangeResult.staffNotificationSent,
         });
       }
     }
@@ -209,7 +234,7 @@ export async function PUT(
                 },
               },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
           },
           documents: {
             include: {
@@ -220,7 +245,7 @@ export async function PUT(
                 },
               },
             },
-            orderBy: { uploadedAt: 'desc' },
+            orderBy: { uploadedAt: "desc" },
           },
           statusHistory: {
             include: {
@@ -231,7 +256,7 @@ export async function PUT(
                 },
               },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             take: 10,
           },
           _count: {
@@ -247,7 +272,9 @@ export async function PUT(
       // Convert BigInt values to strings for JSON serialization
       const serializedLead = {
         ...updatedLead,
-        legacyLeadId: updatedLead.legacyLeadId ? updatedLead.legacyLeadId.toString() : null,
+        legacyLeadId: updatedLead.legacyLeadId
+          ? updatedLead.legacyLeadId.toString()
+          : null,
       };
 
       return NextResponse.json({ lead: serializedLead });
@@ -257,14 +284,16 @@ export async function PUT(
     // Convert BigInt values to strings for JSON serialization
     const serializedExistingLead = {
       ...existingLead,
-      legacyLeadId: existingLead.legacyLeadId ? existingLead.legacyLeadId.toString() : null,
+      legacyLeadId: existingLead.legacyLeadId
+        ? existingLead.legacyLeadId.toString()
+        : null,
     };
 
     return NextResponse.json({ lead: serializedExistingLead });
   } catch (error) {
-    console.error('Error updating lead:', error);
+    console.error("Error updating lead:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
