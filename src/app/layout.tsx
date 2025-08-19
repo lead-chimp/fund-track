@@ -1,36 +1,34 @@
-import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans } from 'next/font/google'
-import './globals.css'
-import { SessionProvider } from '@/components/auth/SessionProvider'
-import { ServerInitializer } from '@/components/ServerInitializer'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
+import { SessionProvider } from "@/components/auth/SessionProvider";
+import { ServerInitializer } from "@/components/ServerInitializer";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const plusJakartaSans = Plus_Jakarta_Sans({ 
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-plus-jakarta-sans'
-})
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-plus-jakarta-sans",
+});
 
 export const metadata: Metadata = {
-  title: 'Fund Track App',
-  description: 'Internal lead management system for Fund Track',
-}
+  title: "Fund Track App",
+  description: "Internal lead management system for Fund Track",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body className={`${plusJakartaSans.variable} font-sans`}>
         <ServerInitializer />
         <ErrorBoundary>
-          <SessionProvider>
-            {children}
-          </SessionProvider>
+          <SessionProvider>{children}</SessionProvider>
         </ErrorBoundary>
       </body>
     </html>
-  )
+  );
 }

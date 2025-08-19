@@ -1,21 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { SystemSetting, SystemSettingCategory } from '@prisma/client';
-import { SettingsCard } from '@/components/admin/SettingsCard';
-import { SettingsAuditLog } from '@/components/admin/SettingsAuditLog';
-import { ConnectivityCheck } from '@/components/admin/ConnectivityCheck';
+import { useState, useEffect } from "react";
+import { SystemSetting, SystemSettingCategory } from "@prisma/client";
+import { SettingsCard } from "@/components/admin/SettingsCard";
+import { SettingsAuditLog } from "@/components/admin/SettingsAuditLog";
+import { ConnectivityCheck } from "@/components/admin/ConnectivityCheck";
+import { AdminOnly, RoleGuard } from "@/components/auth/RoleGuard";
+import { UserRole } from "@prisma/client";
 
 const CATEGORY_LABELS = {
-  [SystemSettingCategory.NOTIFICATIONS]: 'Notifications',
-  [SystemSettingCategory.CONNECTIVITY]: 'Connectivity',
+  [SystemSettingCategory.NOTIFICATIONS]: "Notifications",
+  [SystemSettingCategory.CONNECTIVITY]: "Connectivity",
 };
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SystemSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<SystemSettingCategory>(SystemSettingCategory.NOTIFICATIONS);
+  const [activeTab, setActiveTab] = useState<SystemSettingCategory>(
+    SystemSettingCategory.NOTIFICATIONS
+  );
   const [showAuditLog, setShowAuditLog] = useState(false);
 
   useEffect(() => {
@@ -25,16 +29,21 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/settings');
+      const response = await fetch("/api/admin/settings");
 
       if (!response.ok) {
-        throw new Error('Failed to fetch settings');
+        // Try to decode server error message for better UX/debugging
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(
+          (errorBody && (errorBody.error || errorBody.message)) ||
+            `Failed to fetch settings (${response.status})`
+        );
       }
 
       const data = await response.json();
       setSettings(data.settings);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch settings');
+      setError(err instanceof Error ? err.message : "Failed to fetch settings");
     } finally {
       setLoading(false);
     }
@@ -43,22 +52,22 @@ export default function AdminSettingsPage() {
   const handleSettingUpdate = async (key: string, value: string) => {
     try {
       const response = await fetch(`/api/admin/settings/${key}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ value }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update setting');
+        throw new Error(errorData.error || "Failed to update setting");
       }
 
       // Refresh settings
       await fetchSettings();
     } catch (err) {
-      console.error('[Settings UI] Update failed:', err);
+      console.error("[Settings UI] Update failed:", err);
       throw err; // Re-throw to be handled by the component
     }
   };
@@ -66,16 +75,16 @@ export default function AdminSettingsPage() {
   const handleSettingReset = async (key: string) => {
     try {
       const response = await fetch(`/api/admin/settings/${key}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: 'reset' }),
+        body: JSON.stringify({ action: "reset" }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reset setting');
+        throw new Error(errorData.error || "Failed to reset setting");
       }
 
       // Refresh settings
@@ -86,7 +95,7 @@ export default function AdminSettingsPage() {
   };
 
   const getSettingsByCategory = (category: SystemSettingCategory) => {
-    return settings.filter(setting => setting.category === category);
+    return settings.filter((setting) => setting.category === category);
   };
 
   if (loading) {
@@ -96,7 +105,7 @@ export default function AdminSettingsPage() {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
             <div className="space-y-4">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="h-32 bg-gray-200 rounded"></div>
               ))}
             </div>
@@ -107,6 +116,16 @@ export default function AdminSettingsPage() {
   }
 
   if (error) {
+    // If the error indicates lack of authorization, render the same Access denied UI
+    if (typeof error === "string" && /unauthori/i.test(error)) {
+      return (
+        <RoleGuard allowedRoles={[UserRole.ADMIN]}>
+          {/* RoleGuard will render the Access denied UI when the user is not an admin */}
+          <></>
+        </RoleGuard>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
@@ -134,70 +153,80 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-          <p className="mt-2 text-gray-600">
-            Configure system-wide settings and preferences
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mb-6 flex justify-between items-center">
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setShowAuditLog(!showAuditLog)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              {showAuditLog ? 'Hide' : 'Show'} Audit Log
-            </button>
-          </div>
-        </div>
-
-        {/* Audit Log */}
-        {showAuditLog && (
+    <AdminOnly>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
           <div className="mb-8">
-            <SettingsAuditLog />
+            <h1 className="text-3xl font-bold text-gray-900">
+              System Settings
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Configure system-wide settings and preferences
+            </p>
           </div>
-        )}
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
-            {Object.entries(CATEGORY_LABELS).map(([category, label]) => (
+          {/* Action Buttons */}
+          <div className="mb-6 flex justify-between items-center">
+            <div className="flex space-x-4">
               <button
-                key={category}
-                onClick={() => setActiveTab(category as SystemSettingCategory)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === category
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                onClick={() => setShowAuditLog(!showAuditLog)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
-                {label}
-                <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                  {getSettingsByCategory(category as SystemSettingCategory).length}
-                </span>
+                {showAuditLog ? "Hide" : "Show"} Audit Log
               </button>
-            ))}
-          </nav>
-        </div>
+            </div>
+          </div>
 
-        {/* Settings Content */}
-        <div className="space-y-6">
-          {activeTab === SystemSettingCategory.CONNECTIVITY ? (
-            <ConnectivityCheck />
-          ) : (
-            <SettingsCard
-              category={activeTab}
-              settings={getSettingsByCategory(activeTab)}
-              onUpdate={handleSettingUpdate}
-              onReset={handleSettingReset}
-            />
+          {/* Audit Log */}
+          {showAuditLog && (
+            <div className="mb-8">
+              <SettingsAuditLog />
+            </div>
           )}
+
+          {/* Tabs */}
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="-mb-px flex space-x-8">
+              {Object.entries(CATEGORY_LABELS).map(([category, label]) => (
+                <button
+                  key={category}
+                  onClick={() =>
+                    setActiveTab(category as SystemSettingCategory)
+                  }
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === category
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  {label}
+                  <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
+                    {
+                      getSettingsByCategory(category as SystemSettingCategory)
+                        .length
+                    }
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Settings Content */}
+          <div className="space-y-6">
+            {activeTab === SystemSettingCategory.CONNECTIVITY ? (
+              <ConnectivityCheck />
+            ) : (
+              <SettingsCard
+                category={activeTab}
+                settings={getSettingsByCategory(activeTab)}
+                onUpdate={handleSettingUpdate}
+                onReset={handleSettingReset}
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </AdminOnly>
   );
 }

@@ -396,7 +396,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
               {STATUS_LABELS[lead.status]}
             </span>
             {/* Delete Lead button for admins */}
-            <RoleGuard allowedRoles={[UserRole.ADMIN]}>
+            <RoleGuard allowedRoles={[UserRole.ADMIN]} fallback={<></>}>
               <button
                 onClick={deleteLead}
                 className="ml-4 px-3 py-1 text-sm text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded"
@@ -505,7 +505,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                 <h2 className="text-lg font-medium text-gray-900">
                   Documents ({lead._count.documents})
                 </h2>
-                <RoleGuard allowedRoles={[UserRole.ADMIN, UserRole.USER]}>
+                <RoleGuard
+                  allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                  fallback={<></>}
+                >
                   <button
                     onClick={() => setShowUploadForm(!showUploadForm)}
                     className="text-sm text-indigo-600 hover:text-indigo-500"
@@ -517,7 +520,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
             </div>
             <div className="px-6 py-4">
               {/* File Upload Form */}
-              <RoleGuard allowedRoles={[UserRole.ADMIN, UserRole.USER]}>
+              <RoleGuard
+                allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                fallback={<></>}
+              >
                 {showUploadForm && (
                   <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
                     <h3 className="text-sm font-medium text-gray-900 mb-3">
@@ -599,6 +605,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         </button>
                         <RoleGuard
                           allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                          fallback={<></>}
                         >
                           <button
                             onClick={() => deleteDocument(document)}

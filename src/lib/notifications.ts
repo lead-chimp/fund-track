@@ -1,4 +1,8 @@
-import { notificationService, EmailNotification, SMSNotification } from '@/services/NotificationService';
+import {
+  notificationService,
+  EmailNotification,
+  SMSNotification,
+} from "@/services/NotificationService";
 
 /**
  * Helper functions for common notification scenarios
@@ -20,19 +24,20 @@ export async function sendIntakeNotification(
   leadId: number,
   leadData: LeadNotificationData
 ) {
-  const { firstName, lastName, email, phone, intakeToken, businessName } = leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'there';
-  const businessText = businessName ? ` for ${businessName}` : '';
-  
+  const { firstName, lastName, email, phone, intakeToken, businessName } =
+    leadData;
+  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "there";
+  const businessText = businessName ? ` for ${businessName}` : "";
+
   const intakeUrl = `${process.env.INTAKE_BASE_URL}/${intakeToken}`;
-  
+
   const results = [];
 
   // Send email if available
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: 'Complete Your Fund Track Application',
+      subject: "Complete Your MerchantFund Application",
       text: `Hi ${fullName},
 
 Thank you for your interest in merchant funding${businessText}. To complete your application, please click the link below:
@@ -50,7 +55,7 @@ Best regards,
 Fund Track Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Complete Your Fund Track Application</h2>
+          <h2 style="color: #333;">Complete Your MerchantFund Application</h2>
           <p>Hi ${fullName},</p>
           <p>Thank you for your interest in merchant funding${businessText}. To complete your application, please click the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -70,7 +75,7 @@ Fund Track Team`,
     };
 
     const emailResult = await notificationService.sendEmail(emailNotification);
-    results.push({ type: 'email', ...emailResult });
+    results.push({ type: "email", ...emailResult });
   }
 
   // Send SMS if available
@@ -82,7 +87,7 @@ Fund Track Team`,
     };
 
     const smsResult = await notificationService.sendSMS(smsNotification);
-    results.push({ type: 'sms', ...smsResult });
+    results.push({ type: "sms", ...smsResult });
   }
 
   return results;
@@ -94,27 +99,28 @@ Fund Track Team`,
 export async function sendFollowUpNotification(
   leadId: number,
   leadData: LeadNotificationData,
-  followUpType: '3h' | '9h' | '24h' | '72h'
+  followUpType: "3h" | "9h" | "24h" | "72h"
 ) {
-  const { firstName, lastName, email, phone, intakeToken, businessName } = leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'there';
-  const businessText = businessName ? ` for ${businessName}` : '';
-  
+  const { firstName, lastName, email, phone, intakeToken, businessName } =
+    leadData;
+  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "there";
+  const businessText = businessName ? ` for ${businessName}` : "";
+
   const intakeUrl = `${process.env.INTAKE_BASE_URL}/${intakeToken}`;
-  
+
   // Customize message based on follow-up type
   const getFollowUpMessage = (type: string) => {
     switch (type) {
-      case '3h':
-        return 'We noticed you started your merchant funding application but haven\'t finished yet.';
-      case '9h':
-        return 'Your merchant funding application is still waiting to be completed.';
-      case '24h':
-        return 'Don\'t miss out on your merchant funding opportunity - complete your application today.';
-      case '72h':
-        return 'Final reminder: Your merchant funding application expires soon.';
+      case "3h":
+        return "We noticed you started your merchant funding application but haven't finished yet.";
+      case "9h":
+        return "Your merchant funding application is still waiting to be completed.";
+      case "24h":
+        return "Don't miss out on your merchant funding opportunity - complete your application today.";
+      case "72h":
+        return "Final reminder: Your merchant funding application expires soon.";
       default:
-        return 'Please complete your merchant funding application.';
+        return "Please complete your merchant funding application.";
     }
   };
 
@@ -125,7 +131,7 @@ export async function sendFollowUpNotification(
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: 'Reminder: Complete Your Fund Track Application',
+      subject: "Reminder: Complete Your MerchantFund Application",
       text: `Hi ${fullName},
 
 ${followUpMessage}
@@ -152,7 +158,7 @@ Fund Track Team`,
     };
 
     const emailResult = await notificationService.sendEmail(emailNotification);
-    results.push({ type: 'email', ...emailResult });
+    results.push({ type: "email", ...emailResult });
   }
 
   // Send SMS if available
@@ -164,7 +170,7 @@ Fund Track Team`,
     };
 
     const smsResult = await notificationService.sendSMS(smsNotification);
-    results.push({ type: 'sms', ...smsResult });
+    results.push({ type: "sms", ...smsResult });
   }
 
   return results;
@@ -181,14 +187,16 @@ export async function sendStatusChangeNotification(
   changedBy: string
 ) {
   const { firstName, lastName, email, phone, businessName } = leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
-  const businessText = businessName ? ` (${businessName})` : '';
-  
+  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
+  const businessText = businessName ? ` (${businessName})` : "";
+
   // This would typically be sent to a staff notification email/SMS
   // For now, we'll log it - in a real implementation, you'd have staff notification preferences
-  console.log(`Lead status changed: ${fullName}${businessText} - ${oldStatus} → ${newStatus} by ${changedBy}`);
-  
-  return { success: true, message: 'Status change logged' };
+  console.log(
+    `Lead status changed: ${fullName}${businessText} - ${oldStatus} → ${newStatus} by ${changedBy}`
+  );
+
+  return { success: true, message: "Status change logged" };
 }
 
 /**
