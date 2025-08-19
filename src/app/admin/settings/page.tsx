@@ -32,7 +32,6 @@ export default function AdminSettingsPage() {
       const response = await fetch("/api/admin/settings");
 
       if (!response.ok) {
-        // Try to decode server error message for better UX/debugging
         const errorBody = await response.json().catch(() => null);
         throw new Error(
           (errorBody && (errorBody.error || errorBody.message)) ||
@@ -64,11 +63,10 @@ export default function AdminSettingsPage() {
         throw new Error(errorData.error || "Failed to update setting");
       }
 
-      // Refresh settings
       await fetchSettings();
     } catch (err) {
       console.error("[Settings UI] Update failed:", err);
-      throw err; // Re-throw to be handled by the component
+      throw err;
     }
   };
 
@@ -87,10 +85,9 @@ export default function AdminSettingsPage() {
         throw new Error(errorData.error || "Failed to reset setting");
       }
 
-      // Refresh settings
       await fetchSettings();
     } catch (err) {
-      throw err; // Re-throw to be handled by the component
+      throw err;
     }
   };
 
@@ -116,11 +113,9 @@ export default function AdminSettingsPage() {
   }
 
   if (error) {
-    // If the error indicates lack of authorization, render the same Access denied UI
     if (typeof error === "string" && /unauthori/i.test(error)) {
       return (
         <RoleGuard allowedRoles={[UserRole.ADMIN]}>
-          {/* RoleGuard will render the Access denied UI when the user is not an admin */}
           <></>
         </RoleGuard>
       );
@@ -156,7 +151,6 @@ export default function AdminSettingsPage() {
     <AdminOnly>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
               System Settings
@@ -166,7 +160,6 @@ export default function AdminSettingsPage() {
             </p>
           </div>
 
-          {/* Action Buttons */}
           <div className="mb-6 flex justify-between items-center">
             <div className="flex space-x-4">
               <button
@@ -178,14 +171,12 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {/* Audit Log */}
           {showAuditLog && (
             <div className="mb-8">
               <SettingsAuditLog />
             </div>
           )}
 
-          {/* Tabs */}
           <div className="border-b border-gray-200 mb-6">
             <nav className="-mb-px flex space-x-8">
               {Object.entries(CATEGORY_LABELS).map(([category, label]) => (
@@ -212,7 +203,6 @@ export default function AdminSettingsPage() {
             </nav>
           </div>
 
-          {/* Settings Content */}
           <div className="space-y-6">
             {activeTab === SystemSettingCategory.CONNECTIVITY ? (
               <ConnectivityCheck />

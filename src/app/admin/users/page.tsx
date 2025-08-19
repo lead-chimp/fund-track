@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AdminOnly } from "@/components/auth/RoleGuard";
 import { UserRole } from "@prisma/client";
-// Using simple alert-based notifications instead of sonner
 
 function formatDate(d?: string) {
   return d ? new Date(d).toLocaleString() : "-";
@@ -32,7 +31,6 @@ export default function UsersAdminPage() {
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const fetchUsers = async () => {

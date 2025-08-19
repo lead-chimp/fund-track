@@ -18,7 +18,6 @@ export default function NotificationsAdminPage() {
 
   useEffect(() => {
     fetchLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const fetchLogs = async () => {
@@ -50,7 +49,6 @@ export default function NotificationsAdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Notification Logs
@@ -60,7 +58,6 @@ export default function NotificationsAdminPage() {
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="mb-6 flex justify-between items-center">
           <div className="flex space-x-4">
             <button
@@ -115,7 +112,6 @@ export default function NotificationsAdminPage() {
           </form>
         )}
 
-        {/* Logs Card */}
         <div className="space-y-6">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="p-6">

@@ -26,7 +26,7 @@ export default function AdminIndexPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <AdminOnly>
             <Link
-              href="/dashboard/admin/users"
+              href="/admin/users"
               className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
             >
               <h3 className="text-lg font-medium text-gray-900">Users</h3>
@@ -38,7 +38,7 @@ export default function AdminIndexPage() {
 
           <AdminOnly>
             <Link
-              href="/dashboard/admin/settings"
+              href="/admin/settings"
               className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
             >
               <h3 className="text-lg font-medium text-gray-900">Settings</h3>
@@ -50,7 +50,7 @@ export default function AdminIndexPage() {
 
           <AuthenticatedOnly>
             <Link
-              href="/dashboard/admin/notifications"
+              href="/admin/notifications"
               className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
             >
               <h3 className="text-lg font-medium text-gray-900">
