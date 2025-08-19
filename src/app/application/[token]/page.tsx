@@ -1,6 +1,7 @@
-import { notFound } from 'next/navigation';
-import { TokenService } from '@/services/TokenService';
-import IntakeWorkflow from '@/components/intake/IntakeWorkflow';
+/* eslint-disable @next/next/no-img-element */
+import { notFound } from "next/navigation";
+import { TokenService } from "@/services/TokenService";
+import IntakeWorkflow from "@/components/intake/IntakeWorkflow";
 
 interface IntakePageProps {
   params: {
@@ -24,14 +25,18 @@ export default async function IntakePage({ params }: IntakePageProps) {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Fund Track Application
-              </h1>
+              <div className="flex items-center mb-2">
+                <img
+                  src="https://merchantfunding.com/assets/img/merchant-funding-logo.png"
+                  alt="Merchant Funding Logo"
+                  className="h-8 w-auto mb-5"
+                />
+              </div>
               <p className="text-gray-600">
                 Complete your application in two simple steps
               </p>
             </div>
-            
+
             <IntakeWorkflow intakeSession={intakeSession} />
           </div>
         </div>

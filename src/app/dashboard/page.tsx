@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { useSession, signOut } from "next-auth/react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { AuthenticatedOnly } from "@/components/auth/RoleGuard"
@@ -41,7 +43,12 @@ export default function DashboardPage() {
         <nav className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
-              <div className="flex items-center">
+              <div className="flex items-center space-x-4">
+                <img
+                  src="https://merchantfunding.com/assets/img/merchant-funding-logo.png"
+                  alt="Merchant Funding Logo"
+                  className="h-8 w-auto mr-3"
+                />
                 <h1 className="text-xl font-semibold text-gray-900">
                   Fund Track Dashboard
                 </h1>

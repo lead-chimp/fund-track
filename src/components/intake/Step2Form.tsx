@@ -193,7 +193,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="bg-[#62ab00] text-white px-4 py-2 rounded-md hover:bg-[#519000] transition-colors"
               disabled={isUploading}
             >
               Choose Files
@@ -300,7 +300,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
           disabled={files.length !== 3 || files.some(f => f.error) || isUploading}
           className={`px-6 py-2 rounded-md font-medium transition-colors ${
             files.length === 3 && !files.some(f => f.error) && !isUploading
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-[#62ab00] text-white hover:bg-[#519000]'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
