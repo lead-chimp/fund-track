@@ -108,12 +108,26 @@ export class SystemSettingsService {
     // Validate the value format
     this.validateSettingValue(value, existingSetting.type);
 
+    // Validate user exists if updatedBy is provided
+    let finalUpdatedBy: number | null = updatedBy ?? null;
+    if (updatedBy !== undefined) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: updatedBy },
+        select: { id: true }
+      });
+      
+      if (!userExists) {
+        console.warn(`User with ID ${updatedBy} not found, setting updatedBy to null`);
+        finalUpdatedBy = null;
+      }
+    }
+
     // Update in database
     const updatedSetting = await prisma.systemSetting.update({
       where: { key },
       data: {
         value,
-        updatedBy,
+        updatedBy: finalUpdatedBy,
         updatedAt: new Date(),
       },
     });
@@ -150,7 +164,7 @@ export class SystemSettingsService {
           where: { key: update.key },
           data: {
             value: update.value,
-            updatedBy,
+            updatedBy: updatedBy ?? null,
             updatedAt: new Date(),
           },
         });
@@ -174,7 +188,21 @@ export class SystemSettingsService {
       throw new Error(`Setting '${key}' not found`);
     }
 
-    return this.updateSetting(key, setting.defaultValue, updatedBy);
+    // Validate user exists if updatedBy is provided
+    let finalUpdatedBy: number | null = updatedBy ?? null;
+    if (updatedBy !== undefined) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: updatedBy },
+        select: { id: true }
+      });
+      
+      if (!userExists) {
+        console.warn(`User with ID ${updatedBy} not found, setting updatedBy to null`);
+        finalUpdatedBy = null;
+      }
+    }
+
+    return this.updateSetting(key, setting.defaultValue, finalUpdatedBy ?? undefined);
   }
 
   /**
@@ -237,7 +265,7 @@ export class SystemSettingsService {
           throw new Error(`Unknown setting type: ${type}`);
       }
     } catch (error) {
-      throw new Error(`Invalid value for ${type} setting: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Invalid value for ${type} setting: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
