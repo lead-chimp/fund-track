@@ -60,7 +60,7 @@ export async function PUT(
       return NextResponse.json({ error: "Value is required" }, { status: 400 });
     }
 
-    const userId = session.user.id ? parseInt(session.user.id) : undefined;
+    const userId = session.user.id ? parseInt(session.user.id, 10) : undefined;
 
     const updatedSetting = await systemSettingsService.updateSetting(
       key,
@@ -102,7 +102,7 @@ export async function POST(
     const { action } = body;
 
     if (action === "reset") {
-      const userId = session.user.id ? parseInt(session.user.id) : undefined;
+      const userId = session.user.id ? parseInt(session.user.id, 10) : undefined;
 
       const resetSetting = await systemSettingsService.resetSetting(
         params.key,

@@ -6,7 +6,7 @@ export const systemSettingsData = [
   // Notification Settings
   {
     key: 'sms_notifications_enabled',
-    value: 'true',
+    value: 'false',
     type: SystemSettingType.BOOLEAN,
     category: SystemSettingCategory.NOTIFICATIONS,
     description: 'Enable or disable SMS notifications globally',
@@ -14,7 +14,7 @@ export const systemSettingsData = [
   },
   {
     key: 'email_notifications_enabled',
-    value: 'true',
+    value: 'false',
     type: SystemSettingType.BOOLEAN,
     category: SystemSettingCategory.NOTIFICATIONS,
     description: 'Enable or disable email notifications globally',
@@ -45,7 +45,7 @@ export const systemSettingsData = [
 
 export async function seedSystemSettings() {
   console.log('Seeding system settings...');
-  
+
   for (const setting of systemSettingsData) {
     await prisma.systemSetting.upsert({
       where: { key: setting.key },
@@ -58,7 +58,7 @@ export async function seedSystemSettings() {
       create: setting,
     });
   }
-  
+
   console.log(`Seeded ${systemSettingsData.length} system settings`);
 }
 
