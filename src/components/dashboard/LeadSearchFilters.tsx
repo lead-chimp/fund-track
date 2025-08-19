@@ -71,7 +71,7 @@ export function LeadSearchFilters({
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Search & Filter</h3>
+  <h3 className="text-base font-medium text-gray-900">Search & Filter</h3>
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
@@ -89,7 +89,7 @@ export function LeadSearchFilters({
       <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
         {/* Search Input */}
         <div className="flex-1 lg:min-w-0">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="search" className="block text-xs font-medium text-gray-700">
             Search
           </label>
           <div className="mt-1 relative rounded-md shadow-sm">
@@ -105,7 +105,7 @@ export function LeadSearchFilters({
               onChange={(e) => handleInputChange("search", e.target.value)}
               placeholder="Search by name, email, phone, or business..."
               disabled={loading}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="block w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-md text-xs leading-4 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {localFilters.search && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -125,7 +125,7 @@ export function LeadSearchFilters({
 
         {/* Status Filter */}
         <div className="lg:w-40">
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="status" className="block text-xs font-medium text-gray-700">
             Status
           </label>
           <select
@@ -133,7 +133,7 @@ export function LeadSearchFilters({
             value={localFilters.status}
             onChange={(e) => handleInputChange("status", e.target.value)}
             disabled={loading}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-1 block w-full pl-3 pr-10 py-1.5 text-xs border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {STATUS_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>
@@ -145,7 +145,7 @@ export function LeadSearchFilters({
 
         {/* Date From */}
         <div className="lg:w-36">
-          <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="dateFrom" className="block text-xs font-medium text-gray-700">
             Date From
           </label>
           <input
@@ -154,13 +154,13 @@ export function LeadSearchFilters({
             value={localFilters.dateFrom}
             onChange={(e) => handleInputChange("dateFrom", e.target.value)}
             disabled={loading}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
         {/* Date To */}
         <div className="lg:w-36">
-          <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="dateTo" className="block text-xs font-medium text-gray-700">
             Date To
           </label>
           <input
@@ -170,7 +170,7 @@ export function LeadSearchFilters({
             onChange={(e) => handleInputChange("dateTo", e.target.value)}
             disabled={loading}
             min={localFilters.dateFrom || undefined}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       </div>
@@ -178,7 +178,7 @@ export function LeadSearchFilters({
       {/* Active Filters Summary */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
-          <span className="text-sm text-gray-500">Active filters:</span>
+          <span className="text-xs text-gray-500">Active filters:</span>
           {localFilters.search && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               Search: &quot;{localFilters.search}&quot;

@@ -124,32 +124,32 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
             {leads.map((lead) => (
               <tr key={lead.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-xs font-medium text-gray-900">
                     {formatName(lead)}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-500">
                     ID: {lead.id}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-xs text-gray-900">
                     {lead.email || 'No email'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-500">
                     {lead.phone || 'No phone'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-xs text-gray-900">
                     {lead.businessName || 'N/A'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[lead.status]}`}>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[lead.status]}`}> 
                     {STATUS_LABELS[lead.status]}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
                       <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,10 +165,10 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                   {formatDate(lead.createdAt)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-medium">
                   <a 
                     href={`/dashboard/leads/${lead.id}`}
                     className="text-indigo-600 hover:text-indigo-900"

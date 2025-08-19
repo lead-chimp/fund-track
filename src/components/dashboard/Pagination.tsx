@@ -58,21 +58,21 @@ export function Pagination({ pagination, onPageChange, onLimitChange }: Paginati
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       {/* Results info and per-page selector */}
       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <div className="text-sm text-gray-700">
+  <div className="text-xs text-gray-700">
           Showing <span className="font-medium">{startItem}</span> to{' '}
           <span className="font-medium">{endItem}</span> of{' '}
           <span className="font-medium">{totalCount}</span> results
         </div>
         
         <div className="flex items-center space-x-2">
-          <label htmlFor="limit" className="text-sm text-gray-700">
+          <label htmlFor="limit" className="text-xs text-gray-700">
             Per page:
           </label>
           <select
             id="limit"
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="border border-gray-300 rounded-md text-sm py-1 px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+            className="border border-gray-300 rounded-md text-xs py-1 px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           >
             {LIMIT_OPTIONS.map(option => (
               <option key={option} value={option}>
@@ -90,7 +90,7 @@ export function Pagination({ pagination, onPageChange, onLimitChange }: Paginati
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={!hasPrev}
-            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="sr-only">Previous</span>
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -104,7 +104,7 @@ export function Pagination({ pagination, onPageChange, onLimitChange }: Paginati
               key={index}
               onClick={() => typeof pageNum === 'number' ? onPageChange(pageNum) : undefined}
               disabled={typeof pageNum !== 'number'}
-              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+              className={`relative inline-flex items-center px-4 py-2 border text-xs font-medium ${
                 pageNum === page
                   ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
                   : typeof pageNum === 'number'
@@ -120,7 +120,7 @@ export function Pagination({ pagination, onPageChange, onLimitChange }: Paginati
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={!hasNext}
-            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="sr-only">Next</span>
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
