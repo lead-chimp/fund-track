@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { NotificationLog, NotificationStatus } from "@prisma/client";
 
@@ -14,42 +14,50 @@ export default function NotificationsAdminPage() {
   const [limit] = useState(25);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const totalPages = Math.max(1, Math.ceil(total / Number(limit)));
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Intentionally only re-run when `page` changes. `fetchLogs` is defined
-  // in the component scope but we don't want to recreate it or include it
-  // in the deps array.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchLogs();
-  }, [page]);
+  const searchRef = useRef(search);
 
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      const query = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-      });
-      if (search) query.set("search", search);
-      const res = await fetch(`/api/admin/notifications?${query.toString()}`);
-      if (!res.ok) throw new Error("Failed to load logs");
-      const data = await res.json();
-      setLogs(data.logs);
-      setTotal(data.total);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Centralized fetch that accepts explicit page and search values so we
+  // can avoid stale closures and prevent duplicate requests.
+  const fetchPage = useCallback(
+    async (pageToFetch: number, searchTerm?: string) => {
+      try {
+        setLoading(true);
+        const query = new URLSearchParams({
+          page: String(pageToFetch),
+          limit: String(limit),
+        });
+        if (searchTerm) query.set("search", searchTerm);
+        const res = await fetch(`/api/admin/notifications?${query.toString()}`);
+        if (!res.ok) throw new Error("Failed to load logs");
+        const data = await res.json();
+        setLogs(data.logs);
+        setTotal(data.total);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [limit]
+  );
+
+  // Fetch when page or limit change. We read the latest search value from
+  // the ref to avoid fetching on every keystroke.
+  useEffect(() => {
+    fetchPage(page, searchRef.current);
+  }, [page, limit, fetchPage]);
 
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    // Reset to first page and let the effect trigger fetchLogs so we
-    // always fetch the correct page value.
-    setPage(1);
+    if (page === 1) {
+      await fetchPage(1, searchRef.current);
+    } else {
+      setPage(1);
+    }
   };
 
   return (
@@ -121,11 +129,9 @@ export default function NotificationsAdminPage() {
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">Total: {total}</div>
             <button
-              onClick={() => {
-                setPage(1);
-                fetchLogs();
-              }}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              onClick={() => fetchPage(page, searchRef.current)}
+              disabled={loading}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
             >
               Refresh
             </button>
@@ -142,7 +148,10 @@ export default function NotificationsAdminPage() {
                   </label>
                   <input
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      searchRef.current = e.target.value;
+                    }}
                     placeholder="recipient, subject, content..."
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
@@ -241,18 +250,21 @@ export default function NotificationsAdminPage() {
             </div>
 
             <div className="p-6 border-t border-gray-100 flex items-center justify-between">
-              <div className="text-sm text-gray-600">Page {page}</div>
+              <div className="text-sm text-gray-600">
+                Page {page} of {totalPages}
+              </div>
               <div className="space-x-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
+                  disabled={page === 1 || loading}
                   className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => setPage((p) => p + 1)}
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages || loading}
+                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Next
                 </button>
