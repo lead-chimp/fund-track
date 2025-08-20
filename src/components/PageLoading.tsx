@@ -4,9 +4,7 @@ type PageLoadingProps = {
   message?: string;
 };
 
-export default function PageLoading({
-  message = "",
-}: PageLoadingProps) {
+export default function PageLoading({ message = "" }: PageLoadingProps) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex items-center space-x-3">
