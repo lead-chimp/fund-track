@@ -43,12 +43,14 @@ function ContextMenuButton() {
         className="p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <svg
-          className="w-5 h-5 text-gray-700"
+          className="w-4 h-4 text-gray-700"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
         >
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4z" />
+          <circle cx="10" cy="4" r="1.5" />
+          <circle cx="10" cy="10" r="1.5" />
+          <circle cx="10" cy="16" r="1.5" />
         </svg>
         <span className="sr-only">Open menu</span>
       </button>
@@ -114,7 +116,7 @@ export default function DashboardPage() {
                   className="h-8 w-auto mr-3"
                 />
                 <h1 className="text-xl font-semibold text-gray-900">
-                  Fund Track Dashboard
+                  FUND TRACK
                 </h1>
               </div>
               <div className="flex items-center space-x-4">
