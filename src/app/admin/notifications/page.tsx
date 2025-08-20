@@ -10,32 +10,33 @@ function formatRecipient(log: Partial<NotificationLog>) {
 
 export default function NotificationsAdminPage() {
   const [logs, setLogs] = useState<NotificationLog[]>([]);
-  const [page, setPage] = useState(1);
   const [limit] = useState(25);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const totalPages = Math.max(1, Math.ceil(total / Number(limit)));
+  const [cursors, setCursors] = useState<string[]>([""]); // '' means start
+  const [cursorIndex, setCursorIndex] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
 
   const searchRef = useRef(search);
+  const [latestNextCursor, setLatestNextCursor] = useState<string | null>(null);
 
-  // Centralized fetch that accepts explicit page and search values so we
-  // can avoid stale closures and prevent duplicate requests.
+  // Centralized fetch that accepts an explicit cursor and search term.
   const fetchPage = useCallback(
-    async (pageToFetch: number, searchTerm?: string) => {
+    async (cursor?: string, searchTerm?: string) => {
       try {
         setLoading(true);
         const query = new URLSearchParams({
-          page: String(pageToFetch),
           limit: String(limit),
         });
         if (searchTerm) query.set("search", searchTerm);
+        if (cursor) query.set("cursor", cursor);
         const res = await fetch(`/api/admin/notifications?${query.toString()}`);
         if (!res.ok) throw new Error("Failed to load logs");
         const data = await res.json();
-        setLogs(data.logs);
-        setTotal(data.total);
+        setLogs(data.logs || []);
+        setHasMore(Boolean(data.hasMore));
+        setLatestNextCursor(data.nextCursor ? String(data.nextCursor) : null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -45,19 +46,18 @@ export default function NotificationsAdminPage() {
     [limit]
   );
 
-  // Fetch when page or limit change. We read the latest search value from
-  // the ref to avoid fetching on every keystroke.
+  // Fetch when the cursor index or limit changes.
   useEffect(() => {
-    fetchPage(page, searchRef.current);
-  }, [page, limit, fetchPage]);
+    const currentCursor = cursors[cursorIndex] || undefined;
+    fetchPage(currentCursor, searchRef.current);
+  }, [cursorIndex, limit, fetchPage, cursors]);
 
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (page === 1) {
-      await fetchPage(1, searchRef.current);
-    } else {
-      setPage(1);
-    }
+    // Reset cursors when starting a new search.
+    setCursors([""]);
+    setCursorIndex(0);
+    await fetchPage(undefined, searchRef.current);
   };
 
   return (
@@ -127,9 +127,9 @@ export default function NotificationsAdminPage() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">Total: {total}</div>
+            <div className="text-sm text-gray-600">&nbsp;</div>
             <button
-              onClick={() => fetchPage(page, searchRef.current)}
+              onClick={() => fetchPage(cursors[cursorIndex], searchRef.current)}
               disabled={loading}
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
             >
@@ -251,21 +251,40 @@ export default function NotificationsAdminPage() {
 
             <div className="p-6 border-t border-gray-100 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Page {page} of {totalPages}
+                {cursorIndex === 0 ? "Newest" : `Page ${cursorIndex + 1}`}
               </div>
               <div className="space-x-2">
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1 || loading}
+                  onClick={() => {
+                    if (cursorIndex > 0) setCursorIndex((i) => i - 1);
+                  }}
+                  disabled={cursorIndex === 0 || loading}
                   className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
+                  {loading && (
+                    <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
+                  )}
                   Previous
                 </button>
                 <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages || loading}
+                  onClick={() => {
+                    if (hasMore && latestNextCursor) {
+                      // Append the next cursor and advance index
+                      setCursors((arr) => {
+                        const next = String(latestNextCursor);
+                        // Avoid duplicates
+                        if (arr[arr.length - 1] === next) return arr;
+                        return [...arr, next];
+                      });
+                      setCursorIndex((i) => i + 1);
+                    }
+                  }}
+                  disabled={!hasMore || loading}
                   className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
+                  {loading && (
+                    <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
+                  )}
                   Next
                 </button>
               </div>
