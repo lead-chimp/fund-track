@@ -47,8 +47,9 @@ export default function NotificationsAdminPage() {
 
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    // Reset to first page and let the effect trigger fetchLogs so we
+    // always fetch the correct page value.
     setPage(1);
-    await fetchLogs();
   };
 
   return (
