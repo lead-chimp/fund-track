@@ -61,3 +61,4 @@ run_query "SELECT id, lead_id, recipient, subject, status, external_id, error_me
 echo "Report complete: $OUTFILE"
 
 
+

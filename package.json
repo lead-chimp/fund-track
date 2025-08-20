@@ -13,6 +13,7 @@
     "db:migrate:prod": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:force": "FORCE_SEED=true tsx prisma/seed.ts",
+    "db:seed:simple": "FORCE_SEED=true tsx prisma/seed-simple.ts",
     "db:seed:prod": "tsx prisma/seed-production.ts",
     "db:studio": "prisma studio",
     "backup:db": "echo 'Database backups are handled by Coolify'",

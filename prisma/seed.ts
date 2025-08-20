@@ -53,21 +53,62 @@ async function main() {
       );
       // Add a 5-second delay in production to give time to cancel
       console.log("⏳ Starting in 5 seconds... Press Ctrl+C to cancel");
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      // More robust timeout handling
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            console.log("⏳ Countdown complete, proceeding with seed...");
+            resolve(void 0);
+          }, 5000);
+          
+          // Handle process termination
+          process.on('SIGINT', () => {
+            clearTimeout(timeout);
+            console.log('\n❌ Seeding cancelled by user');
+            reject(new Error('Cancelled by user'));
+          });
+        });
+      } catch (error) {
+        console.log('❌ Seeding cancelled');
+        process.exit(0);
+      }
     }
   }
 
   // Clear existing data in correct order (respecting foreign key constraints)
-  await prisma.notificationLog.deleteMany();
-  await prisma.followupQueue.deleteMany();
-  await prisma.document.deleteMany();
-  await prisma.leadNote.deleteMany();
-  await prisma.leadStatusHistory.deleteMany();
-  await prisma.lead.deleteMany();
-  await prisma.systemSetting.deleteMany();
-  await prisma.user.deleteMany();
+  console.log("🧹 Starting data cleanup...");
+  
+  try {
+    console.log("  - Deleting notification logs...");
+    await prisma.notificationLog.deleteMany();
+    
+    console.log("  - Deleting followup queue...");
+    await prisma.followupQueue.deleteMany();
+    
+    console.log("  - Deleting documents...");
+    await prisma.document.deleteMany();
+    
+    console.log("  - Deleting lead notes...");
+    await prisma.leadNote.deleteMany();
+    
+    console.log("  - Deleting lead status history...");
+    await prisma.leadStatusHistory.deleteMany();
+    
+    console.log("  - Deleting leads...");
+    await prisma.lead.deleteMany();
+    
+    console.log("  - Deleting system settings...");
+    await prisma.systemSetting.deleteMany();
+    
+    console.log("  - Deleting users...");
+    await prisma.user.deleteMany();
 
-  console.log("🧹 Cleared existing data");
+    console.log("🧹 Cleared existing data successfully");
+  } catch (error) {
+    console.error("❌ Error during data cleanup:", error);
+    throw error;
+  }
 
   // Create sample users
   const adminPassword = await bcrypt.hash("admin123", 12);
@@ -439,11 +480,31 @@ async function main() {
   console.log("   Sales: user-002@merchantfunding.com / user123");
 }
 
+// Set up process timeout to prevent hanging
+const SEED_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+const seedTimeout = setTimeout(() => {
+  console.error("❌ Seed operation timed out after 5 minutes");
+  process.exit(1);
+}, SEED_TIMEOUT);
+
 main()
+  .then(() => {
+    clearTimeout(seedTimeout);
+    console.log("✅ Seed completed successfully");
+  })
   .catch((e) => {
+    clearTimeout(seedTimeout);
     console.error("❌ Error seeding database:", e);
+    if (e.message && e.message.includes('Cancelled by user')) {
+      process.exit(0);
+    }
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+      console.log("🔌 Database connection closed");
+    } catch (error) {
+      console.error("❌ Error disconnecting from database:", error);
+    }
   });
