@@ -30,6 +30,15 @@ export async function POST(request: NextRequest) {
           importedAt: {
             gte: new Date(Date.now() - 5 * 60 * 1000),
           },
+          // Only get leads that haven't had notifications sent yet
+          notificationLog: {
+            none: {
+              status: "SENT",
+              createdAt: {
+                gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // No successful notifications in last 24 hours
+              },
+            },
+          },
         },
         select: {
           id: true,

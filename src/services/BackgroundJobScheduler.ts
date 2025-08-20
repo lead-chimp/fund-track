@@ -2,12 +2,14 @@ import * as cron from "node-cron";
 import { createLeadPoller } from "./LeadPoller";
 import { notificationService } from "./NotificationService";
 import { followUpScheduler } from "./FollowUpScheduler";
+import { notificationCleanupService } from "./NotificationCleanupService";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
 export class BackgroundJobScheduler {
   private leadPollingTask: cron.ScheduledTask | null = null;
   private followUpTask: cron.ScheduledTask | null = null;
+  private cleanupTask: cron.ScheduledTask | null = null;
   private isRunning = false;
 
   /**
@@ -52,9 +54,25 @@ export class BackgroundJobScheduler {
       } as any
     );
 
+    // Schedule notification cleanup daily at 2 AM
+    // Cron pattern: '0 2 * * *' = daily at 2:00 AM
+    const cleanupPattern = process.env.CLEANUP_CRON_PATTERN || "0 2 * * *";
+
+    this.cleanupTask = cron.schedule(
+      cleanupPattern,
+      async () => {
+        await this.executeCleanupJob();
+      },
+      {
+        scheduled: false, // Don't start immediately
+        timezone: process.env.TZ || "America/New_York",
+      } as any
+    );
+
     // Start the scheduled tasks
     this.leadPollingTask.start();
     this.followUpTask.start();
+    this.cleanupTask.start();
     this.isRunning = true;
 
     logger.info(
@@ -83,6 +101,12 @@ export class BackgroundJobScheduler {
       this.followUpTask.stop();
       this.followUpTask.destroy();
       this.followUpTask = null;
+    }
+
+    if (this.cleanupTask) {
+      this.cleanupTask.stop();
+      this.cleanupTask.destroy();
+      this.cleanupTask = null;
     }
 
     this.isRunning = false;
@@ -161,11 +185,13 @@ export class BackgroundJobScheduler {
           importedAt: {
             gte: new Date(Date.now() - 20 * 60 * 1000), // Last 20 minutes
           },
-          // Only get leads that haven't had notifications sent yet
+          // Only get leads that haven't had ANY notifications sent yet (both email and SMS)
           notificationLog: {
             none: {
-              type: "EMAIL",
               status: "SENT",
+              createdAt: {
+                gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // No successful notifications in last 24 hours
+              },
             },
           },
         },
@@ -371,6 +397,41 @@ export class BackgroundJobScheduler {
       "follow-ups"
     );
     await this.executeFollowUpJob();
+  }
+
+  /**
+   * Execute the cleanup job
+   */
+  private async executeCleanupJob(): Promise<void> {
+    const jobStartTime = Date.now();
+    logger.backgroundJob("Starting scheduled cleanup job", "cleanup");
+
+    try {
+      // Clean up old notifications (keep 30 days)
+      const notificationCleanup = await notificationCleanupService.cleanupOldNotifications(30);
+      
+      // Clean up old follow-ups (keep 30 days)
+      const followUpCleanup = await followUpScheduler.cleanupOldFollowUps(30);
+
+      logger.backgroundJob("Cleanup job completed", "cleanup", {
+        processingTime: `${Date.now() - jobStartTime}ms`,
+        notificationsDeleted: notificationCleanup.deletedCount,
+        followUpsDeleted: followUpCleanup,
+      });
+    } catch (error) {
+      logger.error("Scheduled cleanup job failed", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        processingTime: `${Date.now() - jobStartTime}ms`,
+      });
+    }
+  }
+
+  /**
+   * Execute cleanup job manually (for testing)
+   */
+  async executeCleanupManually(): Promise<void> {
+    logger.backgroundJob("Executing cleanup job manually", "cleanup");
+    await this.executeCleanupJob();
   }
 }
 

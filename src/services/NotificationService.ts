@@ -49,6 +49,7 @@ export class NotificationService {
   private twilioClient: twilio.Twilio | null = null;
   private mailgunClient: any = null;
   private config: NotificationConfig;
+  private recentNotifications: Map<string, Date[]> = new Map(); // Rate limiting cache
 
   constructor() {
     this.config = {
@@ -94,22 +95,18 @@ export class NotificationService {
     // Check if email notifications are enabled
     const settings = await getNotificationSettings();
     if (!settings.emailEnabled) {
-      // Create notification log entry as skipped
-      await prisma.notificationLog.create({
-        data: {
-          leadId: notification.leadId,
-          type: NotificationType.EMAIL,
-          recipient: notification.to,
-          subject: notification.subject,
-          content: notification.text,
-          status: NotificationStatus.FAILED,
-          errorMessage: 'Email notifications are disabled',
-        },
-      });
-
       return {
         success: false,
         error: 'Email notifications are disabled',
+      };
+    }
+
+    // Check rate limiting
+    const rateLimitCheck = await this.checkRateLimit(notification.to, 'EMAIL', notification.leadId);
+    if (!rateLimitCheck.allowed) {
+      return {
+        success: false,
+        error: rateLimitCheck.reason,
       };
     }
 
@@ -171,21 +168,18 @@ export class NotificationService {
     // Check if SMS notifications are enabled
     const settings = await getNotificationSettings();
     if (!settings.smsEnabled) {
-      // Create notification log entry as skipped
-      await prisma.notificationLog.create({
-        data: {
-          leadId: notification.leadId,
-          type: NotificationType.SMS,
-          recipient: notification.to,
-          content: notification.message,
-          status: NotificationStatus.FAILED,
-          errorMessage: 'SMS notifications are disabled',
-        },
-      });
-
       return {
         success: false,
         error: 'SMS notifications are disabled',
+      };
+    }
+
+    // Check rate limiting
+    const rateLimitCheck = await this.checkRateLimit(notification.to, 'SMS', notification.leadId);
+    if (!rateLimitCheck.allowed) {
+      return {
+        success: false,
+        error: rateLimitCheck.reason,
       };
     }
 
@@ -328,6 +322,69 @@ export class NotificationService {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Check rate limiting to prevent spam notifications
+   */
+  private async checkRateLimit(
+    recipient: string, 
+    type: 'EMAIL' | 'SMS', 
+    leadId?: number
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    try {
+      // Check database for recent notifications to this recipient
+      const recentNotifications = await prisma.notificationLog.count({
+        where: {
+          recipient,
+          type: type as any,
+          status: 'SENT',
+          createdAt: {
+            gte: oneHourAgo,
+          },
+        },
+      });
+
+      // Allow max 2 notifications per hour per recipient
+      if (recentNotifications >= 2) {
+        return {
+          allowed: false,
+          reason: `Rate limit exceeded: ${recentNotifications} notifications sent to ${recipient} in the last hour`,
+        };
+      }
+
+      // If leadId is provided, check lead-specific limits
+      if (leadId) {
+        const leadNotificationsToday = await prisma.notificationLog.count({
+          where: {
+            leadId,
+            type: type as any,
+            status: 'SENT',
+            createdAt: {
+              gte: oneDayAgo,
+            },
+          },
+        });
+
+        // Allow max 10 notifications per day per lead
+        if (leadNotificationsToday >= 10) {
+          return {
+            allowed: false,
+            reason: `Daily limit exceeded: ${leadNotificationsToday} notifications sent to lead ${leadId} today`,
+          };
+        }
+      }
+
+      return { allowed: true };
+    } catch (error) {
+      console.error('Rate limit check failed:', error);
+      // If rate limit check fails, allow the notification but log the error
+      return { allowed: true };
+    }
   }
 
   /**
