@@ -1,30 +1,24 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import Link from "next/link"
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Link from "next/link";
 
 export default function Home() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard")
+      router.push("/dashboard");
     }
-  }, [status, router])
+  }, [status, router]);
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    )
-  }
+  if (status === "loading") return <PageLoading />;
 
   if (session) {
-    return null // Will redirect to dashboard
+    return null; // Will redirect to dashboard
   }
 
   return (
@@ -36,7 +30,7 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-8">
           Internal lead management system for Fund Track staff
         </p>
-        
+
         <div className="space-y-4">
           <Link
             href="/auth/signin"
@@ -44,12 +38,14 @@ export default function Home() {
           >
             Staff Sign In
           </Link>
-          
+
           <div className="text-sm text-gray-500">
-            <p>For prospect intake, use the link provided in your email or SMS</p>
+            <p>
+              For prospect intake, use the link provided in your email or SMS
+            </p>
           </div>
         </div>
       </div>
     </main>
-  )
+  );
 }

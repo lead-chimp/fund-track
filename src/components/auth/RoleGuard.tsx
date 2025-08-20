@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
 import { ReactNode } from "react";
+import PageLoading from "@/components/PageLoading";
 
 interface RoleGuardProps {
   children: ReactNode;
@@ -17,12 +18,13 @@ export function RoleGuard({
 }: RoleGuardProps) {
   const { data: session, status } = useSession();
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
+  if (status === "loading") return <PageLoading />;
 
   if (!session || !allowedRoles.includes(session.user.role)) {
-    if (fallback) return <>{fallback}</>;
+    // Treat an explicit `fallback` (including `null`) as the intended
+    // rendering for unauthorized users. If `fallback` is undefined,
+    // fall back to the default Access denied UI.
+    if (fallback !== undefined) return <>{fallback}</>;
 
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -43,7 +45,7 @@ export function RoleGuard({
 // Convenience components for common role checks
 export function AdminOnly({
   children,
-  fallback,
+  fallback = null,
 }: {
   children: ReactNode;
   fallback?: ReactNode;
@@ -57,7 +59,7 @@ export function AdminOnly({
 
 export function AuthenticatedOnly({
   children,
-  fallback,
+  fallback = null,
 }: {
   children: ReactNode;
   fallback?: ReactNode;

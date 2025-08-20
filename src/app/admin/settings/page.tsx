@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { SystemSetting, SystemSettingCategory } from "@prisma/client";
 import { SettingsCard } from "@/components/admin/SettingsCard";
 import { SettingsAuditLog } from "@/components/admin/SettingsAuditLog";
@@ -152,12 +153,53 @@ export default function AdminSettingsPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              System Settings
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Configure system-wide settings and preferences
-            </p>
+            <nav className="text-sm text-gray-500 flex items-center space-x-2">
+              <Link href="/admin" className="text-gray-500 hover:underline">
+                Admin Dashboard
+              </Link>
+              <svg
+                className="w-4 h-4 text-gray-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-gray-900 font-semibold">
+                System Settings
+              </span>
+            </nav>
+
+            <div className="mt-4 flex items-start space-x-4">
+              <div className="bg-gray-100 rounded-lg p-3">
+                <svg
+                  className="w-6 h-6 text-gray-700"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 8v4l3 3"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <h1 className="text-3xl font-extrabold text-gray-900">
+                  System Settings
+                </h1>
+                <p className="mt-1 text-gray-500">
+                  Configure system-wide settings and preferences (admin only)
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="mb-6 flex justify-between items-center">

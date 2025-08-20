@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { NotificationLog, NotificationStatus } from "@prisma/client";
 
 function formatRecipient(log: Partial<NotificationLog>) {
@@ -16,6 +17,10 @@ export default function NotificationsAdminPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
 
+  // Intentionally only re-run when `page` changes. `fetchLogs` is defined
+  // in the component scope but we don't want to recreate it or include it
+  // in the deps array.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchLogs();
   }, [page]);
@@ -50,12 +55,54 @@ export default function NotificationsAdminPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Notification Logs
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Recent email and SMS delivery history
-          </p>
+          <nav className="text-sm text-gray-500 flex items-center space-x-2">
+            <Link href="/admin" className="text-gray-500 hover:underline">
+              Admin Dashboard
+            </Link>
+            <svg
+              className="w-4 h-4 text-gray-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="text-gray-900 font-semibold">
+              Notification Logs
+            </span>
+          </nav>
+
+          <div className="mt-4 flex items-start space-x-4">
+            <div className="bg-gray-100 rounded-lg p-3">
+              {/* bell icon */}
+              <svg
+                className="w-6 h-6 text-gray-700"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+            </div>
+
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900">
+                Notification Logs
+              </h1>
+              <p className="mt-1 text-gray-500">
+                Recent email and SMS delivery history
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="mb-6 flex justify-between items-center">
