@@ -11,6 +11,9 @@ export interface LegacyDbConfig {
     trustServerCertificate?: boolean;
     requestTimeout?: number;
     connectionTimeout?: number;
+    enableArithAbort?: boolean;
+    abortTransactionOnError?: boolean;
+    [key: string]: any; // Allow additional mssql options
   };
 }
 
