@@ -20,7 +20,12 @@ const DEFAULT_TEST_RECORD = {
     ZipCode: '33323',
     Country: 'USA',
     TestLead: 1,
-    NetworkID: 10000
+    NetworkID: 10000,
+    LeadCost: 0.00,
+    Currency: 'USD',
+    Payin: 0.00,
+    PayOutType: 1,
+    CurrencyIn: 'USD'
 };
 
 export async function POST(request: NextRequest) {
@@ -80,7 +85,7 @@ export async function GET() {
 
         // Check for existing test records
         const existingRecords = await legacyDb.query(`
-      SELECT LeadID, PostDT, CampaignID, SourceID, PublisherID, SubID, FirstName, LastName, Email, Phone, TestLead, NetworkID
+      SELECT LeadID, PostDT, CampaignID, SourceID, PublisherID, SubID, FirstName, LastName, Email, Phone, TestLead, NetworkID, LeadCost, Currency, Payin, PayOutType, CurrencyIn
       FROM [LeadData2].[dbo].[Leads]
       WHERE CampaignID = @CampaignID
         AND SourceID = @SourceID
@@ -92,6 +97,11 @@ export async function GET() {
         AND Phone = @Phone
         AND TestLead = @TestLead
         AND NetworkID = @NetworkID
+        AND LeadCost = @LeadCost
+        AND Currency = @Currency
+        AND Payin = @Payin
+        AND PayOutType = @PayOutType
+        AND CurrencyIn = @CurrencyIn
       ORDER BY PostDT DESC
     `, DEFAULT_TEST_RECORD);
 
@@ -145,7 +155,7 @@ async function insertTestRecord(legacyDb: any, customValues?: any) {
 
     const insertQuery = `
     INSERT INTO [LeadData2].[dbo].[Leads]
-    ([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[AlternatePhone],[Address],[Address2],[City],[State],[ZipCode],[Country],[TestLead],[DateID],[NetworkID])
+    ([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[AlternatePhone],[Address],[Address2],[City],[State],[ZipCode],[Country],[TestLead],[DateID],[NetworkID],[LeadCost],[Currency],[Payin],[PayOutType],[CurrencyIn])
     VALUES(
       GETDATE(),
       @CampaignID,
@@ -165,7 +175,12 @@ async function insertTestRecord(legacyDb: any, customValues?: any) {
       @Country,
       @TestLead,
       CONVERT(INT, CONVERT(CHAR(8), GETDATE(), 112)),
-      @NetworkID
+      @NetworkID,
+      @LeadCost,
+      @Currency,
+      @Payin,
+      @PayOutType,
+      @CurrencyIn
     );
     SELECT SCOPE_IDENTITY() as NewLeadID;
   `;
@@ -199,7 +214,12 @@ async function deleteTestRecord(legacyDb: any, customValues?: any) {
       AND ZipCode = @ZipCode
       AND Country = @Country
       AND TestLead = @TestLead
-      AND NetworkID = @NetworkID;
+      AND NetworkID = @NetworkID
+      AND LeadCost = @LeadCost
+      AND Currency = @Currency
+      AND Payin = @Payin
+      AND PayOutType = @PayOutType
+      AND CurrencyIn = @CurrencyIn;
   `;
 
     const result = await legacyDb.query(deleteQuery, values);

@@ -20,6 +20,11 @@ interface TestRecord {
     Country: string;
     TestLead: number;
     NetworkID: number;
+    LeadCost: number;
+    Currency: string;
+    Payin: number;
+    PayOutType: number;
+    CurrencyIn: string;
 }
 
 interface LegacyRecord {
@@ -66,7 +71,12 @@ export default function TestLegacyDbPage() {
         ZipCode: '33323',
         Country: 'USA',
         TestLead: 1,
-        NetworkID: 10000
+        NetworkID: 10000,
+        LeadCost: 0.00,
+        Currency: 'USD',
+        Payin: 0.00,
+        PayOutType: 1,
+        CurrencyIn: 'USD'
     });
 
     const [loading, setLoading] = useState(false);
@@ -138,11 +148,16 @@ export default function TestLegacyDbPage() {
             ZipCode: '33323',
             Country: 'USA',
             TestLead: 1,
-            NetworkID: 10000
+            NetworkID: 10000,
+            LeadCost: 0.00,
+            Currency: 'USD',
+            Payin: 0.00,
+            PayOutType: 1,
+            CurrencyIn: 'USD'
         });
     };
 
-    const updateFormValue = (field: keyof TestRecord, value: string | number) => {
+    const updateFormValue = (field: keyof TestRecord, value: string | number | null) => {
         setFormValues(prev => ({
             ...prev,
             [field]: value
@@ -338,6 +353,63 @@ export default function TestLegacyDbPage() {
                                 type="number"
                                 value={formValues.NetworkID}
                                 onChange={(e) => updateFormValue('NetworkID', parseInt(e.target.value))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Lead Cost</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={formValues.LeadCost}
+                                onChange={(e) => updateFormValue('LeadCost', parseFloat(e.target.value))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                            <input
+                                type="text"
+                                maxLength={3}
+                                value={formValues.Currency}
+                                onChange={(e) => updateFormValue('Currency', e.target.value.toUpperCase())}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Pay In</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={formValues.Payin}
+                                onChange={(e) => updateFormValue('Payin', parseFloat(e.target.value))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Pay Out Type</label>
+                            <select
+                                value={formValues.PayOutType}
+                                onChange={(e) => updateFormValue('PayOutType', parseInt(e.target.value))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value={1}>Type 1</option>
+                                <option value={2}>Type 2</option>
+                                <option value={3}>Type 3</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Currency In</label>
+                            <input
+                                type="text"
+                                maxLength={3}
+                                value={formValues.CurrencyIn}
+                                onChange={(e) => updateFormValue('CurrencyIn', e.target.value.toUpperCase())}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>

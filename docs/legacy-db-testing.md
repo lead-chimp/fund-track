@@ -15,7 +15,7 @@ The legacy database testing tools allow you to:
 ```sql
 -- INSERT
 INSERT INTO [LeadData2].[dbo].[Leads]
-([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[AlternatePhone],[Address],[Address2],[City],[State],[ZipCode],[Country],[TestLead],[DateID],[NetworkID])
+([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[AlternatePhone],[Address],[Address2],[City],[State],[ZipCode],[Country],[TestLead],[DateID],[NetworkID],[LeadCost],[Currency],[Payin],[PayOutType],[CurrencyIn])
 VALUES(
   GETDATE(),               -- PostDT: now
   11302,                   -- CampaignID
@@ -35,7 +35,12 @@ VALUES(
   'USA',                   -- Country
   1,                       -- TestLead (true)
   CONVERT(INT, CONVERT(CHAR(8), GETDATE(), 112)), -- DateID as yyyymmdd
-  10000                    -- NetworkID
+  10000,                   -- NetworkID
+  0.00,                    -- LeadCost (smallmoney)
+  'USD',                   -- Currency (char(3))
+  0.00,                    -- Payin (smallmoney)
+  1,                       -- PayOutType (tinyint)
+  'USD'                    -- CurrencyIn (char(3))
 );
 
 -- DELETE
@@ -54,7 +59,12 @@ WHERE CampaignID = 11302
   AND ZipCode = '33323'
   AND Country = 'USA'
   AND TestLead = 1
-  AND NetworkID = 10000;
+  AND NetworkID = 10000
+  AND LeadCost = 0.00
+  AND Currency = 'USD'
+  AND Payin = 0.00
+  AND PayOutType = 1
+  AND CurrencyIn = 'USD';
 ```
 
 ## Testing Methods
