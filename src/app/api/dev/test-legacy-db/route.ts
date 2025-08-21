@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getLegacyDatabase } from '@/lib/legacy-db';
 import { prisma } from '@/lib/prisma';
 
+// Utility function to convert BigInt values to strings for JSON serialization
+function serializeBigInt(obj: any): any {
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
+    
+    if (typeof obj === 'bigint') {
+        return obj.toString();
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(serializeBigInt);
+    }
+    
+    if (typeof obj === 'object') {
+        const serialized: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            serialized[key] = serializeBigInt(value);
+        }
+        return serialized;
+    }
+    
+    return obj;
+}
+
 // Default test record values
 const DEFAULT_TEST_RECORD = {
     CampaignID: 11302,
@@ -62,7 +87,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             action,
-            result,
+            result: serializeBigInt(result),
             timestamp: new Date().toISOString(),
         });
 
@@ -133,8 +158,8 @@ export async function GET() {
 
         return NextResponse.json({
             defaultValues: DEFAULT_TEST_RECORD,
-            existingLegacyRecords: existingRecords,
-            relatedAppRecords,
+            existingLegacyRecords: serializeBigInt(existingRecords),
+            relatedAppRecords: serializeBigInt(relatedAppRecords),
             timestamp: new Date().toISOString(),
         });
 

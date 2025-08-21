@@ -42,7 +42,7 @@ interface LegacyRecord {
 
 interface AppRecord {
     id: number;
-    legacyLeadId: string;
+    legacyLeadId: string; // Already string after serialization
     campaignId: number;
     firstName: string;
     lastName: string;
