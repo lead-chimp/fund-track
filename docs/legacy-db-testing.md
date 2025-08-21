@@ -193,18 +193,18 @@ LEGACY_DB_TRUST_CERT=true
 
 ### Scenario 1: New Lead Import
 1. Insert a test record using the web interface
-2. Wait for the lead poller to run (or trigger manually)
+2. Click "Trigger Lead Polling" button to manually import the record
 3. Verify the lead appears in the app dashboard
 4. Test the intake workflow with the generated token
 
 ### Scenario 2: Lead Deletion and Cleanup
-1. Insert a test record and let it be imported
+1. Insert a test record and trigger polling to import it
 2. Complete some intake steps to create related data
 3. Delete the record from legacy database
 4. Verify all related app records are cleaned up
 
 ### Scenario 3: Re-import Testing
-1. Insert a test record and let it be imported
+1. Insert a test record and trigger polling to import it
 2. Use cleanup operation to remove app records only
 3. Trigger lead poller again to test re-import logic
 
@@ -212,6 +212,33 @@ LEGACY_DB_TRUST_CERT=true
 1. Modify the form values in the web interface
 2. Insert records with different campaign IDs, names, etc.
 3. Test how the system handles various data scenarios
+
+## Manual Lead Polling
+
+### Web Interface
+- Use the "Trigger Lead Polling" button on the test page
+- Specifically configured for test campaign ID 11302
+- Shows polling results in real-time
+
+### Command Line
+```bash
+# Trigger test lead polling
+node scripts/test-lead-polling.mjs poll
+
+# Check poller status
+node scripts/test-lead-polling.mjs status
+```
+
+### API Endpoint
+```bash
+# Trigger polling
+curl -X POST http://localhost:3000/api/dev/test-lead-polling \
+  -H "Content-Type: application/json" \
+  -d '{"action": "poll"}'
+
+# Get status
+curl http://localhost:3000/api/dev/test-lead-polling
+```
 
 ## Monitoring and Verification
 

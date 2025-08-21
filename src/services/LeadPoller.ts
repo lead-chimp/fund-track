@@ -425,3 +425,11 @@ export function createLeadPoller(): LeadPoller {
     batchSize: process.env.LEAD_POLLING_BATCH_SIZE ? parseInt(process.env.LEAD_POLLING_BATCH_SIZE) : 100,
   });
 }
+
+// Factory function to create LeadPoller for testing with test campaign ID
+export function createTestLeadPoller(): LeadPoller {
+  return new LeadPoller({
+    campaignIds: [11302], // Test campaign ID
+    batchSize: 10,
+  });
+}

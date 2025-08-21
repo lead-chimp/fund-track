@@ -130,6 +130,36 @@ export default function TestLegacyDbPage() {
         }
     };
 
+    const triggerLeadPolling = async () => {
+        setLoading(true);
+        setResult(null);
+
+        try {
+            const response = await fetch('/api/dev/test-lead-polling', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'poll',
+                }),
+            });
+
+            const data = await response.json();
+            setResult(data);
+
+            // Reload data after polling
+            setTimeout(loadData, 2000);
+        } catch (error) {
+            setResult({
+                success: false,
+                error: 'Network error: ' + (error instanceof Error ? error.message : 'Unknown error'),
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const resetToDefaults = () => {
         setFormValues({
             CampaignID: 11302,
@@ -455,6 +485,14 @@ export default function TestLegacyDbPage() {
                             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             Refresh Data
+                        </button>
+                        
+                        <button
+                            onClick={triggerLeadPolling}
+                            disabled={loading}
+                            className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Trigger Lead Polling
                         </button>
                     </div>
 
