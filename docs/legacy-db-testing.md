@@ -15,7 +15,7 @@ The legacy database testing tools allow you to:
 ```sql
 -- INSERT
 INSERT INTO [LeadData2].[dbo].[Leads]
-([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[Address],[City],[State],[ZipCode],[Country])
+([PostDT],[CampaignID],[SourceID],[PublisherID],[SubID],[FirstName],[LastName],[Email],[Phone],[AlternatePhone],[Address],[Address2],[City],[State],[ZipCode],[Country],[TestLead],[DateID],[NetworkID])
 VALUES(
   GETDATE(),               -- PostDT: now
   11302,                   -- CampaignID
@@ -26,11 +26,16 @@ VALUES(
   'TEST',                  -- LastName
   'ARDABASOGLU@GMAIL.COM', -- Email
   '+905326666815',         -- Phone
+  NULL,                    -- AlternatePhone
   '1260 NW 133 AVE',       -- Address
+  NULL,                    -- Address2
   'Fort Lauderdale',       -- City
   'FL',                    -- State
   '33323',                 -- ZipCode
-  'USA'                    -- Country
+  'USA',                   -- Country
+  1,                       -- TestLead (true)
+  CONVERT(INT, CONVERT(CHAR(8), GETDATE(), 112)), -- DateID as yyyymmdd
+  10000                    -- NetworkID
 );
 
 -- DELETE
@@ -47,7 +52,9 @@ WHERE CampaignID = 11302
   AND City = 'Fort Lauderdale'
   AND State = 'FL'
   AND ZipCode = '33323'
-  AND Country = 'USA';
+  AND Country = 'USA'
+  AND TestLead = 1
+  AND NetworkID = 10000;
 ```
 
 ## Testing Methods
