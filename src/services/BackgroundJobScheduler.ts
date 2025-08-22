@@ -366,17 +366,34 @@ export class BackgroundJobScheduler {
     nextLeadPolling?: Date;
     nextFollowUp?: Date;
   } {
+    let nextLeadPolling: Date | undefined;
+    let nextFollowUp: Date | undefined;
+
+    try {
+      if (this.leadPollingTask && typeof (this.leadPollingTask as any).nextDate === 'function') {
+        const nextDate = (this.leadPollingTask as any).nextDate();
+        nextLeadPolling = nextDate ? nextDate.toDate() : undefined;
+      }
+    } catch (error) {
+      // Ignore errors getting next date
+    }
+
+    try {
+      if (this.followUpTask && typeof (this.followUpTask as any).nextDate === 'function') {
+        const nextDate = (this.followUpTask as any).nextDate();
+        nextFollowUp = nextDate ? nextDate.toDate() : undefined;
+      }
+    } catch (error) {
+      // Ignore errors getting next date
+    }
+
     return {
       isRunning: this.isRunning,
       leadPollingPattern:
         process.env.LEAD_POLLING_CRON_PATTERN || "*/15 * * * *",
       followUpPattern: process.env.FOLLOWUP_CRON_PATTERN || "*/5 * * * *",
-      nextLeadPolling: this.leadPollingTask
-        ? (this.leadPollingTask as any).nextDate()?.toDate()
-        : undefined,
-      nextFollowUp: this.followUpTask
-        ? (this.followUpTask as any).nextDate()?.toDate()
-        : undefined,
+      nextLeadPolling,
+      nextFollowUp,
     };
   }
 

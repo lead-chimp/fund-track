@@ -182,6 +182,34 @@ export default function TestLegacyDbPage() {
         }
     };
 
+    const controlScheduler = async (action: 'start' | 'stop') => {
+        setLoading(true);
+        setResult(null);
+
+        try {
+            const response = await fetch('/api/dev/scheduler-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action }),
+            });
+
+            const data = await response.json();
+            setResult(data);
+
+            // Check status after action
+            setTimeout(checkSchedulerStatus, 1000);
+        } catch (error) {
+            setResult({
+                success: false,
+                error: 'Network error: ' + (error instanceof Error ? error.message : 'Unknown error'),
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const resetToDefaults = () => {
         setFormValues({
             CampaignID: 11302,
@@ -523,6 +551,22 @@ export default function TestLegacyDbPage() {
                             className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             Check Scheduler Status
+                        </button>
+                        
+                        <button
+                            onClick={() => controlScheduler('start')}
+                            disabled={loading}
+                            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Start Scheduler
+                        </button>
+                        
+                        <button
+                            onClick={() => controlScheduler('stop')}
+                            disabled={loading}
+                            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Stop Scheduler
                         </button>
                     </div>
 

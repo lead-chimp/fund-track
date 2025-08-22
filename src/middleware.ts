@@ -120,6 +120,12 @@ export default withAuth(
       return addSecurityHeaders(NextResponse.next());
     }
 
+    // Allow dev endpoints in development or when explicitly enabled
+    if (pathname.startsWith("/api/dev/") && 
+        (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === 'true')) {
+      return addSecurityHeaders(NextResponse.next());
+    }
+
     // Protect dashboard and API routes (except auth routes)
     if (pathname.startsWith("/dashboard") || 
         (pathname.startsWith("/api") && !pathname.startsWith("/api/auth"))) {
@@ -153,6 +159,12 @@ export default withAuth(
 
         // Allow health check endpoint
         if (pathname === "/api/health") {
+          return true
+        }
+
+        // Allow dev endpoints in development or when explicitly enabled
+        if (pathname.startsWith("/api/dev/") && 
+            (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === 'true')) {
           return true
         }
         

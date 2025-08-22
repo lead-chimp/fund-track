@@ -26,12 +26,23 @@ export function initializeServer(): void {
     }
 
     // Start background job scheduler only in production or when explicitly enabled
-    const shouldStartScheduler = process.env.NODE_ENV === 'production' || 
-                                 process.env.ENABLE_BACKGROUND_JOBS === 'true';
+    const shouldStartScheduler = process.env.NODE_ENV === 'production' ||
+      process.env.ENABLE_BACKGROUND_JOBS === 'true';
+
+    logger.info('Scheduler startup check', {
+      nodeEnv: process.env.NODE_ENV,
+      enableBackgroundJobs: process.env.ENABLE_BACKGROUND_JOBS,
+      shouldStartScheduler,
+      currentStatus: backgroundJobScheduler.getStatus().isRunning
+    });
 
     if (shouldStartScheduler) {
-      backgroundJobScheduler.start();
-      logger.info('Background job scheduler started');
+      if (!backgroundJobScheduler.getStatus().isRunning) {
+        backgroundJobScheduler.start();
+        logger.info('Background job scheduler started during server initialization');
+      } else {
+        logger.info('Background job scheduler already running, skipping start');
+      }
     } else {
       logger.info('Background job scheduler disabled (set ENABLE_BACKGROUND_JOBS=true to enable in development)');
     }
