@@ -247,7 +247,7 @@ export class BackgroundJobScheduler {
                 <p><a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>
                 <p>This secure link will allow you to provide the required information and upload necessary documents.</p>
                 <p>If you have any questions, please don't hesitate to contact us.</p>
-                <p>Best regards,<br>Fund Track Team</p>
+                <p>Best regards,<br>Merchant Funding Team</p>
               `,
               leadId: lead.id,
             });

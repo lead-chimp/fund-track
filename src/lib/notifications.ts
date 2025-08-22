@@ -52,7 +52,7 @@ This secure link will allow you to:
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Complete Your MerchantFund Application</h2>
@@ -68,7 +68,7 @@ Fund Track Team`,
             <li>Complete your application</li>
           </ul>
           <p>If you have any questions, please don't hesitate to contact us.</p>
-          <p>Best regards,<br>Fund Track Team</p>
+          <p>Best regards,<br>Merchant Funding Team</p>
         </div>
       `,
       leadId,
@@ -141,7 +141,7 @@ Complete your application here: ${intakeUrl}
 This will only take a few minutes and you can save your progress at any time.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Reminder: Complete Your Application</h2>
@@ -151,7 +151,7 @@ Fund Track Team`,
             <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>
           </div>
           <p>This will only take a few minutes and you can save your progress at any time.</p>
-          <p>Best regards,<br>Fund Track Team</p>
+          <p>Best regards,<br>Merchant Funding Team</p>
         </div>
       `,
       leadId,

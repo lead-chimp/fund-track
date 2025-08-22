@@ -90,7 +90,7 @@ export default function TestNotificationsPage() {
     setLeadId(lead.id.toString());
     if (type === 'email') {
       setSubject(`Test Email for ${lead.firstName} ${lead.lastName}`);
-      setMessage(`Hello ${lead.firstName},\n\nThis is a test email from Fund Track system.\n\nBest regards,\nFund Track Team`);
+      setMessage(`Hello ${lead.firstName},\n\nThis is a test email from Fund Track system.\n\nBest regards,\nMerchant Funding Team`);
     } else {
       setMessage(`Hello ${lead.firstName}, this is a test SMS from Fund Track system.`);
     }

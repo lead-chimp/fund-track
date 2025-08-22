@@ -24,7 +24,7 @@ const testNotifications: EmailNotification[] = [
   {
     to: TEST_EMAIL,
     subject: "Fund Track - MailGun Integration Test",
-    text: "This is a basic text email test from Fund Track application.",
+    text: "This is a basic text email test from Merchant Funding application.",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Fund Track - MailGun Test</h2>
@@ -73,7 +73,7 @@ Merchant Funding Team`,
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>
       <p>This secure link will allow you to provide the required information and upload necessary documents.</p>
       <p>If you have any questions, please don't hesitate to contact us.</p>
-      <p>Best regards,<br>Fund Track Team</p>
+      <p>Best regards,<br>Merchant Funding Team</p>
     `,
   },
 
@@ -95,7 +95,7 @@ This secure link will allow you to:
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Complete Your MerchantFund Application</h2>
@@ -111,7 +111,7 @@ Fund Track Team`,
           <li>Complete your application</li>
         </ul>
         <p>If you have any questions, please don't hesitate to contact us.</p>
-        <p>Best regards,<br>Fund Track Team</p>
+        <p>Best regards,<br>Merchant Funding Team</p>
       </div>
     `,
   },
@@ -131,7 +131,7 @@ Don't miss this opportunity to secure funding for your business. The application
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
     html: `
       <h2>Quick Reminder: Complete Your MerchantFund Application</h2>
       <p>Hi Mike Johnson,</p>
@@ -139,7 +139,7 @@ Fund Track Team`,
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
       <p>If you have any questions, please don't hesitate to contact us.</p>
-      <p>Best regards,<br>Fund Track Team</p>
+      <p>Best regards,<br>Merchant Funding Team</p>
     `,
   },
 
@@ -158,7 +158,7 @@ Don't miss this opportunity to secure funding for your business. The application
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
     html: `
       <h2>Final Reminder: Complete Your Application Today</h2>
       <p>Hi Sarah Wilson,</p>
@@ -166,7 +166,7 @@ Fund Track Team`,
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
       <p>If you have any questions, please don't hesitate to contact us.</p>
-      <p>Best regards,<br>Fund Track Team</p>
+      <p>Best regards,<br>Merchant Funding Team</p>
     `,
   },
 
@@ -185,7 +185,7 @@ Don't miss this opportunity to secure funding for your business. The application
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
     html: `
       <h2>Last Chance: Your Fund Track Application Expires Soon</h2>
       <p>Hi Robert Davis,</p>
@@ -193,7 +193,7 @@ Fund Track Team`,
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
       <p>If you have any questions, please don't hesitate to contact us.</p>
-      <p>Best regards,<br>Fund Track Team</p>
+      <p>Best regards,<br>Merchant Funding Team</p>
     `,
   },
 
@@ -210,7 +210,7 @@ Complete your application here: ${TEST_INTAKE_URL}
 This will only take a few minutes and you can save your progress at any time.
 
 Best regards,
-Fund Track Team`,
+Merchant Funding Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Reminder: Complete Your Application</h2>
@@ -220,7 +220,7 @@ Fund Track Team`,
           <a href="${TEST_INTAKE_URL}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>
         </div>
         <p>This will only take a few minutes and you can save your progress at any time.</p>
-        <p>Best regards,<br>Fund Track Team</p>
+        <p>Best regards,<br>Merchant Funding Team</p>
       </div>
     `,
   },
