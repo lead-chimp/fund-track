@@ -202,7 +202,7 @@ export async function sendStatusChangeNotification(
 /**
  * Validate notification configuration on startup
  */
-export function validateNotificationConfig(): boolean {
+export async function validateNotificationConfig(): Promise<boolean> {
   return notificationService.validateConfiguration();
 }
 
