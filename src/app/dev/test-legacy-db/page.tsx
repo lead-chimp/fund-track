@@ -160,6 +160,28 @@ export default function TestLegacyDbPage() {
         }
     };
 
+    const checkSchedulerStatus = async () => {
+        setLoading(true);
+        setResult(null);
+
+        try {
+            const response = await fetch('/api/dev/scheduler-status');
+            const data = await response.json();
+            setResult({
+                success: true,
+                action: 'scheduler-status',
+                result: data,
+            });
+        } catch (error) {
+            setResult({
+                success: false,
+                error: 'Network error: ' + (error instanceof Error ? error.message : 'Unknown error'),
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const resetToDefaults = () => {
         setFormValues({
             CampaignID: 11302,
@@ -493,6 +515,14 @@ export default function TestLegacyDbPage() {
                             className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             Trigger Lead Polling
+                        </button>
+                        
+                        <button
+                            onClick={checkSchedulerStatus}
+                            disabled={loading}
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Check Scheduler Status
                         </button>
                     </div>
 
