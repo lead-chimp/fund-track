@@ -36,7 +36,7 @@ const DEFAULT_TEST_RECORD = {
     FirstName: 'TEST',
     LastName: 'TEST',
     Email: 'ARDABASOGLU@GMAIL.COM',
-    Phone: '+905326666815',
+    Phone: '+15005550006',
     AlternatePhone: null,
     Address: '1260 NW 133 AVE',
     Address2: null,
