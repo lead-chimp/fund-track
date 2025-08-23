@@ -370,7 +370,10 @@ export class BackgroundJobScheduler {
     let nextFollowUp: Date | undefined;
 
     try {
-      if (this.leadPollingTask && typeof (this.leadPollingTask as any).nextDate === 'function') {
+      if (
+        this.leadPollingTask &&
+        typeof (this.leadPollingTask as any).nextDate === "function"
+      ) {
         const nextDate = (this.leadPollingTask as any).nextDate();
         nextLeadPolling = nextDate ? nextDate.toDate() : undefined;
       }
@@ -379,7 +382,10 @@ export class BackgroundJobScheduler {
     }
 
     try {
-      if (this.followUpTask && typeof (this.followUpTask as any).nextDate === 'function') {
+      if (
+        this.followUpTask &&
+        typeof (this.followUpTask as any).nextDate === "function"
+      ) {
         const nextDate = (this.followUpTask as any).nextDate();
         nextFollowUp = nextDate ? nextDate.toDate() : undefined;
       }
@@ -425,8 +431,9 @@ export class BackgroundJobScheduler {
 
     try {
       // Clean up old notifications (keep 30 days)
-      const notificationCleanup = await notificationCleanupService.cleanupOldNotifications(30);
-      
+      const notificationCleanup =
+        await notificationCleanupService.cleanupOldNotifications(30);
+
       // Clean up old follow-ups (keep 30 days)
       const followUpCleanup = await followUpScheduler.cleanupOldFollowUps(30);
 

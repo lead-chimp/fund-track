@@ -5,6 +5,9 @@ import { initializeServer } from '@/lib/server-init';
  * This component runs only on the server side
  */
 export function ServerInitializer() {
+  // Add logging to see if this component is executing
+  console.log('🔄 ServerInitializer component executing at:', new Date().toISOString());
+  
   // Initialize server services
   initializeServer();
 
