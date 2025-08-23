@@ -137,42 +137,42 @@ if (typeof process !== "undefined") {
 
 // Alternative initialization method that can be called from API routes
 export function forceInitializeScheduler(): void {
-  console.log(' Force initializing scheduler...');
-  
+  console.log(" Force initializing scheduler...");
+
   try {
     const status = backgroundJobScheduler.getStatus();
-    console.log('📊 Current scheduler status:', status);
-    
+    console.log("📊 Current scheduler status:", status);
+
     if (!status.isRunning) {
-      console.log(' Starting scheduler...');
+      console.log(" Starting scheduler...");
       backgroundJobScheduler.start();
-      
+
       // Wait a moment and check status
       setTimeout(() => {
         const newStatus = backgroundJobScheduler.getStatus();
-        console.log('📊 Scheduler status after start:', newStatus);
-        
+        console.log("📊 Scheduler status after start:", newStatus);
+
         if (newStatus.isRunning) {
-          console.log('✅ Scheduler started successfully');
+          console.log("✅ Scheduler started successfully");
         } else {
-          console.log('❌ Scheduler failed to start');
+          console.log("❌ Scheduler failed to start");
         }
       }, 1000);
     } else {
-      console.log('✅ Scheduler is already running');
+      console.log("✅ Scheduler is already running");
     }
   } catch (error) {
-    console.error('❌ Force initialization failed:', error);
+    console.error("❌ Force initialization failed:", error);
   }
 }
 
 // Auto-initialize if this module is imported in production
-if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
-  console.log('🌍 Production environment detected, auto-initializing...');
-  
+if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
+  console.log("🌍 Production environment detected, auto-initializing...");
+
   // Delay initialization to ensure all modules are loaded
   setTimeout(() => {
-    console.log('⏰ Auto-initializing scheduler...');
+    console.log("⏰ Auto-initializing scheduler...");
     forceInitializeScheduler();
   }, 2000);
 }
