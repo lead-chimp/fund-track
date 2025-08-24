@@ -64,9 +64,8 @@ export async function POST(request: NextRequest) {
       for (const lead of newLeads) {
         if (!lead.intakeToken) continue;
 
-        const intakeUrl = `${
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-        }/application/${lead.intakeToken}`;
+        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, '');
+        const intakeUrl = `${baseUrl}/application/${lead.intakeToken}`;
         const leadName =
           lead.firstName && lead.lastName
             ? `${lead.firstName} ${lead.lastName}`

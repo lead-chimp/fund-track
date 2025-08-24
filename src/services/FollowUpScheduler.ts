@@ -297,9 +297,8 @@ export class FollowUpScheduler {
       return { success: false, errors };
     }
 
-    const intakeUrl = `${
-      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-    }/application/${followUp.lead.intakeToken}`;
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, '');
+    const intakeUrl = `${baseUrl}/application/${followUp.lead.intakeToken}`;
     const leadName =
       followUp.lead.firstName && followUp.lead.lastName
         ? `${followUp.lead.firstName} ${followUp.lead.lastName}`
@@ -426,7 +425,7 @@ Merchant Funding Team`,
         <p>If you have any questions, please don't hesitate to contact us.</p>
         <p>Best regards,<br>Merchant Funding Team</p>
       `,
-      smsText: `Hi ${leadName}! ${message.urgency} your merchant funding application. Complete it now: ${intakeUrl}`,
+      smsText: `Hi ${leadName}! ${message.urgency} to complete your merchant funding application. Complete it now: ${intakeUrl}`,
     };
   }
 

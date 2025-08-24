@@ -49,7 +49,7 @@ export class NotificationService {
   private twilioClient: twilio.Twilio | null = null;
   private mailgunClient: any = null;
   private config: NotificationConfig;
-  private recentNotifications: Map<string, Date[]> = new Map(); // Rate limiting cache
+
 
   constructor() {
     this.config = {
@@ -328,8 +328,8 @@ export class NotificationService {
    * Check rate limiting to prevent spam notifications
    */
   private async checkRateLimit(
-    recipient: string, 
-    type: 'EMAIL' | 'SMS', 
+    recipient: string,
+    type: 'EMAIL' | 'SMS',
     leadId?: number
   ): Promise<{ allowed: boolean; reason?: string }> {
     const now = new Date();
