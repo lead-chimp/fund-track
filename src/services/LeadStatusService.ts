@@ -251,6 +251,7 @@ export class LeadStatusService {
     // Only send notifications for significant status changes
     const significantChanges = [
       { from: LeadStatus.NEW, to: LeadStatus.IN_PROGRESS },
+      { from: LeadStatus.PENDING, to: LeadStatus.IN_PROGRESS }, // Documents uploaded, ready for review
       { from: LeadStatus.PENDING, to: LeadStatus.COMPLETED },
       { from: LeadStatus.IN_PROGRESS, to: LeadStatus.COMPLETED },
       { from: LeadStatus.COMPLETED, to: LeadStatus.IN_PROGRESS }, // Reopened
