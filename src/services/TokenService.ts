@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { followUpScheduler } from './FollowUpScheduler';
+import { LeadStatusService } from './LeadStatusService';
+import { logger } from '@/lib/logger';
 
 export interface IntakeSession {
   leadId: number;
@@ -124,6 +126,7 @@ export class TokenService {
    */
   static async markStep2Completed(leadId: number): Promise<boolean> {
     try {
+      // First, mark the intake steps as completed
       await prisma.lead.update({
         where: { id: leadId },
         data: {
@@ -138,6 +141,37 @@ export class TokenService {
       } catch (error) {
         console.error(`Failed to cancel follow-ups for completed lead ${leadId}:`, error);
         // Don't fail the step completion if follow-up cancellation fails
+      }
+
+      // Change lead status to IN_PROGRESS to alert staff that it's ready for review
+      try {
+        // Get the first admin user to use for system-initiated changes
+        const systemUser = await prisma.user.findFirst({
+          where: { role: 'ADMIN' },
+          select: { id: true }
+        });
+
+        if (!systemUser) {
+          logger.error(`No admin user found for system-initiated status change for lead ${leadId}`);
+        } else {
+          const leadStatusService = new LeadStatusService();
+          const statusChangeResult = await leadStatusService.changeLeadStatus({
+            leadId,
+            newStatus: 'IN_PROGRESS',
+            changedBy: systemUser.id,
+            reason: 'Intake completed - documents uploaded and ready for review'
+          });
+
+          if (!statusChangeResult.success) {
+            logger.error(`Failed to change lead status to IN_PROGRESS for lead ${leadId}:`, statusChangeResult.error);
+            // Don't fail the step completion if status change fails
+          } else {
+            logger.info(`Lead ${leadId} status changed to IN_PROGRESS after intake completion`);
+          }
+        }
+      } catch (error) {
+        logger.error(`Error changing lead status for completed intake ${leadId}:`, error);
+        // Don't fail the step completion if status change fails
       }
 
       return true;
