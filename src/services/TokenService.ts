@@ -18,7 +18,7 @@ export interface IntakeSession {
     phone: string | null;
     firstName: string | null;
     lastName: string | null;
-    
+
     // Business Information
     businessName: string | null;
     dba: string | null;
@@ -31,8 +31,8 @@ export interface IntakeSession {
     businessZip: string | null;
     industry: string | null;
     yearsInBusiness: number | null;
-    amountNeeded: number | null;
-    monthlyRevenue: number | null;
+    amountNeeded: string | null;
+    monthlyRevenue: string | null;
     ownershipPercentage: string | null;
     taxId: string | null;
     stateOfInc: string | null;
@@ -40,7 +40,7 @@ export interface IntakeSession {
     legalEntity: string | null;
     natureOfBusiness: string | null;
     hasExistingLoans: string | null;
-    
+
     // Personal Information
     dateOfBirth: string | null;
     socialSecurity: string | null;
@@ -49,7 +49,7 @@ export interface IntakeSession {
     personalState: string | null;
     personalZip: string | null;
     legalName: string | null;
-    
+
     status: string;
   };
 }
@@ -76,13 +76,14 @@ export class TokenService {
           phone: true,
           firstName: true,
           lastName: true,
-          
+
           // Business Information
           businessName: true,
           dba: true,
           businessAddress: true,
           businessPhone: true,
           businessEmail: true,
+          mobile: true,
           businessCity: true,
           businessState: true,
           businessZip: true,
@@ -97,7 +98,7 @@ export class TokenService {
           legalEntity: true,
           natureOfBusiness: true,
           hasExistingLoans: true,
-          
+
           // Personal Information
           dateOfBirth: true,
           socialSecurity: true,
@@ -106,7 +107,7 @@ export class TokenService {
           personalState: true,
           personalZip: true,
           legalName: true,
-          
+
           // System fields
           status: true,
           intakeToken: true,
@@ -138,13 +139,14 @@ export class TokenService {
           phone: lead.phone,
           firstName: lead.firstName,
           lastName: lead.lastName,
-          
+
           // Business Information
           businessName: lead.businessName,
           dba: lead.dba,
           businessAddress: lead.businessAddress,
           businessPhone: lead.businessPhone,
           businessEmail: lead.businessEmail,
+          mobile: lead.mobile,
           businessCity: lead.businessCity,
           businessState: lead.businessState,
           businessZip: lead.businessZip,
@@ -159,7 +161,7 @@ export class TokenService {
           legalEntity: lead.legalEntity,
           natureOfBusiness: lead.natureOfBusiness,
           hasExistingLoans: lead.hasExistingLoans,
-          
+
           // Personal Information
           dateOfBirth: lead.dateOfBirth,
           socialSecurity: lead.socialSecurity,
@@ -168,7 +170,7 @@ export class TokenService {
           personalState: lead.personalState,
           personalZip: lead.personalZip,
           legalName: lead.legalName,
-          
+
           status: lead.status,
         },
       };

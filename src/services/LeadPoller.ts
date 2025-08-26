@@ -340,8 +340,8 @@ export class LeadPoller {
       businessName: sanitizedBusinessName ? 'present' : 'null',
       industry: sanitizedIndustry ? 'present' : 'null',
       yearsInBusiness: legacyLead.YearsInBusiness || null,
-      amountNeeded: legacyLead.AmountNeeded || null,
-      monthlyRevenue: legacyLead.MonthlyRevenue || null,
+      amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
+      monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
       personalAddress: sanitizedAddress ? 'present' : 'null',
       personalCity: sanitizedCity ? 'present' : 'null',
       personalState: sanitizedState ? 'present' : 'null',
@@ -355,6 +355,7 @@ export class LeadPoller {
       // Contact Information
       email: sanitizedEmail,
       phone: sanitizedPhone,
+      mobile: null, // Add mobile property, set to null or map if available
       firstName: sanitizedFirstName,
       lastName: sanitizedLastName,
       
@@ -362,8 +363,8 @@ export class LeadPoller {
       businessName: sanitizedBusinessName,
       industry: sanitizedIndustry,
       yearsInBusiness: legacyLead.YearsInBusiness || null,
-      amountNeeded: legacyLead.AmountNeeded || null,
-      monthlyRevenue: legacyLead.MonthlyRevenue || null,
+      amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
+      monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
       
       // Personal Address Information (from Leads table)
       // Note: Legacy Address/City/State/ZipCode are personal, not business addresses
