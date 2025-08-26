@@ -29,6 +29,7 @@ interface Step1FormData {
   natureOfBusiness: string;     // Nature of Business* (input_80) - dropdown
   hasExistingLoans: string;     // Do You Have Any Loans Now* (input_43)
   industry: string;             // Enter Your Industry or Product Type* (input_81)
+  yearsInBusiness: string;      // Years in Business* - new field
   monthlyRevenue: string;       // Monthly Gross Revenue* (input_21) - dropdown
   amountNeeded: string;         // Amount Requested* (input_22) - dropdown
   
@@ -178,8 +179,9 @@ export default function Step1Form({ intakeSession, onComplete }: Step1FormProps)
     natureOfBusiness: intakeSession.lead.natureOfBusiness || '',
     hasExistingLoans: intakeSession.lead.hasExistingLoans || '',
     industry: intakeSession.lead.industry || '',
-    monthlyRevenue: intakeSession.lead.monthlyRevenue?.toString() || '',
-    amountNeeded: intakeSession.lead.amountNeeded?.toString() || '',
+    yearsInBusiness: intakeSession.lead.yearsInBusiness?.toString() || '',
+    monthlyRevenue: intakeSession.lead.monthlyRevenue || '',
+    amountNeeded: intakeSession.lead.amountNeeded || '',
     
     // Personal Details Section
     firstName: intakeSession.lead.firstName || '',
@@ -222,7 +224,7 @@ export default function Step1Form({ intakeSession, onComplete }: Step1FormProps)
       'businessName', 'businessAddress', 'businessPhone', 'businessEmail', 'mobile',
       'businessCity', 'businessState', 'businessZip', 'ownershipPercentage', 'taxId',
       'stateOfInc', 'dateBusinessStarted', 'legalEntity', 'natureOfBusiness',
-      'hasExistingLoans', 'industry', 'monthlyRevenue', 'amountNeeded',
+      'hasExistingLoans', 'industry', 'yearsInBusiness', 'monthlyRevenue', 'amountNeeded',
       'firstName', 'lastName', 'dateOfBirth', 'socialSecurity', 'personalAddress',
       'personalCity', 'personalState', 'personalZip', 'legalName', 'email'
     ];
@@ -259,6 +261,14 @@ export default function Step1Form({ intakeSession, onComplete }: Step1FormProps)
       }
     }
 
+    // Years in business validation
+    if (formData.yearsInBusiness) {
+      const years = parseInt(formData.yearsInBusiness);
+      if (isNaN(years) || years < 0 || years > 100) {
+        newErrors.yearsInBusiness = 'Please enter a valid number of years (0-100)';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -283,7 +293,15 @@ export default function Step1Form({ intakeSession, onComplete }: Step1FormProps)
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save step 1 data');
+        console.error('API Error:', errorData);
+        
+        // Handle specific validation errors
+        if (errorData.missingFields) {
+          alert(`Please fill in the following required fields: ${errorData.missingFields.join(', ')}`);
+        } else {
+          alert(errorData.error || 'Failed to save step 1 data');
+        }
+        return;
       }
 
       onComplete();
@@ -329,6 +347,7 @@ export default function Step1Form({ intakeSession, onComplete }: Step1FormProps)
               <SelectField id="natureOfBusiness" label="Nature of Business" value={formData.natureOfBusiness} onChange={handleInputChange} options={NATURE_OF_BUSINESS} error={errors.natureOfBusiness} required />
               <SelectField id="hasExistingLoans" label="Do You Have Any Loans Now?" value={formData.hasExistingLoans} onChange={handleInputChange} options={[{ value: '', label: 'Select Option' }, { value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} error={errors.hasExistingLoans} required />
               <InputField id="industry" label="Enter Your Industry or Product Type" value={formData.industry} onChange={handleInputChange} error={errors.industry} required />
+              <InputField id="yearsInBusiness" label="Years in Business" type="number" min="0" max="100" value={formData.yearsInBusiness} onChange={handleInputChange} error={errors.yearsInBusiness} required />
               <SelectField id="monthlyRevenue" label="Monthly Gross Revenue" value={formData.monthlyRevenue} onChange={handleInputChange} options={MONTHLY_REVENUE_OPTIONS} error={errors.monthlyRevenue} required />
               <SelectField id="amountNeeded" label="Amount Requested" value={formData.amountNeeded} onChange={handleInputChange} options={AMOUNT_REQUESTED_OPTIONS} error={errors.amountNeeded} required />
             </div>

@@ -21,6 +21,7 @@ interface Step1Data {
   natureOfBusiness: string;     // Nature of Business*
   hasExistingLoans: string;     // Do You Have Any Loans Now*
   industry: string;             // Enter Your Industry or Product Type*
+  yearsInBusiness: string;      // Years in Business*
   monthlyRevenue: string;       // Monthly Gross Revenue*
   amountNeeded: string;         // Amount Requested*
   
@@ -91,6 +92,7 @@ export async function POST(
       natureOfBusiness: body.natureOfBusiness?.trim() || "",
       hasExistingLoans: body.hasExistingLoans?.trim() || "",
       industry: body.industry?.trim() || "",
+      yearsInBusiness: body.yearsInBusiness?.trim() || "",
       monthlyRevenue: body.monthlyRevenue?.trim() || "",
       amountNeeded: body.amountNeeded?.trim() || "",
       
@@ -128,6 +130,7 @@ export async function POST(
       "natureOfBusiness",
       "hasExistingLoans",
       "industry",
+      "yearsInBusiness",
       "monthlyRevenue",
       "amountNeeded",
       
@@ -160,7 +163,7 @@ export async function POST(
     }
 
     // Validate email formats
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^'''\s@]+@[^'''\s@]+\.[^'''\s@]+$/;
     if (!emailRegex.test(trimmedData.email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
@@ -175,35 +178,35 @@ export async function POST(
     }
 
     // Validate phone formats (basic validation)
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    const cleanBusinessPhone = trimmedData.businessPhone.replace(/[\s\-\(\)]/g, "");
-    if (!phoneRegex.test(cleanBusinessPhone)) {
+    const phoneRegex = /^[\d\s\-\(\)\+\.]{10,}$/;
+    if (!phoneRegex.test(trimmedData.businessPhone)) {
       return NextResponse.json(
         { error: "Invalid business phone number format" },
         { status: 400 }
       );
     }
-    const cleanMobile = trimmedData.mobile.replace(/[\s\-\(\)]/g, "");
-    if (!phoneRegex.test(cleanMobile)) {
+    if (!phoneRegex.test(trimmedData.mobile)) {
       return NextResponse.json(
         { error: "Invalid mobile number format" },
         { status: 400 }
       );
     }
 
-    // Validate numeric fields (these are now dropdown selections, so we validate they're not empty)
-    const amountNeeded = parseInt(trimmedData.amountNeeded);
-    if (isNaN(amountNeeded) || amountNeeded <= 0) {
+    // Clean phone numbers for storage
+    const cleanBusinessPhone = trimmedData.businessPhone.replace(/[\s\-\(\)\.]/g, "");
+    const cleanMobile = trimmedData.mobile.replace(/[\s\-\(\)\.]/g, "");
+
+    // Validate dropdown selections (these are string values from dropdowns)
+    if (!trimmedData.amountNeeded) {
       return NextResponse.json(
-        { error: "Invalid amount requested" },
+        { error: "Amount requested is required" },
         { status: 400 }
       );
     }
 
-    const monthlyRevenue = parseInt(trimmedData.monthlyRevenue);
-    if (isNaN(monthlyRevenue) || monthlyRevenue < 0) {
+    if (!trimmedData.monthlyRevenue) {
       return NextResponse.json(
-        { error: "Invalid monthly gross revenue" },
+        { error: "Monthly gross revenue is required" },
         { status: 400 }
       );
     }
@@ -213,6 +216,15 @@ export async function POST(
     if (isNaN(ownershipPercentage) || ownershipPercentage < 0 || ownershipPercentage > 100) {
       return NextResponse.json(
         { error: "Invalid ownership percentage (must be between 0-100)" },
+        { status: 400 }
+      );
+    }
+
+    // Validate years in business
+    const yearsInBusiness = parseInt(trimmedData.yearsInBusiness);
+    if (isNaN(yearsInBusiness) || yearsInBusiness < 0 || yearsInBusiness > 100) {
+      return NextResponse.json(
+        { error: "Invalid years in business (must be between 0-100)" },
         { status: 400 }
       );
     }
@@ -239,8 +251,9 @@ export async function POST(
         natureOfBusiness: trimmedData.natureOfBusiness,
         hasExistingLoans: trimmedData.hasExistingLoans,
         industry: trimmedData.industry,
-        monthlyRevenue: monthlyRevenue,
-        amountNeeded: amountNeeded,
+        yearsInBusiness: yearsInBusiness,
+        monthlyRevenue: trimmedData.monthlyRevenue,
+        amountNeeded: trimmedData.amountNeeded,
         
         // Personal Details Section
         firstName: trimmedData.firstName,
@@ -272,8 +285,18 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error processing step 1:", error);
+    
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : String(error) : undefined
+      },
       { status: 500 }
     );
   }
