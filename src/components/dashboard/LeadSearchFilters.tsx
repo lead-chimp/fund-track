@@ -103,7 +103,7 @@ export function LeadSearchFilters({
               id="search"
               value={localFilters.search}
               onChange={(e) => handleInputChange("search", e.target.value)}
-              placeholder="Search by name, email, phone, or business..."
+              placeholder="Search by name, email, phone, business, location, token, or ID..."
               disabled={loading}
               className="block w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-md text-xs leading-4 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />

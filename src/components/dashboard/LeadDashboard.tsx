@@ -58,6 +58,8 @@ export function LeadDashboard() {
                 updatedAt: new Date(lead.updatedAt),
                 importedAt: new Date(lead.importedAt),
                 intakeCompletedAt: lead.intakeCompletedAt ? new Date(lead.intakeCompletedAt) : null,
+                step1CompletedAt: lead.step1CompletedAt ? new Date(lead.step1CompletedAt) : null,
+                step2CompletedAt: lead.step2CompletedAt ? new Date(lead.step2CompletedAt) : null,
                 // Keep legacyLeadId as string since BigInt can't be serialized
                 legacyLeadId: lead.legacyLeadId
             }))

@@ -40,9 +40,37 @@ interface LeadDetail {
   firstName: string | null;
   lastName: string | null;
   businessName: string | null;
+  dba: string | null;
+  businessAddress: string | null;
+  businessPhone: string | null;
+  businessEmail: string | null;
+  mobile: string | null;
+  businessCity: string | null;
+  businessState: string | null;
+  businessZip: string | null;
+  ownershipPercentage: string | null;
+  taxId: string | null;
+  stateOfInc: string | null;
+  dateBusinessStarted: string | null;
+  legalEntity: string | null;
+  natureOfBusiness: string | null;
+  hasExistingLoans: string | null;
+  personalAddress: string | null;
+  personalCity: string | null;
+  personalState: string | null;
+  personalZip: string | null;
+  dateOfBirth: string | null;
+  socialSecurity: string | null;
+  legalName: string | null;
+  industry: string | null;
+  yearsInBusiness: number | null;
+  amountNeeded: number | null;
+  monthlyRevenue: number | null;
   status: LeadStatus;
   intakeToken: string | null;
   intakeCompletedAt: string | null;
+  step1CompletedAt: string | null;
+  step2CompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
   importedAt: string;
@@ -86,7 +114,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
 
-  // Delete lead handler (must be inside component for access to lead, leadId, router)
+  // Delete lead handler
   const deleteLead = async () => {
     if (!lead) return;
     if (
@@ -161,10 +189,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              notes: updatedNotes,
-              _count: { ...prev._count, notes: newCount },
-            }
+            ...prev,
+            notes: updatedNotes,
+            _count: { ...prev._count, notes: newCount },
+          }
           : null
       );
     },
@@ -191,8 +219,6 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
   const downloadDocument = async (doc: Document) => {
     try {
-      // Use window.location to trigger the download directly
-      // This will follow the redirect to the signed B2 URL automatically
       window.location.href = `/api/leads/${leadId}/documents/${doc.id}/download`;
     } catch (err) {
       console.error("Error downloading document:", err);
@@ -222,14 +248,13 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
         throw new Error(errorData.error || "Failed to delete document");
       }
 
-      // Remove document from state
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              documents: prev.documents.filter((d) => d.id !== doc.id),
-              _count: { ...prev._count, documents: prev._count.documents - 1 },
-            }
+            ...prev,
+            documents: prev.documents.filter((d) => d.id !== doc.id),
+            _count: { ...prev._count, documents: prev._count.documents - 1 },
+          }
           : null
       );
 
@@ -263,10 +288,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              documents: [data.document, ...prev.documents],
-              _count: { ...prev._count, documents: prev._count.documents + 1 },
-            }
+            ...prev,
+            documents: [data.document, ...prev.documents],
+            _count: { ...prev._count, documents: prev._count.documents + 1 },
+          }
           : null
       );
       setShowUploadForm(false);
@@ -384,17 +409,34 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
             </button>
             <h1 className="text-3xl font-bold text-gray-900">{fullName}</h1>
             <p className="text-sm text-gray-500">
-              Lead ID: {lead.id} • Legacy ID: {lead.legacyLeadId}
+              Lead ID: {lead.id} • Legacy ID: {lead.legacyLeadId} • Campaign: {lead.campaignId}
             </p>
           </div>
           <div className="flex items-center space-x-3">
             <span
-              className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                STATUS_COLORS[lead.status]
-              }`}
+              className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${STATUS_COLORS[lead.status]
+                }`}
             >
               {STATUS_LABELS[lead.status]}
             </span>
+            {/* Progress Indicators */}
+            <div className="flex items-center space-x-2">
+              {lead.step1CompletedAt && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  ✓ Step 1
+                </span>
+              )}
+              {lead.step2CompletedAt && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  ✓ Step 2
+                </span>
+              )}
+              {lead.intakeCompletedAt && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  ✓ Completed
+                </span>
+              )}
+            </div>
             {/* Delete Lead button for admins */}
             <RoleGuard allowedRoles={[UserRole.ADMIN]} fallback={<></>}>
               <button
@@ -411,29 +453,113 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Lead Information */}
+          {/* Key Information Summary */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">
-                Lead Information
+                Lead Summary
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Financial Highlights */}
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {lead.amountNeeded ? `$${lead.amountNeeded.toLocaleString()}` : "N/A"}
+                  </div>
+                  <div className="text-sm text-gray-500">Amount Requested</div>
+                  {lead.monthlyRevenue && (
+                    <div className="mt-1">
+                      <div className="text-lg font-semibold text-gray-700">
+                        ${lead.monthlyRevenue.toLocaleString()}/mo
+                      </div>
+                      <div className="text-xs text-gray-500">Monthly Revenue</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Business Info */}
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-gray-900">
+                    {lead.businessName || "Business Name N/A"}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {lead.industry || "Industry N/A"}
+                  </div>
+                  {lead.yearsInBusiness && (
+                    <div className="mt-1">
+                      <div className="text-lg font-semibold text-gray-700">
+                        {lead.yearsInBusiness} years
+                      </div>
+                      <div className="text-xs text-gray-500">In Business</div>
+                    </div>
+                  )}
+                  {lead.legalEntity && (
+                    <div className="mt-1 text-xs text-gray-500">
+                      {lead.legalEntity}
+                    </div>
+                  )}
+                </div>
+
+                {/* Contact & Location */}
+                <div className="text-center">
+                  <div className="text-sm text-gray-900">
+                    {lead.email && (
+                      <div className="mb-1">
+                        <a href={`mailto:${lead.email}`} className="text-indigo-600 hover:text-indigo-500">
+                          {lead.email}
+                        </a>
+                      </div>
+                    )}
+                    {lead.phone && (
+                      <div className="mb-1">
+                        <a href={`tel:${lead.phone}`} className="text-indigo-600 hover:text-indigo-500">
+                          {lead.phone}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  {(lead.businessCity || lead.businessState) && (
+                    <div className="text-sm text-gray-500">
+                      {[lead.businessCity, lead.businessState].filter(Boolean).join(', ')}
+                    </div>
+                  )}
+                  {lead.hasExistingLoans && (
+                    <div className="mt-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === 'yes'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800'
+                        }`}>
+                        Existing Loans: {lead.hasExistingLoans}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Contact Information
               </h2>
             </div>
             <div className="px-6 py-4">
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Name</dt>
+                  <dt className="text-sm font-medium text-gray-500">Full Name</dt>
                   <dd className="mt-1 text-sm text-gray-900">{fullName}</dd>
                 </div>
+                {lead.legalName && lead.legalName !== fullName && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Legal Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.legalName}</dd>
+                  </div>
+                )}
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Business Name
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {lead.businessName || "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Email</dt>
+                  <dt className="text-sm font-medium text-gray-500">Personal Email</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {lead.email ? (
                       <a
@@ -447,6 +573,19 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     )}
                   </dd>
                 </div>
+                {lead.businessEmail && lead.businessEmail !== lead.email && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Business Email</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      <a
+                        href={`mailto:${lead.businessEmail}`}
+                        className="text-indigo-600 hover:text-indigo-500"
+                      >
+                        {lead.businessEmail}
+                      </a>
+                    </dd>
+                  </div>
+                )}
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Phone</dt>
                   <dd className="mt-1 text-sm text-gray-900">
@@ -462,14 +601,404 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     )}
                   </dd>
                 </div>
+                {lead.mobile && lead.mobile !== lead.phone && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Mobile</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      <a
+                        href={`tel:${lead.mobile}`}
+                        className="text-indigo-600 hover:text-indigo-500"
+                      >
+                        {lead.mobile}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {lead.businessPhone && lead.businessPhone !== lead.phone && lead.businessPhone !== lead.mobile && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Business Phone</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      <a
+                        href={`tel:${lead.businessPhone}`}
+                        className="text-indigo-600 hover:text-indigo-500"
+                      >
+                        {lead.businessPhone}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {lead.dateOfBirth && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.dateOfBirth}</dd>
+                  </div>
+                )}
+                {lead.socialSecurity && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Social Security</dt>
+                    <dd className="mt-1 text-sm text-gray-900">***-**-{lead.socialSecurity.slice(-4)}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </div>
+
+          {/* Business Information */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Business Information
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
-                    Campaign ID
+                    Business Name
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {lead.campaignId}
+                    {lead.businessName || "N/A"}
                   </dd>
                 </div>
+                {lead.dba && lead.dba !== lead.businessName && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">DBA</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.dba}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Industry</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {lead.industry || "N/A"}
+                  </dd>
+                </div>
+                {lead.natureOfBusiness && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Nature of Business</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.natureOfBusiness}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Years in Business
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {lead.yearsInBusiness !== null ? `${lead.yearsInBusiness} years` : "N/A"}
+                  </dd>
+                </div>
+                {lead.dateBusinessStarted && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Business Start Date</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.dateBusinessStarted}</dd>
+                  </div>
+                )}
+                {lead.legalEntity && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Legal Entity</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.legalEntity}</dd>
+                  </div>
+                )}
+                {lead.stateOfInc && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">State of Incorporation</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.stateOfInc}</dd>
+                  </div>
+                )}
+                {lead.taxId && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Tax ID</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.taxId}</dd>
+                  </div>
+                )}
+                {lead.ownershipPercentage && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Ownership Percentage</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{lead.ownershipPercentage}%</dd>
+                  </div>
+                )}
+                <div className="sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Business Address
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {lead.businessAddress ? (
+                      <div>
+                        <div>{lead.businessAddress}</div>
+                        <div>
+                          {lead.businessCity && `${lead.businessCity}, `}
+                          {lead.businessState && `${lead.businessState} `}
+                          {lead.businessZip}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-500 italic">To be provided during intake</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          {/* Application Progress & Completion Status */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Application Progress
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <div className="space-y-4">
+                {/* Progress Timeline */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${lead.step1CompletedAt ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span className={`text-sm ${lead.step1CompletedAt ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                      Step 1: Business & Personal Info
+                    </span>
+                    {lead.step1CompletedAt && (
+                      <span className="text-xs text-gray-500">
+                        ({formatDate(lead.step1CompletedAt)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${lead.step2CompletedAt ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span className={`text-sm ${lead.step2CompletedAt ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                      Step 2: Document Upload
+                    </span>
+                    {lead.step2CompletedAt && (
+                      <span className="text-xs text-gray-500">
+                        ({formatDate(lead.step2CompletedAt)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${lead.intakeCompletedAt ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span className={`text-sm ${lead.intakeCompletedAt ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                      Application Complete
+                    </span>
+                    {lead.intakeCompletedAt && (
+                      <span className="text-xs text-gray-500">
+                        ({formatDate(lead.intakeCompletedAt)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Completion Status Summary */}
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-700">
+                    <strong>Application Status:</strong> {
+                      lead.intakeCompletedAt ? (
+                        <span className="text-green-600 font-medium">Complete</span>
+                      ) : lead.step2CompletedAt ? (
+                        <span className="text-blue-600 font-medium">Documents uploaded, pending final submission</span>
+                      ) : lead.step1CompletedAt ? (
+                        <span className="text-yellow-600 font-medium">Basic info complete, documents pending</span>
+                      ) : (
+                        <span className="text-gray-600 font-medium">Not started</span>
+                      )
+                    }
+                  </div>
+                  {!lead.intakeCompletedAt && lead.intakeToken && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      Prospect can continue at: /application/{lead.intakeToken}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Financial Information
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Amount Needed
+                  </dt>
+                  <dd className="mt-1 text-3xl font-bold text-green-600">
+                    {lead.amountNeeded !== null ? `$${lead.amountNeeded.toLocaleString()}` : "N/A"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Monthly Revenue
+                  </dt>
+                  <dd className="mt-1 text-xl font-semibold text-gray-900">
+                    {lead.monthlyRevenue !== null ? `$${lead.monthlyRevenue.toLocaleString()}` : "N/A"}
+                  </dd>
+                </div>
+                {lead.hasExistingLoans && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Existing Loans</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === 'yes'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800'
+                        }`}>
+                        {lead.hasExistingLoans}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </div>
+
+          {/* Personal Address Information */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Personal Address
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Address
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {lead.personalAddress ? (
+                      <div>
+                        <div>{lead.personalAddress}</div>
+                        <div>
+                          {lead.personalCity && `${lead.personalCity}, `}
+                          {lead.personalState && `${lead.personalState} `}
+                          {lead.personalZip}
+                        </div>
+                      </div>
+                    ) : (
+                      "N/A"
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          {/* Data Completeness Check */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Information Completeness
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <div className="space-y-3">
+                {/* Check for missing critical information */}
+                {(() => {
+                  const missingFields = [];
+                  const incompleteFields = [];
+
+                  // Critical business information
+                  if (!lead.businessName) missingFields.push("Business Name");
+                  if (!lead.industry) missingFields.push("Industry");
+                  if (!lead.businessAddress) incompleteFields.push("Business Address");
+                  if (!lead.businessPhone) incompleteFields.push("Business Phone");
+                  if (!lead.businessEmail) incompleteFields.push("Business Email");
+
+                  // Financial information
+                  if (!lead.amountNeeded) missingFields.push("Amount Requested");
+                  if (!lead.monthlyRevenue) missingFields.push("Monthly Revenue");
+                  if (!lead.yearsInBusiness) incompleteFields.push("Years in Business");
+
+                  // Legal/Tax information
+                  if (!lead.taxId) incompleteFields.push("Tax ID");
+                  if (!lead.legalEntity) incompleteFields.push("Legal Entity");
+                  if (!lead.ownershipPercentage) incompleteFields.push("Ownership Percentage");
+
+                  // Personal information
+                  if (!lead.dateOfBirth) incompleteFields.push("Date of Birth");
+                  if (!lead.socialSecurity) incompleteFields.push("Social Security Number");
+                  if (!lead.personalAddress) incompleteFields.push("Personal Address");
+
+                  const totalFields = 15; // Total expected fields
+                  const completedFields = totalFields - missingFields.length - incompleteFields.length;
+                  const completionPercentage = Math.round((completedFields / totalFields) * 100);
+
+                  return (
+                    <div>
+                      {/* Completion Progress Bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between text-sm text-gray-600 mb-1">
+                          <span>Information Completeness</span>
+                          <span>{completionPercentage}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${completionPercentage >= 80 ? 'bg-green-500' :
+                              completionPercentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                            style={{ width: `${completionPercentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Missing Critical Fields */}
+                      {missingFields.length > 0 && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <h4 className="text-sm font-medium text-red-800 mb-2">Missing Critical Information:</h4>
+                          <ul className="text-sm text-red-700 space-y-1">
+                            {missingFields.map((field, index) => (
+                              <li key={index}>• {field}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Incomplete Optional Fields */}
+                      {incompleteFields.length > 0 && (
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <h4 className="text-sm font-medium text-yellow-800 mb-2">Incomplete Information:</h4>
+                          <ul className="text-sm text-yellow-700 space-y-1">
+                            {incompleteFields.map((field, index) => (
+                              <li key={index}>• {field}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* All Complete */}
+                      {missingFields.length === 0 && incompleteFields.length === 0 && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center">
+                            <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-sm font-medium text-green-800">All information complete!</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+
+          {/* Lead Metadata */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Lead Details & Timeline
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Created</dt>
                   <dd className="mt-1 text-sm text-gray-900">
@@ -486,14 +1015,60 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
-                    Intake Completed
+                    Imported
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {lead.intakeCompletedAt
-                      ? formatDate(lead.intakeCompletedAt)
-                      : "Not completed"}
+                    {formatDate(lead.importedAt)}
                   </dd>
                 </div>
+                {lead.step1CompletedAt && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Step 1 Completed
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {formatDate(lead.step1CompletedAt)}
+                    </dd>
+                  </div>
+                )}
+                {lead.step2CompletedAt && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Step 2 Completed
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {formatDate(lead.step2CompletedAt)}
+                    </dd>
+                  </div>
+                )}
+                {lead.intakeCompletedAt && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Intake Completed
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {formatDate(lead.intakeCompletedAt)}
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Legacy Lead ID
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {lead.legacyLeadId}
+                  </dd>
+                </div>
+                {lead.intakeToken && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Intake Token
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900 font-mono">
+                      {lead.intakeToken}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
           </div>
@@ -703,7 +1278,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         );
                         alert("Link copied to clipboard!");
                       }}
-                      className="px-3 py-2 text-sm text-indigo-600 hover:text-indigo-500"
+                      className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                     >
                       Copy
                     </button>

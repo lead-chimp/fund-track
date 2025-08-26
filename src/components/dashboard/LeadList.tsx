@@ -78,11 +78,14 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
         {[...Array(5)].map((_, i) => (
           <div key={i} className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center space-x-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/5"></div>
               <div className="h-4 bg-gray-200 rounded w-1/8"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/6"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/8"></div>
             </div>
           </div>
         ))}
@@ -93,93 +96,177 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
   return (
     <div className="overflow-hidden">
       {/* Desktop Table */}
-      <div className="hidden sm:block">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <SortButton field="firstName">Name</SortButton>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contact
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <SortButton field="businessName">Business</SortButton>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <SortButton field="status">Status</SortButton>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Activity
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <SortButton field="createdAt">Created</SortButton>
-              </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {leads.map((lead) => (
-              <tr key={lead.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-xs font-medium text-gray-900">
-                    {formatName(lead)}
+      <div className="hidden lg:block">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <SortButton field="firstName">Name</SortButton>
+                </th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <SortButton field="status">Status</SortButton>
+                </th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Activity
+                </th>
+                <th scope="col" className="relative px-4 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {leads.map((lead) => (
+                <tr key={lead.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-xs font-medium text-gray-900">
+                      {formatName(lead)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      ID: {lead.id} {lead.legacyLeadId && `(Legacy: ${lead.legacyLeadId})`}
+                    </div>
+                    {lead.businessName && (
+                      <div className="text-xs text-gray-500">
+                        {lead.businessName}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-xs text-gray-900">
+                      {lead.email || 'No email'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Phone: {lead.phone || 'N/A'}
+                    </div>
+                    {lead.mobile && lead.mobile !== lead.phone && (
+                      <div className="text-xs text-gray-500">
+                        Mobile: {lead.mobile}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[lead.status]}`}>
+                      {STATUS_LABELS[lead.status]}
+                    </span>
+                    <div className="mt-1 space-y-1">
+                      {lead.step1CompletedAt && (
+                        <div className="text-xs text-green-600">
+                          ✓ Step 1
+                        </div>
+                      )}
+                      {lead.step2CompletedAt && (
+                        <div className="text-xs text-green-600">
+                          ✓ Step 2
+                        </div>
+                      )}
+                      {lead.intakeCompletedAt && (
+                        <div className="text-xs text-green-600">
+                          ✓ Completed
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center">
+                        <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        {lead._count.notes}
+                      </div>
+                      <div className="flex items-center">
+                        <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        {lead._count.documents}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-xs font-medium">
+                    <a
+                      href={`/dashboard/leads/${lead.id}`}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      View
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Tablet View */}
+      <div className="hidden sm:block lg:hidden">
+        <div className="bg-gray-50 px-4 py-3">
+          <h3 className="text-sm font-medium text-gray-900">
+            {leads.length} lead{leads.length !== 1 ? 's' : ''}
+          </h3>
+        </div>
+        <div className="divide-y divide-gray-200">
+          {leads.map((lead) => (
+            <div key={lead.id} className="px-4 py-4 hover:bg-gray-50">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {formatName(lead)}
+                    </p>
+                    <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[lead.status]}`}>
+                      {STATUS_LABELS[lead.status]}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    ID: {lead.id}
+
+                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
+                    <div>
+                      <div className="font-medium text-gray-700">Contact</div>
+                      <div>{lead.email || 'No email'}</div>
+                      <div>{lead.phone || 'No phone'}</div>
+                      {lead.mobile && lead.mobile !== lead.phone && <div>Mobile: {lead.mobile}</div>}
+                    </div>
+
+                    <div>
+                      <div className="font-medium text-gray-700">Business</div>
+                      <div>{lead.businessName || 'N/A'}</div>
+                      <div>{lead.industry || 'No industry'}</div>
+                    </div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-xs text-gray-900">
-                    {lead.email || 'No email'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {lead.phone || 'No phone'}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-xs text-gray-900">
-                    {lead.businessName || 'N/A'}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[lead.status]}`}> 
-                    {STATUS_LABELS[lead.status]}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
+
+                  <div className="mt-2 flex items-center text-xs text-gray-500">
+                    <div className="flex items-center mr-4">
                       <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                       </svg>
-                      {lead._count.notes}
+                      {lead._count.notes} notes
                     </div>
                     <div className="flex items-center">
                       <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      {lead._count.documents}
+                      {lead._count.documents} docs
                     </div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                  {formatDate(lead.createdAt)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-medium">
-                  <a 
+
+                  <p className="text-xs text-gray-400 mt-1">
+                    Created {formatDate(lead.createdAt)}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0">
+                  <a
                     href={`/dashboard/leads/${lead.id}`}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                   >
                     View
                   </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Mobile Cards */}
@@ -208,7 +295,7 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
                     </p>
                     {lead.businessName && (
                       <p className="text-sm text-gray-500 mt-1">
-                        {lead.businessName}
+                        {lead.businessName} {lead.industry && `• ${lead.industry}`}
                       </p>
                     )}
                   </div>
@@ -231,7 +318,7 @@ export function LeadList({ leads, loading, sortBy, sortOrder, onSort }: LeadList
                   </p>
                 </div>
                 <div className="ml-4 flex-shrink-0">
-                  <a 
+                  <a
                     href={`/dashboard/leads/${lead.id}`}
                     className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                   >
