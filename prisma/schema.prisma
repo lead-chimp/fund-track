@@ -32,11 +32,45 @@ model Lead {
   id                Int        @id @default(autoincrement())
   legacyLeadId      BigInt     @unique @map("legacy_lead_id")
   campaignId        Int        @map("campaign_id")
+  
+  // Contact Information
   email             String?
   phone             String?
   firstName         String?    @map("first_name")
   lastName          String?    @map("last_name")
+  
+  // Business Information
   businessName      String?    @map("business_name")
+  dba               String?
+  businessAddress   String?    @map("business_address")
+  businessPhone     String?    @map("business_phone")
+  businessEmail     String?    @map("business_email")
+  mobile            String?    @map("mobile")
+  businessCity      String?    @map("business_city")
+  businessState     String?    @map("business_state")
+  businessZip       String?    @map("business_zip")
+  industry          String?
+  yearsInBusiness   Int?       @map("years_in_business")
+  amountNeeded      Int?       @map("amount_needed")
+  monthlyRevenue    Int?       @map("monthly_revenue")
+  ownershipPercentage String?  @map("ownership_percentage")
+  taxId             String?    @map("tax_id")
+  stateOfInc        String?    @map("state_of_inc")
+  dateBusinessStarted String?  @map("date_business_started")
+  legalEntity       String?    @map("legal_entity")
+  natureOfBusiness  String?    @map("nature_of_business")
+  hasExistingLoans  String?    @map("has_existing_loans")
+  
+  // Personal Information
+  dateOfBirth       String?    @map("date_of_birth")
+  socialSecurity    String?    @map("social_security")
+  personalAddress   String?    @map("personal_address")
+  personalCity      String?    @map("personal_city")
+  personalState     String?    @map("personal_state")
+  personalZip       String?    @map("personal_zip")
+  legalName         String?    @map("legal_name")
+  
+  // System fields
   status            LeadStatus @default(NEW)
   intakeToken       String?    @unique @map("intake_token")
   intakeCompletedAt DateTime?  @map("intake_completed_at")
