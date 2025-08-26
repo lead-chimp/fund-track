@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { LeadStatus } from '@prisma/client';
+import { useState, useEffect, useCallback } from "react";
+import { LeadStatus } from "@prisma/client";
 
 interface StatusHistoryItem {
   id: number;
@@ -26,45 +26,49 @@ interface StatusHistorySectionProps {
   leadId: number;
   currentStatus: LeadStatus;
   onStatusChange?: (newStatus: LeadStatus, reason?: string) => void;
+  parentLoading?: boolean;
 }
 
 const statusLabels: Record<LeadStatus, string> = {
-  NEW: 'New',
-  PENDING: 'Pending',
-  IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Completed',
-  REJECTED: 'Rejected',
+  NEW: "New",
+  PENDING: "Pending",
+  IN_PROGRESS: "In Progress",
+  COMPLETED: "Completed",
+  REJECTED: "Rejected",
 };
 
 const statusColors: Record<LeadStatus, string> = {
-  NEW: 'bg-gray-100 text-gray-800',
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  COMPLETED: 'bg-green-100 text-green-800',
-  REJECTED: 'bg-red-100 text-red-800',
+  NEW: "bg-gray-100 text-gray-800",
+  PENDING: "bg-yellow-100 text-yellow-800",
+  IN_PROGRESS: "bg-blue-100 text-blue-800",
+  COMPLETED: "bg-green-100 text-green-800",
+  REJECTED: "bg-red-100 text-red-800",
 };
 
-export default function StatusHistorySection({ 
-  leadId, 
-  currentStatus, 
-  onStatusChange 
+export default function StatusHistorySection({
+  leadId,
+  currentStatus,
+  onStatusChange,
+  parentLoading = false,
 }: StatusHistorySectionProps) {
   const [history, setHistory] = useState<StatusHistoryItem[]>([]);
-  const [availableTransitions, setAvailableTransitions] = useState<StatusTransition[]>([]);
+  const [availableTransitions, setAvailableTransitions] = useState<
+    StatusTransition[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showStatusChange, setShowStatusChange] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<LeadStatus | ''>('');
-  const [reason, setReason] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<LeadStatus | "">("");
+  const [reason, setReason] = useState("");
   const [updating, setUpdating] = useState(false);
 
   const fetchStatusInfo = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/leads/${leadId}/status`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch status information');
+        throw new Error("Failed to fetch status information");
       }
 
       const data = await response.json();
@@ -72,7 +76,7 @@ export default function StatusHistorySection({
       setAvailableTransitions(data.availableTransitions || []);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -87,50 +91,54 @@ export default function StatusHistorySection({
 
     try {
       setUpdating(true);
-      
+
       const updateData: any = { status: selectedStatus };
       if (reason.trim()) {
         updateData.reason = reason.trim();
       }
 
       const response = await fetch(`/api/leads/${leadId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update status');
+        throw new Error(errorData.error || "Failed to update status");
       }
 
       // Refresh status info
       await fetchStatusInfo();
-      
+
       // Reset form
-      setSelectedStatus('');
-      setReason('');
+      setSelectedStatus("");
+      setReason("");
       setShowStatusChange(false);
-      
+
       // Notify parent component
       if (onStatusChange) {
         onStatusChange(selectedStatus, reason.trim() || undefined);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update status');
+      setError(err instanceof Error ? err.message : "Failed to update status");
     } finally {
       setUpdating(false);
     }
   };
 
-  const selectedTransition = availableTransitions.find(t => t.status === selectedStatus);
+  const selectedTransition = availableTransitions.find(
+    (t) => t.status === selectedStatus
+  );
 
-  if (loading) {
+  if (loading && !parentLoading) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Status History</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Status History
+        </h3>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="space-y-3">
@@ -141,6 +149,11 @@ export default function StatusHistorySection({
         </div>
       </div>
     );
+  }
+
+  // If parent is loading, don't render anything to avoid multiple loading states
+  if (parentLoading) {
+    return null;
   }
 
   return (
@@ -166,8 +179,12 @@ export default function StatusHistorySection({
       {/* Current Status */}
       <div className="mb-6">
         <div className="flex items-center">
-          <span className="text-sm font-medium text-gray-500 mr-2">Current Status:</span>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[currentStatus]}`}>
+          <span className="text-sm font-medium text-gray-500 mr-2">
+            Current Status:
+          </span>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[currentStatus]}`}
+          >
             {statusLabels[currentStatus]}
           </span>
         </div>
@@ -176,17 +193,24 @@ export default function StatusHistorySection({
       {/* Status Change Form */}
       {showStatusChange && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Change Status</h4>
-          
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Change Status
+          </h4>
+
           <div className="space-y-4">
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700"
+              >
                 New Status
               </label>
               <select
                 id="status"
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as LeadStatus)}
+                onChange={(e) =>
+                  setSelectedStatus(e.target.value as LeadStatus)
+                }
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               >
                 <option value="">Select a status...</option>
@@ -200,7 +224,10 @@ export default function StatusHistorySection({
 
             {selectedTransition?.requiresReason && (
               <div>
-                <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="reason"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Reason <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -216,7 +243,10 @@ export default function StatusHistorySection({
 
             {!selectedTransition?.requiresReason && (
               <div>
-                <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="reason"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Reason (optional)
                 </label>
                 <textarea
@@ -235,8 +265,8 @@ export default function StatusHistorySection({
                 type="button"
                 onClick={() => {
                   setShowStatusChange(false);
-                  setSelectedStatus('');
-                  setReason('');
+                  setSelectedStatus("");
+                  setReason("");
                 }}
                 className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
@@ -245,10 +275,14 @@ export default function StatusHistorySection({
               <button
                 type="button"
                 onClick={handleStatusChange}
-                disabled={!selectedStatus || updating || (selectedTransition?.requiresReason && !reason.trim())}
+                disabled={
+                  !selectedStatus ||
+                  updating ||
+                  (selectedTransition?.requiresReason && !reason.trim())
+                }
                 className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {updating ? 'Updating...' : 'Update Status'}
+                {updating ? "Updating..." : "Update Status"}
               </button>
             </div>
           </div>
@@ -258,7 +292,7 @@ export default function StatusHistorySection({
       {/* Status History */}
       <div>
         <h4 className="text-sm font-medium text-gray-900 mb-3">History</h4>
-        
+
         {history.length === 0 ? (
           <p className="text-sm text-gray-500">No status changes recorded.</p>
         ) : (
@@ -266,18 +300,18 @@ export default function StatusHistorySection({
             <ul className="-mb-8">
               {history.map((item, itemIdx) => (
                 <li key={item.id}>
-                  <div className="relative pb-8">
+                  <div className="relative pb-6">
                     {itemIdx !== history.length - 1 ? (
                       <span
-                        className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                        className="absolute top-3 left-3 -ml-px h-full w-0.5 bg-gray-200"
                         aria-hidden="true"
                       />
                     ) : null}
                     <div className="relative flex space-x-3">
                       <div>
-                        <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
+                        <span className="h-6 w-6 rounded-full bg-gray-400 flex items-center justify-center ring-4 ring-white">
                           <svg
-                            className="h-4 w-4 text-white"
+                            className="h-3 w-3 text-white"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -289,32 +323,41 @@ export default function StatusHistorySection({
                           </svg>
                         </span>
                       </div>
-                      <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                      <div className="min-w-0 flex-1 pt-1 flex justify-between space-x-4">
                         <div>
-                          <p className="text-sm text-gray-500">
-                            Status changed from{' '}
+                          <p className="text-xs text-gray-500">
+                            Status changed from{" "}
                             {item.previousStatus ? (
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[item.previousStatus]}`}>
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                  statusColors[item.previousStatus]
+                                }`}
+                              >
                                 {statusLabels[item.previousStatus]}
                               </span>
                             ) : (
                               <span className="text-gray-400">—</span>
-                            )}{' '}
-                            to{' '}
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[item.newStatus]}`}>
+                            )}{" "}
+                            to{" "}
+                            <span
+                              className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                statusColors[item.newStatus]
+                              }`}
+                            >
                               {statusLabels[item.newStatus]}
                             </span>
                           </p>
                           {item.reason && (
-                            <p className="mt-1 text-sm text-gray-600">
-                              <span className="font-medium">Reason:</span> {item.reason}
+                            <p className="mt-1 text-xs text-gray-600">
+                              <span className="font-medium">Reason:</span>{" "}
+                              {item.reason}
                             </p>
                           )}
-                          <p className="mt-1 text-xs text-gray-400">
+                          <p className="mt-0.5 text-xs text-gray-400">
                             by {item.user.email}
                           </p>
                         </div>
-                        <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                        <div className="text-right text-xs whitespace-nowrap text-gray-500">
                           {new Date(item.createdAt).toLocaleString()}
                         </div>
                       </div>
