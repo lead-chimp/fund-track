@@ -155,10 +155,10 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">
           Step 2: Document Upload
         </h2>
-        <p className="text-gray-600 mb-4">
+        <p className="text-xs text-gray-600 mb-4">
           Please upload exactly 3 bank statements or financial documents. 
           Accepted formats: PDF, JPG, PNG, DOCX (max 10MB each).
         </p>
@@ -184,16 +184,16 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className="text-lg font-medium text-gray-900 mb-2">
+            <p className="text-base font-medium text-gray-900 mb-2">
               Drop files here or click to browse
             </p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-4">
               {3 - files.length} more document{3 - files.length !== 1 ? 's' : ''} needed
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-[#62ab00] text-white px-4 py-2 rounded-md hover:bg-[#519000] transition-colors"
+              className="bg-[#62ab00] text-white text-xs px-4 py-2 rounded-md hover:bg-[#519000] transition-colors"
               disabled={isUploading}
             >
               Choose Files
@@ -220,7 +220,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
       {/* File List */}
       {files.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">
+          <h3 className="text-xs font-medium text-gray-900 mb-3">
             Selected Documents ({files.length}/3)
           </h3>
           <div className="space-y-3">
@@ -234,7 +234,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
                     {getFileIcon(uploadedFile.file.type)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-xs font-medium text-gray-900 truncate">
                       {uploadedFile.file.name}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -281,13 +281,13 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
       {/* Error Message */}
       {uploadError && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{uploadError}</p>
+          <p className="text-xs text-red-600">{uploadError}</p>
         </div>
       )}
 
       {/* Upload Button */}
       <div className="mt-8 flex justify-between">
-        <div className="text-sm text-gray-500">
+        <div className="text-xs text-gray-500">
           {files.length === 3 && !files.some(f => f.error) && (
             <span className="text-green-600 font-medium">
               ✓ Ready to upload
@@ -298,7 +298,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
         <button
           onClick={handleUpload}
           disabled={files.length !== 3 || files.some(f => f.error) || isUploading}
-          className={`px-6 py-2 rounded-md font-medium transition-colors ${
+          className={`px-6 py-2 rounded-md font-medium text-xs transition-colors ${
             files.length === 3 && !files.some(f => f.error) && !isUploading
               ? 'bg-[#62ab00] text-white hover:bg-[#519000]'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
