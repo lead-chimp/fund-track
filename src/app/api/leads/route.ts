@@ -47,15 +47,33 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   // Build where clause for filtering
   const where: any = {};
 
-  // Search filter (name, email, phone, business name)
+  // Search filter (name, email, phone, business name, DBA, legal name, etc.)
   if (search) {
     where.OR = [
       { firstName: { contains: search, mode: 'insensitive' } },
       { lastName: { contains: search, mode: 'insensitive' } },
+      { legalName: { contains: search, mode: 'insensitive' } },
       { email: { contains: search, mode: 'insensitive' } },
+      { businessEmail: { contains: search, mode: 'insensitive' } },
       { phone: { contains: search, mode: 'insensitive' } },
+      { mobile: { contains: search, mode: 'insensitive' } },
+      { businessPhone: { contains: search, mode: 'insensitive' } },
       { businessName: { contains: search, mode: 'insensitive' } },
-    ];
+      { dba: { contains: search, mode: 'insensitive' } },
+      { industry: { contains: search, mode: 'insensitive' } },
+      { businessCity: { contains: search, mode: 'insensitive' } },
+      { businessState: { contains: search, mode: 'insensitive' } },
+      { personalCity: { contains: search, mode: 'insensitive' } },
+      { personalState: { contains: search, mode: 'insensitive' } },
+      { intakeToken: { contains: search, mode: 'insensitive' } },
+      { legacyLeadId: { equals: !isNaN(Number(search)) ? BigInt(search) : undefined } },
+      { id: { equals: !isNaN(Number(search)) ? Number(search) : undefined } },
+      { campaignId: { equals: !isNaN(Number(search)) ? Number(search) : undefined } },
+    ].filter(condition => {
+      // Filter out conditions with undefined values
+      const value = Object.values(condition)[0];
+      return value !== undefined && (typeof value !== 'object' || Object.values(value).some(v => v !== undefined));
+    });
   }
 
   // Status filter
@@ -86,7 +104,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   }
 
   // Build orderBy clause
-  const validSortFields = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'businessName', 'status', 'email'];
+  const validSortFields = [
+    'createdAt', 'updatedAt', 'importedAt', 'intakeCompletedAt', 'step1CompletedAt', 'step2CompletedAt',
+    'firstName', 'lastName', 'legalName', 'email', 'businessEmail', 'phone', 'mobile', 'businessPhone',
+    'businessName', 'dba', 'industry', 'yearsInBusiness', 'amountNeeded', 'monthlyRevenue',
+    'businessCity', 'businessState', 'personalCity', 'personalState', 'status', 'campaignId'
+  ];
   const orderByField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
   const orderBy: any = { [orderByField]: sortOrder };
 
