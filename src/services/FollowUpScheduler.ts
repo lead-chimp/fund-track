@@ -379,7 +379,7 @@ export class FollowUpScheduler {
   ) {
     const baseMessages = {
       [FollowupType.THREE_HOUR]: {
-        emailSubject: "Quick Reminder: Complete Your MerchantFund Application",
+        emailSubject: "Quick Reminder: Complete Your Merchant Funding Application",
         urgency: "We wanted to follow up quickly",
         timeframe: "just a few hours ago",
       },

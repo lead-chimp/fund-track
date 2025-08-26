@@ -237,10 +237,10 @@ export class BackgroundJobScheduler {
           try {
             const emailResult = await notificationService.sendEmail({
               to: lead.email,
-              subject: "Complete Your MerchantFund Application",
+              subject: "Complete Your Merchant Funding Application",
               text: `Hi ${leadName},\n\nThank you for your interest in merchant funding. Please complete your application by clicking the link below:\n\n${intakeUrl}\n\nThis secure link will allow you to provide the required information and upload necessary documents.\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\nMerchant Funding Team`,
               html: `
-                <h2>Complete Your MerchantFund Application</h2>
+                <h2>Complete Your Merchant Funding Application</h2>
                 <p>Hi ${leadName},</p>
                 <p>Thank you for your interest in merchant funding. Please complete your application by clicking the link below:</p>
                 <p><a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>

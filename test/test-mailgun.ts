@@ -53,7 +53,7 @@ const testNotifications: EmailNotification[] = [
   // 2. Initial Intake Notification (from poll-leads/route.ts and BackgroundJobScheduler.ts)
   {
     to: TEST_EMAIL,
-    subject: "Complete Your MerchantFund Application",
+    subject: "Complete Your Merchant Funding Application",
     text: `Hi John Doe,
 
 Thank you for your interest in merchant funding. Please complete your application by clicking the link below:
@@ -67,7 +67,7 @@ If you have any questions, please don't hesitate to contact us.
 Best regards,
 Merchant Funding Team`,
     html: `
-      <h2>Complete Your MerchantFund Application</h2>
+      <h2>Complete Your Merchant Funding Application</h2>
       <p>Hi John Doe,</p>
       <p>Thank you for your interest in merchant funding. Please complete your application by clicking the link below:</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>
@@ -80,7 +80,7 @@ Merchant Funding Team`,
   // 3. Enhanced Initial Intake (from notifications.ts)
   {
     to: TEST_EMAIL,
-    subject: "Complete Your MerchantFund Application",
+    subject: "Complete Your Merchant Funding Application",
     text: `Hi Jane Smith,
 
 Thank you for your interest in merchant funding for ABC Business LLC. To complete your application, please click the link below:
@@ -98,7 +98,7 @@ Best regards,
 Merchant Funding Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Complete Your MerchantFund Application</h2>
+        <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
         <p>Hi Jane Smith,</p>
         <p>Thank you for your interest in merchant funding for ABC Business LLC. To complete your application, please click the button below:</p>
         <div style="text-align: center; margin: 30px 0;">
@@ -119,7 +119,7 @@ Merchant Funding Team`,
   // 4. 3-Hour Follow-up (from FollowUpScheduler.ts)
   {
     to: TEST_EMAIL,
-    subject: "Quick Reminder: Complete Your MerchantFund Application",
+    subject: "Quick Reminder: Complete Your Merchant Funding Application",
     text: `Hi Mike Johnson,
 
 We wanted to follow up quickly your merchant funding application that you started just a few hours ago.
@@ -133,7 +133,7 @@ If you have any questions, please don't hesitate to contact us.
 Best regards,
 Merchant Funding Team`,
     html: `
-      <h2>Quick Reminder: Complete Your MerchantFund Application</h2>
+      <h2>Quick Reminder: Complete Your Merchant Funding Application</h2>
       <p>Hi Mike Johnson,</p>
       <p>We wanted to follow up quickly your merchant funding application that you started just a few hours ago.</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
@@ -200,7 +200,7 @@ Merchant Funding Team`,
   // 7. General Follow-up Reminder (from notifications.ts)
   {
     to: TEST_EMAIL,
-    subject: "Reminder: Complete Your MerchantFund Application",
+    subject: "Reminder: Complete Your Merchant Funding Application",
     text: `Hi Lisa Brown,
 
 We noticed you started your merchant funding application but haven't finished yet.

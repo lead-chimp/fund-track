@@ -37,7 +37,7 @@ export async function sendIntakeNotification(
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: "Complete Your MerchantFund Application",
+      subject: "Complete Your Merchant Funding Application",
       text: `Hi ${fullName},
 
 Thank you for your interest in merchant funding${businessText}. To complete your application, please click the link below:
@@ -55,7 +55,7 @@ Best regards,
 Merchant Funding Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Complete Your MerchantFund Application</h2>
+          <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
           <p>Hi ${fullName},</p>
           <p>Thank you for your interest in merchant funding${businessText}. To complete your application, please click the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -131,7 +131,7 @@ export async function sendFollowUpNotification(
   if (email && intakeToken) {
     const emailNotification: EmailNotification = {
       to: email,
-      subject: "Reminder: Complete Your MerchantFund Application",
+      subject: "Reminder: Complete Your Merchant Funding Application",
       text: `Hi ${fullName},
 
 ${followUpMessage}
