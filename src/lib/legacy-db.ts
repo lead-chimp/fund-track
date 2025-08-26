@@ -25,6 +25,14 @@ export interface LegacyLead {
   FirstName?: string;
   LastName?: string;
   BusinessName?: string;
+  Industry?: string;
+  YearsInBusiness?: number;
+  AmountNeeded?: number;
+  MonthlyRevenue?: number;
+  Address?: string;
+  City?: string;
+  State?: string;
+  ZipCode?: string;
   CreatedDate?: Date;
   [key: string]: any; // Allow for additional fields from legacy system
 }

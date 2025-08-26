@@ -134,53 +134,85 @@ export class LeadPoller {
    * Fetch leads from legacy database filtered by campaign IDs
    */
   private async fetchLeadsFromLegacy(minLeadId: number = 0): Promise<LegacyLead[]> {
-    const campaignIdList = this.config.campaignIds.join(',');
+    const allLeads: LegacyLead[] = [];
 
-    const query = `
-      SELECT 
-        LeadID as ID,
-        CampaignID,
-        Email,
-        Phone,
-        FirstName,
-        LastName,
-        PostDT as CreatedDate
-      FROM Leads 
-      WHERE CampaignID IN (${campaignIdList}) AND LeadID > ${minLeadId}
-      ORDER BY PostDT ASC
-    `;
-
-    console.log('📋 Executing legacy database query:', {
-      campaignIds: this.config.campaignIds,
-      query: query.replace(/\s+/g, ' ').trim()
-    });
-
-    try {
-      const queryStart = Date.now();
-      const leads = await this.legacyDb.query<LegacyLead>(query);
-      const queryTime = Date.now() - queryStart;
+    // Query each campaign table separately since they have variable names
+    for (const campaignId of this.config.campaignIds) {
+      const tableName = `Leads_${campaignId}`;
       
-      console.log(`⚡ Query executed successfully in ${queryTime}ms, returned ${leads.length} leads`);
-      
-      if (leads.length > 0) {
-        const sampleLead = leads[0];
-        console.log('📄 Sample lead data:', {
-          ID: sampleLead.ID,
-          CampaignID: sampleLead.CampaignID,
-          Email: sampleLead.Email ? '***@***.***' : null,
-          Phone: sampleLead.Phone ? '***-***-****' : null,
-          FirstName: sampleLead.FirstName || null,
-          LastName: sampleLead.LastName || null,
-          BusinessName: sampleLead.BusinessName || null,
-          CreatedDate: sampleLead.CreatedDate
-        });
+      // Join Leads table (contact info) with Leads_[CampaignID] table (business info)
+      const query = `
+        SELECT 
+          l.LeadID as ID,
+          l.CampaignID,
+          l.FirstName,
+          l.LastName,
+          l.Email,
+          l.Phone,
+          l.Address,
+          l.City,
+          l.State,
+          l.ZipCode,
+          l.PostDT as CreatedDate,
+          c.BusinessName,
+          c.Industry,
+          c.YearsInBusiness,
+          c.AmountNeeded,
+          c.MonthlyRevenue
+        FROM [dbo].[Leads] l
+        INNER JOIN [web].[${tableName}] c ON l.LeadID = c.LeadID
+        WHERE l.LeadID > ${minLeadId} 
+          AND l.CampaignID = ${campaignId}
+        ORDER BY l.LeadID ASC
+      `;
+
+      console.log(`📋 Executing legacy database query for campaign ${campaignId}:`, {
+        tableName,
+        query: query.replace(/\s+/g, ' ').trim()
+      });
+
+      try {
+        const queryStart = Date.now();
+        const leads = await this.legacyDb.query<LegacyLead>(query);
+        const queryTime = Date.now() - queryStart;
+        
+        console.log(`⚡ Query for ${tableName} executed successfully in ${queryTime}ms, returned ${leads.length} leads`);
+        
+        if (leads.length > 0) {
+          const sampleLead = leads[0];
+          console.log(`📄 Sample lead data from ${tableName}:`, {
+            ID: sampleLead.ID,
+            CampaignID: sampleLead.CampaignID,
+            Email: sampleLead.Email ? '***@***.***' : null,
+            Phone: sampleLead.Phone ? '***-***-****' : null,
+            FirstName: sampleLead.FirstName || null,
+            LastName: sampleLead.LastName || null,
+            BusinessName: sampleLead.BusinessName || null,
+            Industry: sampleLead.Industry || null,
+            YearsInBusiness: sampleLead.YearsInBusiness || null,
+            AmountNeeded: sampleLead.AmountNeeded || null,
+            MonthlyRevenue: sampleLead.MonthlyRevenue || null,
+            Address: sampleLead.Address || null,
+            City: sampleLead.City || null,
+            State: sampleLead.State || null,
+            ZipCode: sampleLead.ZipCode || null,
+            CreatedDate: sampleLead.CreatedDate
+          });
+        }
+        
+        allLeads.push(...leads);
+      } catch (error) {
+        console.error(`❌ Failed to fetch leads from ${tableName}:`, error);
+        // Continue with other campaigns even if one fails
+        console.log(`⚠️ Skipping campaign ${campaignId} due to error, continuing with others...`);
       }
-      
-      return leads;
-    } catch (error) {
-      console.error('❌ Failed to fetch leads from legacy database:', error);
-      throw new Error(`Legacy lead fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+
+    // Sort all leads by ID to maintain order
+    allLeads.sort((a, b) => a.ID - b.ID);
+    
+    console.log(`📊 Total leads fetched from all campaigns: ${allLeads.length}`);
+    return allLeads;
   }
 
   /**
@@ -293,24 +325,78 @@ export class LeadPoller {
     const sanitizedPhone = this.sanitizePhone(legacyLead.Phone);
     const sanitizedFirstName = this.sanitizeString(legacyLead.FirstName);
     const sanitizedLastName = this.sanitizeString(legacyLead.LastName);
-    const sanitizedBusinessName = null; // BusinessName not available in legacy schema
+    const sanitizedBusinessName = this.sanitizeString(legacyLead.BusinessName);
+    const sanitizedIndustry = this.sanitizeString(legacyLead.Industry);
+    const sanitizedAddress = this.sanitizeString(legacyLead.Address);
+    const sanitizedCity = this.sanitizeString(legacyLead.City);
+    const sanitizedState = this.sanitizeString(legacyLead.State);
+    const sanitizedZipCode = this.sanitizeString(legacyLead.ZipCode);
     
     console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
       email: sanitizedEmail ? 'present' : 'null',
       phone: sanitizedPhone ? 'present' : 'null',
       firstName: sanitizedFirstName ? 'present' : 'null',
       lastName: sanitizedLastName ? 'present' : 'null',
-      businessName: 'null (not available in legacy schema)'
+      businessName: sanitizedBusinessName ? 'present' : 'null',
+      industry: sanitizedIndustry ? 'present' : 'null',
+      yearsInBusiness: legacyLead.YearsInBusiness || null,
+      amountNeeded: legacyLead.AmountNeeded || null,
+      monthlyRevenue: legacyLead.MonthlyRevenue || null,
+      personalAddress: sanitizedAddress ? 'present' : 'null',
+      personalCity: sanitizedCity ? 'present' : 'null',
+      personalState: sanitizedState ? 'present' : 'null',
+      personalZip: sanitizedZipCode ? 'present' : 'null'
     });
     
     return {
       legacyLeadId: BigInt(legacyLead.ID),
       campaignId: legacyLead.CampaignID,
+      
+      // Contact Information
       email: sanitizedEmail,
       phone: sanitizedPhone,
       firstName: sanitizedFirstName,
       lastName: sanitizedLastName,
+      
+      // Business Information (from legacy DB)
       businessName: sanitizedBusinessName,
+      industry: sanitizedIndustry,
+      yearsInBusiness: legacyLead.YearsInBusiness || null,
+      amountNeeded: legacyLead.AmountNeeded || null,
+      monthlyRevenue: legacyLead.MonthlyRevenue || null,
+      
+      // Personal Address Information (from Leads table)
+      // Note: Legacy Address/City/State/ZipCode are personal, not business addresses
+      // Business address fields will be filled during intake process
+      
+      // Initialize business address fields as null (to be filled in application form)
+      businessAddress: null,
+      businessCity: null,
+      businessState: null,
+      businessZip: null,
+      
+      // Initialize other fields as null (to be filled in application form)
+      dba: null,
+      businessPhone: null,
+      businessEmail: null,
+      ownershipPercentage: null,
+      taxId: null,
+      stateOfInc: null,
+      dateBusinessStarted: null,
+      legalEntity: null,
+      natureOfBusiness: null,
+      hasExistingLoans: null,
+      dateOfBirth: null,
+      socialSecurity: null,
+      
+      // Personal Address Information (from Leads table - personal address)
+      personalAddress: sanitizedAddress,
+      personalCity: sanitizedCity,
+      personalState: sanitizedState,
+      personalZip: sanitizedZipCode,
+      legalName: null,
+      
+      // System fields
       status: LeadStatus.PENDING, // Set to pending since we're generating intake token
       intakeToken,
       intakeCompletedAt: null,
@@ -429,7 +515,7 @@ export function createLeadPoller(): LeadPoller {
 // Factory function to create LeadPoller for testing with test campaign ID
 export function createTestLeadPoller(): LeadPoller {
   return new LeadPoller({
-    campaignIds: [11302], // Test campaign ID
+    campaignIds: [11302], // Test campaign ID - corresponds to Leads_11302 table
     batchSize: 10,
   });
 }

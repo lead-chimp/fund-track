@@ -13,11 +13,43 @@ export interface IntakeSession {
   step2Completed: boolean;
   lead: {
     id: number;
+    // Contact Information
     email: string | null;
     phone: string | null;
     firstName: string | null;
     lastName: string | null;
+    
+    // Business Information
     businessName: string | null;
+    dba: string | null;
+    businessAddress: string | null;
+    businessPhone: string | null;
+    businessEmail: string | null;
+    mobile: string | null;
+    businessCity: string | null;
+    businessState: string | null;
+    businessZip: string | null;
+    industry: string | null;
+    yearsInBusiness: number | null;
+    amountNeeded: number | null;
+    monthlyRevenue: number | null;
+    ownershipPercentage: string | null;
+    taxId: string | null;
+    stateOfInc: string | null;
+    dateBusinessStarted: string | null;
+    legalEntity: string | null;
+    natureOfBusiness: string | null;
+    hasExistingLoans: string | null;
+    
+    // Personal Information
+    dateOfBirth: string | null;
+    socialSecurity: string | null;
+    personalAddress: string | null;
+    personalCity: string | null;
+    personalState: string | null;
+    personalZip: string | null;
+    legalName: string | null;
+    
     status: string;
   };
 }
@@ -39,11 +71,43 @@ export class TokenService {
         where: { intakeToken: token },
         select: {
           id: true,
+          // Contact Information
           email: true,
           phone: true,
           firstName: true,
           lastName: true,
+          
+          // Business Information
           businessName: true,
+          dba: true,
+          businessAddress: true,
+          businessPhone: true,
+          businessEmail: true,
+          businessCity: true,
+          businessState: true,
+          businessZip: true,
+          industry: true,
+          yearsInBusiness: true,
+          amountNeeded: true,
+          monthlyRevenue: true,
+          ownershipPercentage: true,
+          taxId: true,
+          stateOfInc: true,
+          dateBusinessStarted: true,
+          legalEntity: true,
+          natureOfBusiness: true,
+          hasExistingLoans: true,
+          
+          // Personal Information
+          dateOfBirth: true,
+          socialSecurity: true,
+          personalAddress: true,
+          personalCity: true,
+          personalState: true,
+          personalZip: true,
+          legalName: true,
+          
+          // System fields
           status: true,
           intakeToken: true,
           intakeCompletedAt: true,
@@ -69,11 +133,42 @@ export class TokenService {
         step2Completed,
         lead: {
           id: lead.id,
+          // Contact Information
           email: lead.email,
           phone: lead.phone,
           firstName: lead.firstName,
           lastName: lead.lastName,
+          
+          // Business Information
           businessName: lead.businessName,
+          dba: lead.dba,
+          businessAddress: lead.businessAddress,
+          businessPhone: lead.businessPhone,
+          businessEmail: lead.businessEmail,
+          businessCity: lead.businessCity,
+          businessState: lead.businessState,
+          businessZip: lead.businessZip,
+          industry: lead.industry,
+          yearsInBusiness: lead.yearsInBusiness,
+          amountNeeded: lead.amountNeeded,
+          monthlyRevenue: lead.monthlyRevenue,
+          ownershipPercentage: lead.ownershipPercentage,
+          taxId: lead.taxId,
+          stateOfInc: lead.stateOfInc,
+          dateBusinessStarted: lead.dateBusinessStarted,
+          legalEntity: lead.legalEntity,
+          natureOfBusiness: lead.natureOfBusiness,
+          hasExistingLoans: lead.hasExistingLoans,
+          
+          // Personal Information
+          dateOfBirth: lead.dateOfBirth,
+          socialSecurity: lead.socialSecurity,
+          personalAddress: lead.personalAddress,
+          personalCity: lead.personalCity,
+          personalState: lead.personalState,
+          personalZip: lead.personalZip,
+          legalName: lead.legalName,
+          
           status: lead.status,
         },
       };
