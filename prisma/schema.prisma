@@ -51,8 +51,8 @@ model Lead {
   businessZip       String?    @map("business_zip")
   industry          String?
   yearsInBusiness   Int?       @map("years_in_business")
-  amountNeeded      Int?       @map("amount_needed")
-  monthlyRevenue    Int?       @map("monthly_revenue")
+  amountNeeded      String?    @map("amount_needed")
+  monthlyRevenue    String?    @map("monthly_revenue")
   ownershipPercentage String?  @map("ownership_percentage")
   taxId             String?    @map("tax_id")
   stateOfInc        String?    @map("state_of_inc")
