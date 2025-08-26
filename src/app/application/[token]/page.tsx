@@ -52,7 +52,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
                 <img
                   src="https://merchantfunding.com/assets/img/merchant-funding-logo.png"
                   alt="Merchant Funding Logo"
-                  className="h-12 w-auto"
+                  className="w-auto"
                 />
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-1">
@@ -92,7 +92,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
                 </h1>
                 <p className="mt-3 text-lg text-gray-600">
                   Complete your application in two simple steps. Your
-                  information is protected by bank-grade encryption.
+                  information is protected by enterprise-grade encryption.
                 </p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
                       />
                     </svg>
                     <span className="text-sm text-gray-600">
-                      Bank-Level Security
+                      Enterprise Security
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -153,51 +153,54 @@ export default async function IntakePage({ params }: IntakePageProps) {
                   </div>
                 </div>
 
-                {/* Disclaimer Text */}
-                <div className="text-xs text-gray-500 leading-relaxed bg-gray-100 p-4 rounded-lg mb-4">
-                  <p>
-                    By signing, each of the above listed business and business
-                    owners/officer(s) (individually and/or collectively,
-                    &ldquo;you&rdquo;) authorize Elixir Capital, LLC D/B/A. and
-                    each of its representatives, successors, assigns, designees
-                    and finance providers with whom MF has, or may in the future
-                    enter into, brokerage relationships
-                    (&ldquo;Recipients&rdquo;), to:
-                  </p>
-                  <ul className="list-decimal ml-4 mt-2 space-y-1">
-                    <li>
-                      obtain consumer, business and investigative reports and
-                      other information about you, including credit pulls (hard
-                      or soft), from one or more consumer reporting agencies,
-                      such as TransUnion, Experian and Equifax;
-                    </li>
-                    <li>
-                      obtain credit card processor statements and bank
-                      statements from banks, creditors and other third parties;
-                    </li>
-                    <li>
-                      obtain the release, by any creditor or financial
-                      institution, of any information relating to you, to any
-                      Recipients;
-                    </li>
-                    <li>
-                      transmit this application form, along with any of the
-                      foregoing information obtained in connection with this
-                      application, to any Recipients;
-                    </li>
-                    <li>
-                      contact you via e-mail, call and/or text-message at the
-                      e-mail address and/or phone number provided above, or at
-                      any e-mail address and/or phone number reasonably
-                      identified as belonging to you, including wireless numbers
-                      (if applicable), even if listed on a Do-Not-Call registry,
-                      using an automated telephone dialing system or other
-                      similar system with respect to this application,
-                      future-related commercial-financing opportunities and/or
-                      other lawful telemarketing purposes.
-                    </li>
-                  </ul>
-                </div>
+                {/* Disclaimer Text - Only show when intake is not completed */}
+                {!intakeSession.isCompleted && (
+                  <div className="text-xs text-gray-500 leading-relaxed bg-gray-100 p-4 rounded-lg mb-4">
+                    <p>
+                      By signing, each of the above listed business and business
+                      owners/officer(s) (individually and/or collectively,
+                      &ldquo;you&rdquo;) authorize Elixir Capital, LLC D/B/A.
+                      and each of its representatives, successors, assigns,
+                      designees and finance providers with whom MF has, or may
+                      in the future enter into, brokerage relationships
+                      (&ldquo;Recipients&rdquo;), to:
+                    </p>
+                    <ul className="list-decimal ml-4 mt-2 space-y-1">
+                      <li>
+                        obtain consumer, business and investigative reports and
+                        other information about you, including credit pulls
+                        (hard or soft), from one or more consumer reporting
+                        agencies, such as TransUnion, Experian and Equifax;
+                      </li>
+                      <li>
+                        obtain credit card processor statements and bank
+                        statements from banks, creditors and other third
+                        parties;
+                      </li>
+                      <li>
+                        obtain the release, by any creditor or financial
+                        institution, of any information relating to you, to any
+                        Recipients;
+                      </li>
+                      <li>
+                        transmit this application form, along with any of the
+                        foregoing information obtained in connection with this
+                        application, to any Recipients;
+                      </li>
+                      <li>
+                        contact you via e-mail, call and/or text-message at the
+                        e-mail address and/or phone number provided above, or at
+                        any e-mail address and/or phone number reasonably
+                        identified as belonging to you, including wireless
+                        numbers (if applicable), even if listed on a Do-Not-Call
+                        registry, using an automated telephone dialing system or
+                        other similar system with respect to this application,
+                        future-related commercial-financing opportunities and/or
+                        other lawful telemarketing purposes.
+                      </li>
+                    </ul>
+                  </div>
+                )}
 
                 {/* Contact Support */}
                 <div className="text-center">
