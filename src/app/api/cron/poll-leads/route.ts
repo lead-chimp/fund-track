@@ -64,12 +64,14 @@ export async function POST(request: NextRequest) {
       for (const lead of newLeads) {
         if (!lead.intakeToken) continue;
 
-        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, '');
+        const baseUrl = (
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+        ).replace(/\/$/, "");
         const intakeUrl = `${baseUrl}/application/${lead.intakeToken}`;
-        const leadName =
-          lead.firstName && lead.lastName
-            ? `${lead.firstName} ${lead.lastName}`
-            : lead.businessName || "there";
+        const leadName = lead.firstName
+          ? lead.firstName.charAt(0).toUpperCase() +
+            lead.firstName.slice(1).toLowerCase()
+          : lead.businessName || "there";
 
         // Send email notification if email exists
         if (lead.email) {

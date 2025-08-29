@@ -54,7 +54,7 @@ const testNotifications: EmailNotification[] = [
   {
     to: TEST_EMAIL,
     subject: "Complete Your Merchant Funding Application",
-    text: `Hi John Doe,
+    text: `Hi John,
 
 Thank you for your interest in merchant funding. Please complete your application by clicking the link below:
 
@@ -68,7 +68,7 @@ Best regards,
 Merchant Funding Team`,
     html: `
       <h2>Complete Your Merchant Funding Application</h2>
-      <p>Hi John Doe,</p>
+      <p>Hi John,</p>
       <p>Thank you for your interest in merchant funding. Please complete your application by clicking the link below:</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>
       <p>This secure link will allow you to provide the required information and upload necessary documents.</p>
@@ -81,7 +81,7 @@ Merchant Funding Team`,
   {
     to: TEST_EMAIL,
     subject: "Complete Your Merchant Funding Application",
-    text: `Hi Jane Smith,
+    text: `Hi Jane,
 
 Thank you for your interest in merchant funding for ABC Business LLC. To complete your application, please click the link below:
 
@@ -99,7 +99,7 @@ Merchant Funding Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
-        <p>Hi Jane Smith,</p>
+        <p>Hi Jane,</p>
         <p>Thank you for your interest in merchant funding for ABC Business LLC. To complete your application, please click the button below:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${TEST_INTAKE_URL}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Application</a>
@@ -120,7 +120,7 @@ Merchant Funding Team`,
   {
     to: TEST_EMAIL,
     subject: "Quick Reminder: Complete Your Merchant Funding Application",
-    text: `Hi Mike Johnson,
+    text: `Hi Mike,
 
 We wanted to follow up quickly your merchant funding application that you started just a few hours ago.
 
@@ -134,7 +134,7 @@ Best regards,
 Merchant Funding Team`,
     html: `
       <h2>Quick Reminder: Complete Your Merchant Funding Application</h2>
-      <p>Hi Mike Johnson,</p>
+      <p>Hi Mike,</p>
       <p>We wanted to follow up quickly your merchant funding application that you started just a few hours ago.</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
@@ -147,7 +147,7 @@ Merchant Funding Team`,
   {
     to: TEST_EMAIL,
     subject: "Final Reminder: Complete Your Application Today",
-    text: `Hi Sarah Wilson,
+    text: `Hi Sarah,
 
 This is a friendly reminder your merchant funding application that you started yesterday.
 
@@ -161,7 +161,7 @@ Best regards,
 Merchant Funding Team`,
     html: `
       <h2>Final Reminder: Complete Your Application Today</h2>
-      <p>Hi Sarah Wilson,</p>
+      <p>Hi Sarah,</p>
       <p>This is a friendly reminder your merchant funding application that you started yesterday.</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
@@ -174,7 +174,7 @@ Merchant Funding Team`,
   {
     to: TEST_EMAIL,
     subject: "Last Chance: Your Fund Track Application Expires Soon",
-    text: `Hi Robert Davis,
+    text: `Hi Robert,
 
 This is your final reminder your merchant funding application that you started a few days ago.
 
@@ -188,7 +188,7 @@ Best regards,
 Merchant Funding Team`,
     html: `
       <h2>Last Chance: Your Fund Track Application Expires Soon</h2>
-      <p>Hi Robert Davis,</p>
+      <p>Hi Robert,</p>
       <p>This is your final reminder your merchant funding application that you started a few days ago.</p>
       <p><a href="${TEST_INTAKE_URL}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
       <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
@@ -201,7 +201,7 @@ Merchant Funding Team`,
   {
     to: TEST_EMAIL,
     subject: "Reminder: Complete Your Merchant Funding Application",
-    text: `Hi Lisa Brown,
+    text: `Hi Lisa,
 
 We noticed you started your merchant funding application but haven't finished yet.
 
@@ -214,7 +214,7 @@ Merchant Funding Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Reminder: Complete Your Application</h2>
-        <p>Hi Lisa Brown,</p>
+        <p>Hi Lisa,</p>
         <p>We noticed you started your merchant funding application but haven't finished yet.</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${TEST_INTAKE_URL}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>

@@ -297,12 +297,14 @@ export class FollowUpScheduler {
       return { success: false, errors };
     }
 
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, '');
+    const baseUrl = (
+      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    ).replace(/\/$/, "");
     const intakeUrl = `${baseUrl}/application/${followUp.lead.intakeToken}`;
-    const leadName =
-      followUp.lead.firstName && followUp.lead.lastName
-        ? `${followUp.lead.firstName} ${followUp.lead.lastName}`
-        : followUp.lead.businessName || "there";
+    const leadName = followUp.lead.firstName
+      ? followUp.lead.firstName.charAt(0).toUpperCase() +
+        followUp.lead.firstName.slice(1).toLowerCase()
+      : followUp.lead.businessName || "there";
 
     // Get follow-up message based on type
     const messages = this.getFollowUpMessages(
@@ -379,7 +381,8 @@ export class FollowUpScheduler {
   ) {
     const baseMessages = {
       [FollowupType.THREE_HOUR]: {
-        emailSubject: "Quick Reminder: Complete Your Merchant Funding Application",
+        emailSubject:
+          "Quick Reminder: Complete Your Merchant Funding Application",
         urgency: "We wanted to follow up quickly",
         timeframe: "just a few hours ago",
       },
@@ -394,7 +397,8 @@ export class FollowUpScheduler {
         timeframe: "yesterday",
       },
       [FollowupType.SEVENTY_TWO_H]: {
-        emailSubject: "Last Chance: Your Merchant Funding Application Expires Soon",
+        emailSubject:
+          "Last Chance: Your Merchant Funding Application Expires Soon",
         urgency: "This is your final reminder",
         timeframe: "a few days ago",
       },

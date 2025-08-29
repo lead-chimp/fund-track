@@ -18,6 +18,26 @@ export interface LeadNotificationData {
 }
 
 /**
+ * Format a person's name to only use first name with proper capitalization
+ */
+export function formatLeadName(
+  firstName?: string,
+  lastName?: string,
+  businessName?: string
+): string {
+  if (firstName) {
+    // Capitalize first letter, lowercase the rest
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  }
+
+  if (businessName) {
+    return businessName;
+  }
+
+  return "there";
+}
+
+/**
  * Send initial intake notification to a lead
  */
 export async function sendIntakeNotification(
@@ -26,7 +46,7 @@ export async function sendIntakeNotification(
 ) {
   const { firstName, lastName, email, phone, intakeToken, businessName } =
     leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "there";
+  const leadName = formatLeadName(firstName, lastName, businessName);
   const businessText = businessName ? ` for ${businessName}` : "";
 
   const intakeUrl = `${process.env.INTAKE_BASE_URL}/${intakeToken}`;
@@ -38,7 +58,7 @@ export async function sendIntakeNotification(
     const emailNotification: EmailNotification = {
       to: email,
       subject: "Complete Your Merchant Funding Application",
-      text: `Hi ${fullName},
+      text: `Hi ${leadName},
 
 Thank you for your interest in merchant funding${businessText}. To complete your application, please click the link below:
 
@@ -56,7 +76,7 @@ Merchant Funding Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
-          <p>Hi ${fullName},</p>
+          <p>Hi ${leadName},</p>
           <p>Thank you for your interest in merchant funding${businessText}. To complete your application, please click the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Application</a>
@@ -82,7 +102,7 @@ Merchant Funding Team`,
   if (phone && intakeToken) {
     const smsNotification: SMSNotification = {
       to: phone,
-      message: `Hi ${fullName}, complete your merchant funding application${businessText}: ${intakeUrl}`,
+      message: `Hi ${leadName}, complete your merchant funding application${businessText}: ${intakeUrl}`,
       leadId,
     };
 
@@ -103,7 +123,7 @@ export async function sendFollowUpNotification(
 ) {
   const { firstName, lastName, email, phone, intakeToken, businessName } =
     leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "there";
+  const leadName = formatLeadName(firstName, lastName, businessName);
   const businessText = businessName ? ` for ${businessName}` : "";
 
   const intakeUrl = `${process.env.INTAKE_BASE_URL}/${intakeToken}`;
@@ -132,7 +152,7 @@ export async function sendFollowUpNotification(
     const emailNotification: EmailNotification = {
       to: email,
       subject: "Reminder: Complete Your Merchant Funding Application",
-      text: `Hi ${fullName},
+      text: `Hi ${leadName},
 
 ${followUpMessage}
 
@@ -145,7 +165,7 @@ Merchant Funding Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Reminder: Complete Your Application</h2>
-          <p>Hi ${fullName},</p>
+          <p>Hi ${leadName},</p>
           <p>${followUpMessage}</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>
@@ -186,14 +206,14 @@ export async function sendStatusChangeNotification(
   newStatus: string,
   changedBy: string
 ) {
-  const { firstName, lastName, email, phone, businessName } = leadData;
-  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
+  const { firstName, lastName, businessName } = leadData;
+  const leadName = formatLeadName(firstName, lastName, businessName);
   const businessText = businessName ? ` (${businessName})` : "";
 
   // This would typically be sent to a staff notification email/SMS
   // For now, we'll log it - in a real implementation, you'd have staff notification preferences
   console.log(
-    `Lead status changed: ${fullName}${businessText} - ${oldStatus} → ${newStatus} by ${changedBy}`
+    `Lead status changed: ${leadName}${businessText} - ${oldStatus} → ${newStatus} by ${changedBy}`
   );
 
   return { success: true, message: "Status change logged" };
