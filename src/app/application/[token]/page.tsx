@@ -159,9 +159,9 @@ export default async function IntakePage({ params }: IntakePageProps) {
                     <p>
                       By signing, each of the above listed business and business
                       owners/officer(s) (individually and/or collectively,
-                      &ldquo;you&rdquo;) authorize Elixir Capital, LLC D/B/A.
+                      &ldquo;you&rdquo;) authorize Elixir Capital, LLC D/B/A http://MerchantFunding.com  
                       and each of its representatives, successors, assigns,
-                      designees and finance providers with whom MF has, or may
+                      designees and finance providers with whom MerchantFunding has, or may
                       in the future enter into, brokerage relationships
                       (&ldquo;Recipients&rdquo;), to:
                     </p>
