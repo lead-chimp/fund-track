@@ -25,7 +25,6 @@ export interface LegacyLead {
   FirstName?: string;
   LastName?: string;
   BusinessName?: string;
-  Industry?: string;
   YearsInBusiness?: number;
   AmountNeeded?: number;
   MonthlyRevenue?: number;

@@ -60,11 +60,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       { businessPhone: { contains: search, mode: 'insensitive' } },
       { businessName: { contains: search, mode: 'insensitive' } },
       { dba: { contains: search, mode: 'insensitive' } },
-      { industry: { contains: search, mode: 'insensitive' } },
       { businessCity: { contains: search, mode: 'insensitive' } },
       { businessState: { contains: search, mode: 'insensitive' } },
-      { personalCity: { contains: search, mode: 'insensitive' } },
-      { personalState: { contains: search, mode: 'insensitive' } },
       { intakeToken: { contains: search, mode: 'insensitive' } },
       { legacyLeadId: { equals: !isNaN(Number(search)) ? BigInt(search) : undefined } },
       { id: { equals: !isNaN(Number(search)) ? Number(search) : undefined } },
@@ -107,8 +104,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const validSortFields = [
     'createdAt', 'updatedAt', 'importedAt', 'intakeCompletedAt', 'step1CompletedAt', 'step2CompletedAt',
     'firstName', 'lastName', 'legalName', 'email', 'businessEmail', 'phone', 'mobile', 'businessPhone',
-    'businessName', 'dba', 'industry', 'yearsInBusiness', 'amountNeeded', 'monthlyRevenue',
-    'businessCity', 'businessState', 'personalCity', 'personalState', 'status', 'campaignId'
+    'businessName', 'dba', 'yearsInBusiness', 'amountNeeded', 'monthlyRevenue',
+    'businessCity', 'businessState', 'status', 'campaignId'
   ];
   const orderByField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
   const orderBy: any = { [orderByField]: sortOrder };

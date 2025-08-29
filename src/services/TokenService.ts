@@ -29,24 +29,20 @@ export interface IntakeSession {
     businessCity: string | null;
     businessState: string | null;
     businessZip: string | null;
-    industry: string | null;
     yearsInBusiness: number | null;
     amountNeeded: string | null;
     monthlyRevenue: string | null;
     ownershipPercentage: string | null;
     taxId: string | null;
     stateOfInc: string | null;
-    dateBusinessStarted: string | null;
     legalEntity: string | null;
-    natureOfBusiness: string | null;
+    industry: string | null;
     hasExistingLoans: string | null;
 
     // Personal Information
     dateOfBirth: string | null;
     socialSecurity: string | null;
     personalAddress: string | null;
-    personalCity: string | null;
-    personalState: string | null;
     personalZip: string | null;
     legalName: string | null;
 
@@ -87,24 +83,20 @@ export class TokenService {
           businessCity: true,
           businessState: true,
           businessZip: true,
-          industry: true,
           yearsInBusiness: true,
           amountNeeded: true,
           monthlyRevenue: true,
           ownershipPercentage: true,
           taxId: true,
           stateOfInc: true,
-          dateBusinessStarted: true,
           legalEntity: true,
-          natureOfBusiness: true,
+          industry: true,
           hasExistingLoans: true,
 
           // Personal Information
           dateOfBirth: true,
           socialSecurity: true,
           personalAddress: true,
-          personalCity: true,
-          personalState: true,
           personalZip: true,
           legalName: true,
 
@@ -150,24 +142,20 @@ export class TokenService {
           businessCity: lead.businessCity,
           businessState: lead.businessState,
           businessZip: lead.businessZip,
-          industry: lead.industry,
           yearsInBusiness: lead.yearsInBusiness,
           amountNeeded: lead.amountNeeded,
           monthlyRevenue: lead.monthlyRevenue,
           ownershipPercentage: lead.ownershipPercentage,
           taxId: lead.taxId,
           stateOfInc: lead.stateOfInc,
-          dateBusinessStarted: lead.dateBusinessStarted,
           legalEntity: lead.legalEntity,
-          natureOfBusiness: lead.natureOfBusiness,
+          industry: lead.industry,
           hasExistingLoans: lead.hasExistingLoans,
 
           // Personal Information
           dateOfBirth: lead.dateOfBirth,
           socialSecurity: lead.socialSecurity,
           personalAddress: lead.personalAddress,
-          personalCity: lead.personalCity,
-          personalState: lead.personalState,
           personalZip: lead.personalZip,
           legalName: lead.legalName,
 

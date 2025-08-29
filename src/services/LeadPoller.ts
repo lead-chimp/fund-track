@@ -155,7 +155,6 @@ export class LeadPoller {
           l.ZipCode,
           l.PostDT as CreatedDate,
           c.BusinessName,
-          c.Industry,
           c.YearsInBusiness,
           c.AmountNeeded,
           c.MonthlyRevenue
@@ -188,7 +187,6 @@ export class LeadPoller {
             FirstName: sampleLead.FirstName || null,
             LastName: sampleLead.LastName || null,
             BusinessName: sampleLead.BusinessName || null,
-            Industry: sampleLead.Industry || null,
             YearsInBusiness: sampleLead.YearsInBusiness || null,
             AmountNeeded: sampleLead.AmountNeeded || null,
             MonthlyRevenue: sampleLead.MonthlyRevenue || null,
@@ -326,10 +324,7 @@ export class LeadPoller {
     const sanitizedFirstName = this.sanitizeString(legacyLead.FirstName);
     const sanitizedLastName = this.sanitizeString(legacyLead.LastName);
     const sanitizedBusinessName = this.sanitizeString(legacyLead.BusinessName);
-    const sanitizedIndustry = this.sanitizeString(legacyLead.Industry);
     const sanitizedAddress = this.sanitizeString(legacyLead.Address);
-    const sanitizedCity = this.sanitizeString(legacyLead.City);
-    const sanitizedState = this.sanitizeString(legacyLead.State);
     const sanitizedZipCode = this.sanitizeString(legacyLead.ZipCode);
     
     console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
@@ -338,13 +333,10 @@ export class LeadPoller {
       firstName: sanitizedFirstName ? 'present' : 'null',
       lastName: sanitizedLastName ? 'present' : 'null',
       businessName: sanitizedBusinessName ? 'present' : 'null',
-      industry: sanitizedIndustry ? 'present' : 'null',
       yearsInBusiness: legacyLead.YearsInBusiness || null,
       amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
       monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
       personalAddress: sanitizedAddress ? 'present' : 'null',
-      personalCity: sanitizedCity ? 'present' : 'null',
-      personalState: sanitizedState ? 'present' : 'null',
       personalZip: sanitizedZipCode ? 'present' : 'null'
     });
     
@@ -361,7 +353,6 @@ export class LeadPoller {
       
       // Business Information (from legacy DB)
       businessName: sanitizedBusinessName,
-      industry: sanitizedIndustry,
       yearsInBusiness: legacyLead.YearsInBusiness || null,
       amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
       monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
@@ -383,7 +374,6 @@ export class LeadPoller {
       ownershipPercentage: null,
       taxId: null,
       stateOfInc: null,
-      dateBusinessStarted: null,
       legalEntity: null,
       natureOfBusiness: null,
       hasExistingLoans: null,
@@ -392,8 +382,6 @@ export class LeadPoller {
       
       // Personal Address Information (from Leads table - personal address)
       personalAddress: sanitizedAddress,
-      personalCity: sanitizedCity,
-      personalState: sanitizedState,
       personalZip: sanitizedZipCode,
       legalName: null,
       

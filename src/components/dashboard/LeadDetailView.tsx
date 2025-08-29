@@ -51,18 +51,14 @@ interface LeadDetail {
   ownershipPercentage: string | null;
   taxId: string | null;
   stateOfInc: string | null;
-  dateBusinessStarted: string | null;
   legalEntity: string | null;
   natureOfBusiness: string | null;
   hasExistingLoans: string | null;
   personalAddress: string | null;
-  personalCity: string | null;
-  personalState: string | null;
   personalZip: string | null;
   dateOfBirth: string | null;
   socialSecurity: string | null;
   legalName: string | null;
-  industry: string | null;
   yearsInBusiness: number | null;
   amountNeeded: number | null;
   monthlyRevenue: number | null;
@@ -453,9 +449,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                   <div className="text-lg font-semibold text-gray-900">
                     {lead.businessName || "Business Name N/A"}
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {lead.industry || "Industry N/A"}
-                  </div>
+
                   {lead.yearsInBusiness && (
                     <div className="mt-1">
                       <div className="text-lg font-semibold text-gray-700">
@@ -671,14 +665,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     <dd className="mt-1 text-sm text-gray-900">{lead.dba}</dd>
                   </div>
                 )}
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Industry
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {lead.industry || "N/A"}
-                  </dd>
-                </div>
+
                 {lead.natureOfBusiness && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
@@ -699,16 +686,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                       : "N/A"}
                   </dd>
                 </div>
-                {lead.dateBusinessStarted && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Business Start Date
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      {lead.dateBusinessStarted}
-                    </dd>
-                  </div>
-                )}
+
                 {lead.legalEntity && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
@@ -982,8 +960,6 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                       <div>
                         <div>{lead.personalAddress}</div>
                         <div>
-                          {lead.personalCity && `${lead.personalCity}, `}
-                          {lead.personalState && `${lead.personalState} `}
                           {lead.personalZip}
                         </div>
                       </div>
@@ -1012,7 +988,6 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
                   // Critical business information
                   if (!lead.businessName) missingFields.push("Business Name");
-                  if (!lead.industry) missingFields.push("Industry");
                   if (!lead.businessAddress)
                     incompleteFields.push("Business Address");
                   if (!lead.businessPhone)

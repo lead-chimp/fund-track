@@ -16,11 +16,9 @@ interface Step1Data {
   ownershipPercentage: string;   // Percentage of Ownership*
   taxId: string;                 // Tax ID*
   stateOfInc: string;           // State of Inc*
-  dateBusinessStarted: string;   // Date Business Started*
   legalEntity: string;          // Legal Entity*
-  natureOfBusiness: string;     // Nature of Business*
-  hasExistingLoans: string;     // Do You Have Any Loans Now*
   industry: string;             // Enter Your Industry or Product Type*
+  hasExistingLoans: string;     // Do You Have Any Loans Now*
   yearsInBusiness: string;      // Years in Business*
   monthlyRevenue: string;       // Monthly Gross Revenue*
   amountNeeded: string;         // Amount Requested*
@@ -31,8 +29,6 @@ interface Step1Data {
   dateOfBirth: string;          // Date of Birth*
   socialSecurity: string;       // Social Security*
   personalAddress: string;      // Address*
-  personalCity: string;         // City*
-  personalState: string;        // State*
   personalZip: string;          // Zip Code*
   
   // Legal Information Section
@@ -87,11 +83,9 @@ export async function POST(
       ownershipPercentage: body.ownershipPercentage?.trim() || "",
       taxId: body.taxId?.trim() || "",
       stateOfInc: body.stateOfInc?.trim() || "",
-      dateBusinessStarted: body.dateBusinessStarted?.trim() || "",
       legalEntity: body.legalEntity?.trim() || "",
-      natureOfBusiness: body.natureOfBusiness?.trim() || "",
-      hasExistingLoans: body.hasExistingLoans?.trim() || "",
       industry: body.industry?.trim() || "",
+      hasExistingLoans: body.hasExistingLoans?.trim() || "",
       yearsInBusiness: body.yearsInBusiness?.trim() || "",
       monthlyRevenue: body.monthlyRevenue?.trim() || "",
       amountNeeded: body.amountNeeded?.trim() || "",
@@ -102,8 +96,6 @@ export async function POST(
       dateOfBirth: body.dateOfBirth?.trim() || "",
       socialSecurity: body.socialSecurity?.trim() || "",
       personalAddress: body.personalAddress?.trim() || "",
-      personalCity: body.personalCity?.trim() || "",
-      personalState: body.personalState?.trim() || "",
       personalZip: body.personalZip?.trim() || "",
       
       // Legal Information Section
@@ -125,11 +117,9 @@ export async function POST(
       "ownershipPercentage",
       "taxId",
       "stateOfInc",
-      "dateBusinessStarted",
       "legalEntity",
-      "natureOfBusiness",
-      "hasExistingLoans",
       "industry",
+      "hasExistingLoans",
       "yearsInBusiness",
       "monthlyRevenue",
       "amountNeeded",
@@ -140,8 +130,6 @@ export async function POST(
       "dateOfBirth",
       "socialSecurity",
       "personalAddress",
-      "personalCity",
-      "personalState",
       "personalZip",
       
       // Legal Information Section
@@ -246,11 +234,9 @@ export async function POST(
         ownershipPercentage: trimmedData.ownershipPercentage,
         taxId: trimmedData.taxId,
         stateOfInc: trimmedData.stateOfInc,
-        dateBusinessStarted: trimmedData.dateBusinessStarted,
         legalEntity: trimmedData.legalEntity,
-        natureOfBusiness: trimmedData.natureOfBusiness,
-        hasExistingLoans: trimmedData.hasExistingLoans,
         industry: trimmedData.industry,
+        hasExistingLoans: trimmedData.hasExistingLoans,
         yearsInBusiness: yearsInBusiness,
         monthlyRevenue: trimmedData.monthlyRevenue,
         amountNeeded: trimmedData.amountNeeded,
@@ -261,8 +247,6 @@ export async function POST(
         dateOfBirth: trimmedData.dateOfBirth,
         socialSecurity: trimmedData.socialSecurity,
         personalAddress: trimmedData.personalAddress,
-        personalCity: trimmedData.personalCity,
-        personalState: trimmedData.personalState,
         personalZip: trimmedData.personalZip,
         
         // Legal Information Section

@@ -19,10 +19,14 @@ export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
 
   const handleStep1Complete = () => {
     setCurrentStep(2);
+    // Scroll to top when transitioning to next step
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleStep2Complete = () => {
     setCurrentStep(3);
+    // Scroll to top when transitioning to completion page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Progress indicator

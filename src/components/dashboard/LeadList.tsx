@@ -198,11 +198,7 @@ export function LeadList({
                     <div className="text-xs text-gray-900 truncate">
                       {lead.businessName || "N/A"}
                     </div>
-                    {lead.industry && (
-                      <div className="text-xs text-gray-500 truncate">
-                        {lead.industry}
-                      </div>
-                    )}
+
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <span
@@ -313,7 +309,6 @@ export function LeadList({
                     <div>
                       <div className="font-medium text-gray-700">Business</div>
                       <div>{lead.businessName || "N/A"}</div>
-                      <div>{lead.industry || "No industry"}</div>
                     </div>
                   </div>
 
@@ -400,8 +395,7 @@ export function LeadList({
                     </p>
                     {lead.businessName && (
                       <p className="text-sm text-gray-500 mt-1">
-                        {lead.businessName}{" "}
-                        {lead.industry && `• ${lead.industry}`}
+                        {lead.businessName}
                       </p>
                     )}
                   </div>

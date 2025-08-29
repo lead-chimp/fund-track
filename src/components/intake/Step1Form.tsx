@@ -24,11 +24,9 @@ interface Step1FormData {
   ownershipPercentage: string; // Percentage of Ownership* (input_40)
   taxId: string; // Tax ID* (input_35)
   stateOfInc: string; // State of Inc* (input_77) - dropdown
-  dateBusinessStarted: string; // Date Business Started* (input_78)
   legalEntity: string; // Legal Entity* (input_44) - dropdown
-  natureOfBusiness: string; // Nature of Business* (input_80) - dropdown
-  hasExistingLoans: string; // Do You Have Any Loans Now* (input_43)
   industry: string; // Enter Your Industry or Product Type* (input_81)
+  hasExistingLoans: string; // Do You Have Any Loans Now* (input_43)
   yearsInBusiness: string; // Years in Business* - new field
   monthlyRevenue: string; // Monthly Gross Revenue* (input_21) - dropdown
   amountNeeded: string; // Amount Requested* (input_22) - dropdown
@@ -39,8 +37,6 @@ interface Step1FormData {
   dateOfBirth: string; // Date of Birth* (input_79)
   socialSecurity: string; // Social Security* (input_46)
   personalAddress: string; // Address* (input_47)
-  personalCity: string; // City* (input_48)
-  personalState: string; // State* (input_52) - dropdown
   personalZip: string; // Zip Code* (input_50)
 
   // Legal Information Section
@@ -119,20 +115,7 @@ const LEGAL_ENTITIES = [
   { value: "Other", label: "Other" },
 ];
 
-const NATURE_OF_BUSINESS = [
-  { value: "", label: "Select Nature of Business" },
-  { value: "Retail", label: "Retail" },
-  { value: "Restaurant", label: "Restaurant" },
-  { value: "Service", label: "Service" },
-  { value: "Manufacturing", label: "Manufacturing" },
-  { value: "Construction", label: "Construction" },
-  { value: "Healthcare", label: "Healthcare" },
-  { value: "Technology", label: "Technology" },
-  { value: "Transportation", label: "Transportation" },
-  { value: "Real Estate", label: "Real Estate" },
-  { value: "Professional Services", label: "Professional Services" },
-  { value: "Other", label: "Other" },
-];
+
 
 const MONTHLY_REVENUE_OPTIONS = [
   { value: "", label: "Select Monthly Revenue" },
@@ -178,11 +161,9 @@ export default function Step1Form({
       intakeSession.lead.ownershipPercentage?.toString() || "",
     taxId: intakeSession.lead.taxId || "",
     stateOfInc: intakeSession.lead.stateOfInc || "",
-    dateBusinessStarted: intakeSession.lead.dateBusinessStarted || "",
     legalEntity: intakeSession.lead.legalEntity || "",
-    natureOfBusiness: intakeSession.lead.natureOfBusiness || "",
-    hasExistingLoans: intakeSession.lead.hasExistingLoans || "",
     industry: intakeSession.lead.industry || "",
+    hasExistingLoans: intakeSession.lead.hasExistingLoans || "",
     yearsInBusiness: intakeSession.lead.yearsInBusiness?.toString() || "",
     monthlyRevenue: intakeSession.lead.monthlyRevenue || "",
     amountNeeded: intakeSession.lead.amountNeeded || "",
@@ -193,8 +174,6 @@ export default function Step1Form({
     dateOfBirth: intakeSession.lead.dateOfBirth || "",
     socialSecurity: intakeSession.lead.socialSecurity || "",
     personalAddress: intakeSession.lead.personalAddress || "",
-    personalCity: intakeSession.lead.personalCity || "",
-    personalState: intakeSession.lead.personalState || "",
     personalZip: intakeSession.lead.personalZip || "",
 
     // Legal Information Section
@@ -297,11 +276,9 @@ export default function Step1Form({
       "ownershipPercentage",
       "taxId",
       "stateOfInc",
-      "dateBusinessStarted",
       "legalEntity",
-      "natureOfBusiness",
-      "hasExistingLoans",
       "industry",
+      "hasExistingLoans",
       "yearsInBusiness",
       "monthlyRevenue",
       "amountNeeded",
@@ -310,8 +287,6 @@ export default function Step1Form({
       "dateOfBirth",
       "socialSecurity",
       "personalAddress",
-      "personalCity",
-      "personalState",
       "personalZip",
       "legalName",
       "email",
@@ -559,15 +534,7 @@ export default function Step1Form({
                 error={errors.stateOfInc}
                 required
               />
-              <InputField
-                id="dateBusinessStarted"
-                label="Date Business Started"
-                type="date"
-                value={formData.dateBusinessStarted}
-                onChange={handleInputChange}
-                error={errors.dateBusinessStarted}
-                required
-              />
+
               <SelectField
                 id="legalEntity"
                 label="Legal Entity"
@@ -577,13 +544,12 @@ export default function Step1Form({
                 error={errors.legalEntity}
                 required
               />
-              <SelectField
-                id="natureOfBusiness"
-                label="Nature of Business"
-                value={formData.natureOfBusiness}
+              <InputField
+                id="industry"
+                label="Enter Your Industry or Product Type"
+                value={formData.industry}
                 onChange={handleInputChange}
-                options={NATURE_OF_BUSINESS}
-                error={errors.natureOfBusiness}
+                error={errors.industry}
                 required
               />
               <SelectField
@@ -599,14 +565,7 @@ export default function Step1Form({
                 error={errors.hasExistingLoans}
                 required
               />
-              <InputField
-                id="industry"
-                label="Enter Your Industry or Product Type"
-                value={formData.industry}
-                onChange={handleInputChange}
-                error={errors.industry}
-                required
-              />
+
               <InputField
                 id="yearsInBusiness"
                 label="Years in Business"
@@ -688,23 +647,7 @@ export default function Step1Form({
                 required
                 className="md:col-span-2"
               />
-              <InputField
-                id="personalCity"
-                label="Personal City"
-                value={formData.personalCity}
-                onChange={handleInputChange}
-                error={errors.personalCity}
-                required
-              />
-              <SelectField
-                id="personalState"
-                label="State"
-                value={formData.personalState}
-                onChange={handleInputChange}
-                options={US_STATES}
-                error={errors.personalState}
-                required
-              />
+
               <InputField
                 id="personalZip"
                 label="Zip Code"
