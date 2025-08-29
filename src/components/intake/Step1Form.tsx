@@ -225,6 +225,21 @@ export default function Step1Form({
       }
     }
 
+    // Format zip codes as 12345 or 12345-6789
+    if (fieldName === "businessZip" || fieldName === "personalZip") {
+      // Remove all non-digit characters
+      const cleaned = value.replace(/\D/g, "");
+
+      // Format as 12345 or 12345-6789
+      if (cleaned.length <= 5) {
+        formattedValue = cleaned;
+      } else if (cleaned.length <= 9) {
+        formattedValue = cleaned.slice(0, 5) + "-" + cleaned.slice(5);
+      } else {
+        formattedValue = cleaned.slice(0, 5) + "-" + cleaned.slice(5, 9);
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [fieldName]: formattedValue,
@@ -323,6 +338,17 @@ export default function Step1Form({
       if (!taxIdRegex.test(formData.taxId)) {
         newErrors.taxId = "Please enter Tax ID in format XX-XXXXXXX";
       }
+    }
+
+    // Zip code validation (5 digits or 5+4 format)
+    const zipRegex = /^\d{5}(-\d{4})?$/;
+    if (formData.businessZip && !zipRegex.test(formData.businessZip)) {
+      newErrors.businessZip =
+        "Please enter a valid zip code (e.g., 12345 or 12345-6789)";
+    }
+    if (formData.personalZip && !zipRegex.test(formData.personalZip)) {
+      newErrors.personalZip =
+        "Please enter a valid zip code (e.g., 12345 or 12345-6789)";
     }
 
     setErrors(newErrors);
@@ -440,6 +466,7 @@ export default function Step1Form({
                 value={formData.businessZip}
                 onChange={handleInputChange}
                 error={errors.businessZip}
+                placeholder="12345"
                 required
               />
               <InputField
@@ -650,6 +677,7 @@ export default function Step1Form({
                 value={formData.personalZip}
                 onChange={handleInputChange}
                 error={errors.personalZip}
+                placeholder="12345"
                 required
               />
             </div>
