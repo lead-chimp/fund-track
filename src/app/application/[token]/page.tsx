@@ -207,7 +207,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
                   <p className="text-sm text-gray-600">
                     Need assistance? Our funding experts are here to help at{" "}
                     <span className="font-medium">
-                      support@merchantfunding.com
+                      support@merchantfunding.com or +1 888-867-3087
                     </span>
                   </p>
                 </div>

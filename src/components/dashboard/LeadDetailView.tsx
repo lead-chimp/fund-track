@@ -803,7 +803,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                             : "text-gray-500"
                         }`}
                       >
-                        Business & Personal Info
+                        Business Info
                       </div>
                       {lead.step1CompletedAt && (
                         <div className="text-xs text-gray-500">

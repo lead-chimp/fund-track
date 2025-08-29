@@ -31,11 +31,7 @@ export default function CompletionPage({ intakeSession }: CompletionPageProps) {
                 <ul className="space-y-2 text-gray-600">
                     <li className="flex items-start">
                         <span className="text-green-500 mr-2">•</span>
-                        Our team will review your application within 24 hours
-                    </li>
-                    <li className="flex items-start">
-                        <span className="text-green-500 mr-2">•</span>
-                        You&apos;ll receive an email confirmation shortly
+                        Our team will review your application within 1-2 business hours
                     </li>
                     <li className="flex items-start">
                         <span className="text-green-500 mr-2">•</span>
