@@ -60,7 +60,7 @@ export async function sendIntakeNotification(
       subject: "Complete Your Merchant Funding Application",
       text: `Hi ${leadName},
 
-Thank you for your interest in merchant funding${businessText}. To complete your application, please click the link below:
+Thank you for requesting information on merchant funding${businessText}. My name is Ryan and I’ll be assisting you through the process. Please click on the link below to complete your application:
 
 ${intakeUrl}
 
@@ -77,7 +77,7 @@ Merchant Funding Team`,
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Complete Your Merchant Funding Application</h2>
           <p>Hi ${leadName},</p>
-          <p>Thank you for your interest in merchant funding${businessText}. To complete your application, please click the button below:</p>
+          <p>Thank you for requesting information on merchant funding${businessText}. My name is Ryan and I’ll be assisting you through the process. Please click on the link below to complete your application:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Application</a>
           </div>
