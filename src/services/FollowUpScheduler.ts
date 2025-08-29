@@ -424,7 +424,7 @@ Merchant Funding Team`,
         <h2>${message.emailSubject}</h2>
         <p>Hi ${leadName},</p>
         <p>${message.urgency} your merchant funding application that you started ${message.timeframe}.</p>
-        <p><a href="${intakeUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Application Now</a></p>
+        <p><a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Click here to complete your application</a></p>
         <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
         <p>If you have any questions, please don't hesitate to contact us.</p>
         <p>Best regards,<br>Merchant Funding Team</p>

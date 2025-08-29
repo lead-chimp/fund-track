@@ -79,7 +79,7 @@ Merchant Funding Team`,
           <p>Hi ${leadName},</p>
           <p>Thank you for requesting information on merchant funding${businessText}. My name is Ryan and I’ll be assisting you through the process. Please click on the link below to complete your application:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Application</a>
+            <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Click here to complete your application</a>
           </div>
           <p>This secure link will allow you to:</p>
           <ul>
@@ -168,7 +168,7 @@ Merchant Funding Team`,
           <p>Hi ${leadName},</p>
           <p>${followUpMessage}</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Now</a>
+            <a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Click here to complete your application</a>
           </div>
           <p>This will only take a few minutes and you can save your progress at any time.</p>
           <p>Best regards,<br>Merchant Funding Team</p>

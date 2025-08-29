@@ -245,7 +245,7 @@ export class BackgroundJobScheduler {
                 <h2>Complete Your Merchant Funding Application</h2>
                 <p>Hi ${leadName},</p>
                 <p>Thank you for requesting information on merchant funding for your business. My name is Ryan and I’ll be assisting you through the process. Please click on the link below to complete your application:</p>
-                <p><a href="${intakeUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Complete Application</a></p>
+                <p><a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Click here to complete your application</a></p>
                 <p>This secure link will allow you to provide the required information and upload necessary documents.</p>
                 <p>If you have any questions, please don't hesitate to contact us.</p>
                 <p>Best regards,<br>Merchant Funding Team</p>
