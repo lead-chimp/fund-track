@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
@@ -12,80 +9,64 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  leadNotes         LeadNote[]
-  documents         Document[]
-  statusChanges     LeadStatusHistory[]
-  systemSettings    SystemSetting[]
+  id             Int                 @id @default(autoincrement())
+  email          String              @unique
+  passwordHash   String              @map("password_hash")
+  role           UserRole            @default(USER)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  documents      Document[]
+  leadNotes      LeadNote[]
+  statusChanges  LeadStatusHistory[]
+  systemSettings SystemSetting[]
 
   @@map("users")
 }
 
 model Lead {
-  id                Int        @id @default(autoincrement())
-  legacyLeadId      BigInt     @unique @map("legacy_lead_id")
-  campaignId        Int        @map("campaign_id")
-  
-  // Contact Information
-  email             String?
-  phone             String?
-  firstName         String?    @map("first_name")
-  lastName          String?    @map("last_name")
-  
-  // Business Information
-  businessName      String?    @map("business_name")
-  dba               String?
-  businessAddress   String?    @map("business_address")
-  businessPhone     String?    @map("business_phone")
-  businessEmail     String?    @map("business_email")
-  mobile            String?    @map("mobile")
-  businessCity      String?    @map("business_city")
-  businessState     String?    @map("business_state")
-  businessZip       String?    @map("business_zip")
-  industry          String?
-  yearsInBusiness   Int?       @map("years_in_business")
-  amountNeeded      String?    @map("amount_needed")
-  monthlyRevenue    String?    @map("monthly_revenue")
-  ownershipPercentage String?  @map("ownership_percentage")
-  taxId             String?    @map("tax_id")
-  stateOfInc        String?    @map("state_of_inc")
-  dateBusinessStarted String?  @map("date_business_started")
-  legalEntity       String?    @map("legal_entity")
-  natureOfBusiness  String?    @map("nature_of_business")
-  hasExistingLoans  String?    @map("has_existing_loans")
-  
-  // Personal Information
-  dateOfBirth       String?    @map("date_of_birth")
-  socialSecurity    String?    @map("social_security")
-  personalAddress   String?    @map("personal_address")
-  personalCity      String?    @map("personal_city")
-  personalState     String?    @map("personal_state")
-  personalZip       String?    @map("personal_zip")
-  legalName         String?    @map("legal_name")
-  
-  // System fields
-  status            LeadStatus @default(NEW)
-  intakeToken       String?    @unique @map("intake_token")
-  intakeCompletedAt DateTime?  @map("intake_completed_at")
-  step1CompletedAt  DateTime?  @map("step1_completed_at")
-  step2CompletedAt  DateTime?  @map("step2_completed_at")
-  createdAt         DateTime   @default(now()) @map("created_at")
-  updatedAt         DateTime   @updatedAt @map("updated_at")
-  importedAt        DateTime   @default(now()) @map("imported_at")
-
-  // Relations
-  notes           LeadNote[]
-  documents       Document[]
-  followupQueue   FollowupQueue[]
-  notificationLog NotificationLog[]
-  statusHistory   LeadStatusHistory[]
+  id                  Int                 @id @default(autoincrement())
+  legacyLeadId        BigInt              @unique @map("legacy_lead_id")
+  campaignId          Int                 @map("campaign_id")
+  email               String?
+  phone               String?
+  firstName           String?             @map("first_name")
+  lastName            String?             @map("last_name")
+  businessName        String?             @map("business_name")
+  status              LeadStatus          @default(NEW)
+  intakeToken         String?             @unique @map("intake_token")
+  intakeCompletedAt   DateTime?           @map("intake_completed_at")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  importedAt          DateTime            @default(now()) @map("imported_at")
+  step1CompletedAt    DateTime?           @map("step1_completed_at")
+  step2CompletedAt    DateTime?           @map("step2_completed_at")
+  amountNeeded        String?             @map("amount_needed")
+  monthlyRevenue      String?             @map("monthly_revenue")
+  yearsInBusiness     Int?                @map("years_in_business")
+  businessAddress     String?             @map("business_address")
+  businessCity        String?             @map("business_city")
+  businessEmail       String?             @map("business_email")
+  businessPhone       String?             @map("business_phone")
+  businessState       String?             @map("business_state")
+  businessZip         String?             @map("business_zip")
+  dateOfBirth         String?             @map("date_of_birth")
+  dba                 String?
+  hasExistingLoans    String?             @map("has_existing_loans")
+  industry            String?
+  legalEntity         String?             @map("legal_entity")
+  legalName           String?             @map("legal_name")
+  ownershipPercentage String?             @map("ownership_percentage")
+  personalAddress     String?             @map("personal_address")
+  personalZip         String?             @map("personal_zip")
+  socialSecurity      String?             @map("social_security")
+  stateOfInc          String?             @map("state_of_inc")
+  taxId               String?             @map("tax_id")
+  mobile              String?             @map("mobile")
+  documents           Document[]
+  followupQueue       FollowupQueue[]
+  notes               LeadNote[]
+  statusHistory       LeadStatusHistory[]
+  notificationLog     NotificationLog[]
 
   @@map("leads")
 }
@@ -96,10 +77,8 @@ model LeadNote {
   userId    Int      @map("user_id")
   content   String
   createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("lead_notes")
 }
@@ -115,10 +94,8 @@ model Document {
   b2BucketName     String   @map("b2_bucket_name")
   uploadedBy       Int?     @map("uploaded_by")
   uploadedAt       DateTime @default(now()) @map("uploaded_at")
-
-  // Relations
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [uploadedBy], references: [id])
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user             User?    @relation(fields: [uploadedBy], references: [id])
 
   @@map("documents")
 }
@@ -131,9 +108,7 @@ model FollowupQueue {
   status       FollowupStatus @default(PENDING)
   sentAt       DateTime?      @map("sent_at")
   createdAt    DateTime       @default(now()) @map("created_at")
-
-  // Relations
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead         Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@map("followup_queue")
 }
@@ -150,48 +125,41 @@ model NotificationLog {
   errorMessage String?            @map("error_message")
   sentAt       DateTime?          @map("sent_at")
   createdAt    DateTime           @default(now()) @map("created_at")
-
-  // Relations
-  lead Lead? @relation(fields: [leadId], references: [id])
+  lead         Lead?              @relation(fields: [leadId], references: [id])
 
   @@map("notification_log")
 }
 
 model LeadStatusHistory {
-  id           Int        @id @default(autoincrement())
-  leadId       Int        @map("lead_id")
+  id             Int         @id @default(autoincrement())
+  leadId         Int         @map("lead_id")
   previousStatus LeadStatus? @map("previous_status")
-  newStatus    LeadStatus @map("new_status")
-  changedBy    Int        @map("changed_by")
-  reason       String?
-  createdAt    DateTime   @default(now()) @map("created_at")
-
-  // Relations
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [changedBy], references: [id])
+  newStatus      LeadStatus  @map("new_status")
+  changedBy      Int         @map("changed_by")
+  reason         String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  user           User        @relation(fields: [changedBy], references: [id])
+  lead           Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@map("lead_status_history")
 }
 
 model SystemSetting {
-  id           Int                @id @default(autoincrement())
-  key          String             @unique
+  id           Int                   @id @default(autoincrement())
+  key          String                @unique
   value        String
   type         SystemSettingType
   category     SystemSettingCategory
   description  String
-  defaultValue String             @map("default_value")
-  updatedBy    Int?               @map("updated_by")
-  createdAt    DateTime           @default(now()) @map("created_at")
-  updatedAt    DateTime           @updatedAt @map("updated_at")
-
-  // Relations
-  user User? @relation(fields: [updatedBy], references: [id])
+  defaultValue String                @map("default_value")
+  updatedBy    Int?                  @map("updated_by")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  user         User?                 @relation(fields: [updatedBy], references: [id])
 
   @@map("system_settings")
 }
 
-// Enums
 enum UserRole {
   ADMIN @map("admin")
   USER  @map("user")
@@ -251,8 +219,8 @@ enum SystemSettingType {
 }
 
 enum SystemSettingCategory {
-  NOTIFICATIONS    @map("notifications")
-  CONNECTIVITY     @map("connectivity")
+  NOTIFICATIONS @map("notifications")
+  CONNECTIVITY  @map("connectivity")
 
   @@map("system_setting_category")
 }
