@@ -240,6 +240,33 @@ export default function Step1Form({
       }
     }
 
+    // Format Social Security Number as XXX-XX-XXXX
+    if (fieldName === "socialSecurity") {
+      // Remove all non-digit characters
+      const cleaned = value.replace(/\D/g, "");
+
+      // Format as XXX-XX-XXXX (3-2-4 format)
+      if (cleaned.length <= 3) {
+        formattedValue = cleaned;
+      } else if (cleaned.length <= 5) {
+        formattedValue = cleaned.slice(0, 3) + "-" + cleaned.slice(3);
+      } else if (cleaned.length <= 9) {
+        formattedValue =
+          cleaned.slice(0, 3) +
+          "-" +
+          cleaned.slice(3, 5) +
+          "-" +
+          cleaned.slice(5);
+      } else {
+        formattedValue =
+          cleaned.slice(0, 3) +
+          "-" +
+          cleaned.slice(3, 5) +
+          "-" +
+          cleaned.slice(5, 9);
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [fieldName]: formattedValue,
@@ -349,6 +376,13 @@ export default function Step1Form({
     if (formData.personalZip && !zipRegex.test(formData.personalZip)) {
       newErrors.personalZip =
         "Please enter a valid zip code (e.g., 12345 or 12345-6789)";
+    }
+
+    // Social Security Number validation (XXX-XX-XXXX format)
+    const ssnRegex = /^\d{3}-\d{2}-\d{4}$/;
+    if (formData.socialSecurity && !ssnRegex.test(formData.socialSecurity)) {
+      newErrors.socialSecurity =
+        "Please enter Social Security Number in format XXX-XX-XXXX";
     }
 
     setErrors(newErrors);
