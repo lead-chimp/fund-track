@@ -16,7 +16,7 @@ async function testIntakeCompletion() {
   try {
     // Find a lead with PENDING status
     let testLead = await prisma.lead.findFirst({
-      where: { 
+      where: {
         status: 'PENDING',
         intakeToken: { not: null }
       },
@@ -29,6 +29,7 @@ async function testIntakeCompletion() {
         intakeToken: true,
         step1CompletedAt: true,
         step2CompletedAt: true,
+        step3CompletedAt: true,
         intakeCompletedAt: true
       }
     });
@@ -36,7 +37,7 @@ async function testIntakeCompletion() {
     // If no pending lead exists, create one for testing
     if (!testLead) {
       console.log('📝 Creating test lead with PENDING status...');
-      
+
       const token = TokenService.generateToken();
       testLead = await prisma.lead.create({
         data: {
@@ -61,6 +62,7 @@ async function testIntakeCompletion() {
           intakeToken: true,
           step1CompletedAt: true,
           step2CompletedAt: true,
+          step3CompletedAt: true,
           intakeCompletedAt: true
         }
       });
@@ -71,6 +73,7 @@ async function testIntakeCompletion() {
     console.log(`   Current Status: ${testLead.status}`);
     console.log(`   Step 1 Completed: ${testLead.step1CompletedAt ? 'Yes' : 'No'}`);
     console.log(`   Step 2 Completed: ${testLead.step2CompletedAt ? 'Yes' : 'No'}`);
+    console.log(`   Step 3 Completed: ${testLead.step3CompletedAt ? 'Yes' : 'No'}`);
     console.log(`   Intake Completed: ${testLead.intakeCompletedAt ? 'Yes' : 'No'}\n`);
 
     // Get status history before
@@ -90,16 +93,23 @@ async function testIntakeCompletion() {
     });
     console.log();
 
-    // Test the markStep2Completed function
-    console.log('🚀 Simulating step 2 completion (document upload)...');
-    const success = await TokenService.markStep2Completed(testLead.id);
+    // Test the markStep3Completed function (which completes the entire intake)
+    console.log('🚀 Simulating step 3 completion (digital signature)...');
+
+    // First mark step 2 as completed if not already
+    if (!testLead.step2CompletedAt) {
+      console.log('📝 Marking step 2 as completed first...');
+      await TokenService.markStep2Completed(testLead.id);
+    }
+
+    const success = await TokenService.markStep3Completed(testLead.id);
 
     if (!success) {
-      console.error('❌ Failed to mark step 2 as completed');
+      console.error('❌ Failed to mark step 3 as completed');
       return;
     }
 
-    console.log('✅ Step 2 marked as completed successfully\n');
+    console.log('✅ Step 3 marked as completed successfully\n');
 
     // Check the updated lead
     const updatedLead = await prisma.lead.findUnique({
@@ -109,6 +119,7 @@ async function testIntakeCompletion() {
         status: true,
         step1CompletedAt: true,
         step2CompletedAt: true,
+        step3CompletedAt: true,
         intakeCompletedAt: true
       }
     });
@@ -116,6 +127,7 @@ async function testIntakeCompletion() {
     console.log('📋 Updated lead status:');
     console.log(`   Status: ${testLead.status} → ${updatedLead.status}`);
     console.log(`   Step 2 Completed: ${testLead.step2CompletedAt ? 'Yes' : 'No'} → ${updatedLead.step2CompletedAt ? 'Yes' : 'No'}`);
+    console.log(`   Step 3 Completed: ${testLead.step3CompletedAt ? 'Yes' : 'No'} → ${updatedLead.step3CompletedAt ? 'Yes' : 'No'}`);
     console.log(`   Intake Completed: ${testLead.intakeCompletedAt ? 'Yes' : 'No'} → ${updatedLead.intakeCompletedAt ? 'Yes' : 'No'}\n`);
 
     // Get status history after
@@ -139,6 +151,7 @@ async function testIntakeCompletion() {
     const expectedChanges = [
       updatedLead.status === 'IN_PROGRESS',
       updatedLead.step2CompletedAt !== null,
+      updatedLead.step3CompletedAt !== null,
       updatedLead.intakeCompletedAt !== null,
       statusHistoryAfter.length > statusHistoryBefore.length
     ];
@@ -149,15 +162,17 @@ async function testIntakeCompletion() {
       console.log('✅ All expected changes verified:');
       console.log('   ✓ Lead status changed to IN_PROGRESS');
       console.log('   ✓ Step 2 marked as completed');
+      console.log('   ✓ Step 3 marked as completed');
       console.log('   ✓ Intake marked as completed');
       console.log('   ✓ Status history entry created');
-      console.log('\n🎉 Test completed successfully! Staff will now be notified when documents are uploaded.');
+      console.log('\n🎉 Test completed successfully! Staff will now be notified when digital signature is completed.');
     } else {
       console.log('❌ Some expected changes were not found:');
       console.log(`   Status is IN_PROGRESS: ${expectedChanges[0] ? '✓' : '❌'}`);
       console.log(`   Step 2 completed: ${expectedChanges[1] ? '✓' : '❌'}`);
-      console.log(`   Intake completed: ${expectedChanges[2] ? '✓' : '❌'}`);
-      console.log(`   Status history updated: ${expectedChanges[3] ? '✓' : '❌'}`);
+      console.log(`   Step 3 completed: ${expectedChanges[2] ? '✓' : '❌'}`);
+      console.log(`   Intake completed: ${expectedChanges[3] ? '✓' : '❌'}`);
+      console.log(`   Status history updated: ${expectedChanges[4] ? '✓' : '❌'}`);
     }
 
   } catch (error) {

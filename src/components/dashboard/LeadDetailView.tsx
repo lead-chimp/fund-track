@@ -67,6 +67,9 @@ interface LeadDetail {
   intakeCompletedAt: string | null;
   step1CompletedAt: string | null;
   step2CompletedAt: string | null;
+  step3CompletedAt: string | null;
+  digitalSignature: string | null;
+  signatureDate: string | null;
   createdAt: string;
   updatedAt: string;
   importedAt: string;
@@ -827,6 +830,40 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     {/* Connecting Line */}
                     <div
                       className={`flex-1 h-0.5 mt-5 mx-4 ${
+                        lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
+                      }`}
+                    ></div>
+
+                    {/* Step 3 */}
+                    <div className="flex flex-col items-center text-center flex-1">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
+                          lead.step3CompletedAt
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {lead.step3CompletedAt ? "✓" : "3"}
+                      </div>
+                      <div
+                        className={`text-sm font-medium mb-1 ${
+                          lead.step3CompletedAt
+                            ? "text-green-700"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        Digital Signature
+                      </div>
+                      {lead.step3CompletedAt && (
+                        <div className="text-xs text-gray-500">
+                          {formatDate(lead.step3CompletedAt)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Connecting Line */}
+                    <div
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${
                         lead.intakeCompletedAt ? "bg-green-500" : "bg-gray-300"
                       }`}
                     ></div>
@@ -840,7 +877,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                             : "bg-gray-300 text-gray-600"
                         }`}
                       >
-                        {lead.intakeCompletedAt ? "✓" : "3"}
+                        {lead.intakeCompletedAt ? "✓" : "✓"}
                       </div>
                       <div
                         className={`text-sm font-medium mb-1 ${
@@ -868,9 +905,13 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                       <span className="text-green-600 font-medium">
                         Complete
                       </span>
+                    ) : lead.step3CompletedAt ? (
+                      <span className="text-blue-600 font-medium">
+                        Digital signature complete, processing application
+                      </span>
                     ) : lead.step2CompletedAt ? (
                       <span className="text-blue-600 font-medium">
-                        Documents uploaded, pending final submission
+                        Documents uploaded, pending digital signature
                       </span>
                     ) : lead.step1CompletedAt ? (
                       <span className="text-yellow-600 font-medium">
@@ -892,6 +933,66 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
               </div>
             </div>
           </div>
+
+          {/* Digital Signature */}
+          {lead.digitalSignature && (
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Digital Signature
+                </h2>
+              </div>
+              <div className="px-6 py-4">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Signed By
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {lead.legalName || [lead.firstName, lead.lastName].filter(Boolean).join(" ") || "N/A"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Signature Date
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {lead.signatureDate ? formatDate(lead.signatureDate) : "N/A"}
+                          </dd>
+                        </div>
+                      </dl>
+                      
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500 mb-2">
+                          Signature
+                        </dt>
+                        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                          <img
+                            src={lead.digitalSignature}
+                            alt="Digital Signature"
+                            className="max-w-full h-auto max-h-32 border border-gray-300 rounded bg-white"
+                            style={{ imageRendering: 'crisp-edges' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-gray-200">
+                    <div className="flex items-center text-sm text-green-700">
+                      <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Digital signature completed and verified
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Financial Information */}
           <div className="bg-white shadow rounded-lg">

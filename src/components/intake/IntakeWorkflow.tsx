@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { IntakeSession } from '@/services/TokenService';
 import Step1Form from './Step1Form';
 import Step2Form from './Step2Form';
+import Step3Form from './Step3Form';
 import CompletionPage from './CompletionPage';
 
 interface IntakeWorkflowProps {
@@ -12,7 +13,8 @@ interface IntakeWorkflowProps {
 
 export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
   const [currentStep, setCurrentStep] = useState(() => {
-    if (intakeSession.isCompleted) return 3;
+    if (intakeSession.isCompleted) return 4;
+    if (intakeSession.step2Completed) return 3;
     if (intakeSession.step1Completed) return 2;
     return 1;
   });
@@ -25,6 +27,12 @@ export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
 
   const handleStep2Complete = () => {
     setCurrentStep(3);
+    // Scroll to top when transitioning to next step
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStep3Complete = () => {
+    setCurrentStep(4);
     // Scroll to top when transitioning to completion page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -56,7 +64,7 @@ export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
             </span>
           </div>
           
-          <div className={`flex-1 h-1 mx-4 ${
+          <div className={`flex-1 h-1 mx-2 ${
             getStepStatus(2) !== 'upcoming' ? 'bg-green-500' : 'bg-gray-300'
           }`} />
           
@@ -72,6 +80,25 @@ export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
             </div>
             <span className="ml-2 text-sm font-medium text-gray-900">
               Document Upload
+            </span>
+          </div>
+
+          <div className={`flex-1 h-1 mx-2 ${
+            getStepStatus(3) !== 'upcoming' ? 'bg-green-500' : 'bg-gray-300'
+          }`} />
+          
+          <div className="flex items-center">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+              getStepStatus(3) === 'completed' 
+                ? 'bg-green-500 text-white' 
+                : getStepStatus(3) === 'current'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-300 text-gray-600'
+            }`}>
+              {getStepStatus(3) === 'completed' ? '✓' : '3'}
+            </div>
+            <span className="ml-2 text-sm font-medium text-gray-900">
+              Digital Signature
             </span>
           </div>
         </div>
@@ -93,6 +120,13 @@ export default function IntakeWorkflow({ intakeSession }: IntakeWorkflowProps) {
       )}
       
       {currentStep === 3 && (
+        <Step3Form 
+          intakeSession={intakeSession} 
+          onComplete={handleStep3Complete}
+        />
+      )}
+      
+      {currentStep === 4 && (
         <CompletionPage intakeSession={intakeSession} />
       )}
     </div>

@@ -11,6 +11,7 @@ export interface IntakeSession {
   isCompleted: boolean;
   step1Completed: boolean;
   step2Completed: boolean;
+  step3Completed: boolean;
   lead: {
     id: number;
     // Contact Information
@@ -45,6 +46,10 @@ export interface IntakeSession {
     personalAddress: string | null;
     personalZip: string | null;
     legalName: string | null;
+
+    // Digital Signature
+    digitalSignature: string | null;
+    signatureDate: Date | null;
 
     status: string;
   };
@@ -100,12 +105,17 @@ export class TokenService {
           personalZip: true,
           legalName: true,
 
+          // Digital Signature
+          digitalSignature: true,
+          signatureDate: true,
+
           // System fields
           status: true,
           intakeToken: true,
           intakeCompletedAt: true,
           step1CompletedAt: true,
           step2CompletedAt: true,
+          step3CompletedAt: true,
         },
       });
 
@@ -116,6 +126,7 @@ export class TokenService {
       const isCompleted = lead.intakeCompletedAt !== null;
       const step1Completed = lead.step1CompletedAt !== null;
       const step2Completed = lead.step2CompletedAt !== null;
+      const step3Completed = lead.step3CompletedAt !== null;
 
       return {
         leadId: lead.id,
@@ -124,6 +135,7 @@ export class TokenService {
         isCompleted,
         step1Completed,
         step2Completed,
+        step3Completed,
         lead: {
           id: lead.id,
           // Contact Information
@@ -158,6 +170,10 @@ export class TokenService {
           personalAddress: lead.personalAddress,
           personalZip: lead.personalZip,
           legalName: lead.legalName,
+
+          // Digital Signature
+          digitalSignature: lead.digitalSignature,
+          signatureDate: lead.signatureDate,
 
           status: lead.status,
         },
@@ -211,11 +227,30 @@ export class TokenService {
    */
   static async markStep2Completed(leadId: number): Promise<boolean> {
     try {
+      // Mark step 2 as completed (but not the entire intake)
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: {
+          step2CompletedAt: new Date()
+        },
+      });
+      return true;
+    } catch (error) {
+      console.error('Error marking step 2 completed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Mark step 3 as completed for a lead
+   */
+  static async markStep3Completed(leadId: number): Promise<boolean> {
+    try {
       // First, mark the intake steps as completed
       await prisma.lead.update({
         where: { id: leadId },
         data: {
-          step2CompletedAt: new Date(),
+          step3CompletedAt: new Date(),
           intakeCompletedAt: new Date() // Mark entire intake as completed
         },
       });
@@ -272,6 +307,7 @@ export class TokenService {
   static async getIntakeProgress(leadId: number): Promise<{
     step1Completed: boolean;
     step2Completed: boolean;
+    step3Completed: boolean;
     intakeCompleted: boolean;
   } | null> {
     try {
@@ -280,6 +316,7 @@ export class TokenService {
         select: {
           step1CompletedAt: true,
           step2CompletedAt: true,
+          step3CompletedAt: true,
           intakeCompletedAt: true,
         },
       });
@@ -291,6 +328,7 @@ export class TokenService {
       return {
         step1Completed: lead.step1CompletedAt !== null,
         step2Completed: lead.step2CompletedAt !== null,
+        step3Completed: lead.step3CompletedAt !== null,
         intakeCompleted: lead.intakeCompletedAt !== null,
       };
     } catch (error) {

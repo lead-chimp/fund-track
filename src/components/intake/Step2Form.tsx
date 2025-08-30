@@ -304,7 +304,7 @@ export default function Step2Form({ intakeSession, onComplete }: Step2FormProps)
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {isUploading ? 'Uploading...' : 'Upload Documents'}
+          {isUploading ? 'Uploading...' : 'Continue to Signature'}
         </button>
       </div>
     </div>
