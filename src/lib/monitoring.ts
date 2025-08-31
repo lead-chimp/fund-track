@@ -241,37 +241,5 @@ export async function testConnectivity(): Promise<{
   return result;
 }
 
-// Legacy function names for backward compatibility (now just log locally)
-export function setSentryUser(user: {
-  id?: string;
-  email?: string;
-  username?: string;
-  role?: string;
-}) {
-  // Just log user context locally
-  logger.info('User context set', { userId: user.id, email: user.email, role: user.role });
-}
-
-export function setSentryContext(key: string, context: Record<string, any>) {
-  // Just log context locally
-  logger.info('Context set', { key, context });
-}
-
-export function addSentryBreadcrumb(message: string, data?: Record<string, any>, level: 'info' | 'warning' | 'error' = 'info') {
-  // Just log breadcrumb locally
-  logger[level]('Breadcrumb', { message, data });
-}
-
-export function captureSentryMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
-  // Just log message locally
-  logger[level]('Captured message', { message });
-}
-
-export function startSentrySpan(name: string, op: string = 'custom') {
-  // Just log span start locally
-  logger.info('Span started', { name, op });
-  return null;
-}
-
 // Alias for backward compatibility
 export const testSentryConnectivity = testConnectivity;
