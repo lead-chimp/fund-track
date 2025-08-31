@@ -391,6 +391,9 @@ export class LeadPoller {
       intakeCompletedAt: null,
       step1CompletedAt: null,
       step2CompletedAt: null,
+      step3CompletedAt: null,
+      digitalSignature: null,
+      signatureDate: null,
       importedAt: new Date(),
     };
   }
