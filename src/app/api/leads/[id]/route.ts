@@ -85,7 +85,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         taxId: true,
         stateOfInc: true,
         legalEntity: true,
-        natureOfBusiness: true,
+        industry: true,
         hasExistingLoans: true,
         personalAddress: true,
         personalZip: true,

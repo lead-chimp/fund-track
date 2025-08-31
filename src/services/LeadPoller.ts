@@ -85,13 +85,13 @@ export class LeadPoller {
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
         console.log(`🔄 Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`);
-        
+
         try {
           const batchResult = await this.processBatch(batch);
           result.newLeads += batchResult.newLeads;
           result.duplicatesSkipped += batchResult.duplicatesSkipped;
           result.errors.push(...batchResult.errors);
-          
+
           console.log(`✅ Batch ${i + 1} completed:`, {
             newLeads: batchResult.newLeads,
             duplicatesSkipped: batchResult.duplicatesSkipped,
@@ -139,7 +139,7 @@ export class LeadPoller {
     // Query each campaign table separately since they have variable names
     for (const campaignId of this.config.campaignIds) {
       const tableName = `Leads_${campaignId}`;
-      
+
       // Join Leads table (contact info) with Leads_[CampaignID] table (business info)
       const query = `
         SELECT 
@@ -174,9 +174,9 @@ export class LeadPoller {
         const queryStart = Date.now();
         const leads = await this.legacyDb.query<LegacyLead>(query);
         const queryTime = Date.now() - queryStart;
-        
+
         console.log(`⚡ Query for ${tableName} executed successfully in ${queryTime}ms, returned ${leads.length} leads`);
-        
+
         if (leads.length > 0) {
           const sampleLead = leads[0];
           console.log(`📄 Sample lead data from ${tableName}:`, {
@@ -197,7 +197,7 @@ export class LeadPoller {
             CreatedDate: sampleLead.CreatedDate
           });
         }
-        
+
         allLeads.push(...leads);
       } catch (error) {
         console.error(`❌ Failed to fetch leads from ${tableName}:`, error);
@@ -208,7 +208,7 @@ export class LeadPoller {
 
     // Sort all leads by ID to maintain order
     allLeads.sort((a, b) => a.ID - b.ID);
-    
+
     console.log(`📊 Total leads fetched from all campaigns: ${allLeads.length}`);
     return allLeads;
   }
@@ -237,7 +237,7 @@ export class LeadPoller {
     for (let i = 0; i < legacyLeads.length; i++) {
       const legacyLead = legacyLeads[i];
       console.log(`📝 Processing lead ${i + 1}/${legacyLeads.length}: ID ${legacyLead.ID} (Campaign: ${legacyLead.CampaignID})`);
-      
+
       try {
         // Since we only fetch new leads, we can import directly
         await this.importLead(legacyLead);
@@ -270,7 +270,7 @@ export class LeadPoller {
 
       // Transform and create new lead with intake token
       const transformedLead = this.transformLegacyLead(legacyLead);
-      
+
       console.log(`🔄 Transformed lead data:`, {
         legacyLeadId: transformedLead.legacyLeadId.toString(),
         campaignId: transformedLead.campaignId,
@@ -313,11 +313,11 @@ export class LeadPoller {
    */
   private transformLegacyLead(legacyLead: LegacyLead): Omit<Lead, 'id' | 'createdAt' | 'updatedAt'> {
     console.log(`🔄 Transforming legacy lead ${legacyLead.ID}...`);
-    
+
     // Generate intake token for new leads
     const intakeToken = TokenService.generateToken();
     console.log(`🎫 Generated intake token for lead ${legacyLead.ID}`);
-    
+
     // Sanitize data
     const sanitizedEmail = this.sanitizeString(legacyLead.Email);
     const sanitizedPhone = this.sanitizePhone(legacyLead.Phone);
@@ -326,7 +326,7 @@ export class LeadPoller {
     const sanitizedBusinessName = this.sanitizeString(legacyLead.BusinessName);
     const sanitizedAddress = this.sanitizeString(legacyLead.Address);
     const sanitizedZipCode = this.sanitizeString(legacyLead.ZipCode);
-    
+
     console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
       email: sanitizedEmail ? 'present' : 'null',
       phone: sanitizedPhone ? 'present' : 'null',
@@ -339,34 +339,34 @@ export class LeadPoller {
       personalAddress: sanitizedAddress ? 'present' : 'null',
       personalZip: sanitizedZipCode ? 'present' : 'null'
     });
-    
+
     return {
       legacyLeadId: BigInt(legacyLead.ID),
       campaignId: legacyLead.CampaignID,
-      
+
       // Contact Information
       email: sanitizedEmail,
       phone: sanitizedPhone,
       mobile: null, // Add mobile property, set to null or map if available
       firstName: sanitizedFirstName,
       lastName: sanitizedLastName,
-      
+
       // Business Information (from legacy DB)
       businessName: sanitizedBusinessName,
       yearsInBusiness: legacyLead.YearsInBusiness || null,
       amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
       monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
-      
+
       // Personal Address Information (from Leads table)
       // Note: Legacy Address/City/State/ZipCode are personal, not business addresses
       // Business address fields will be filled during intake process
-      
+
       // Initialize business address fields as null (to be filled in application form)
       businessAddress: null,
       businessCity: null,
       businessState: null,
       businessZip: null,
-      
+
       // Initialize other fields as null (to be filled in application form)
       dba: null,
       businessPhone: null,
@@ -375,16 +375,16 @@ export class LeadPoller {
       taxId: null,
       stateOfInc: null,
       legalEntity: null,
-      natureOfBusiness: null,
+      industry: null,
       hasExistingLoans: null,
       dateOfBirth: null,
       socialSecurity: null,
-      
+
       // Personal Address Information (from Leads table - personal address)
       personalAddress: sanitizedAddress,
       personalZip: sanitizedZipCode,
       legalName: null,
-      
+
       // System fields
       status: LeadStatus.PENDING, // Set to pending since we're generating intake token
       intakeToken,
@@ -443,7 +443,7 @@ export class LeadPoller {
   async getLeadsNeedingIntakeTokens(): Promise<Lead[]> {
     try {
       console.log('🔍 Fetching leads that need intake tokens...');
-      
+
       const leads = await prisma.lead.findMany({
         where: {
           intakeToken: null,
@@ -453,7 +453,7 @@ export class LeadPoller {
           importedAt: 'desc',
         },
       });
-      
+
       console.log(`📊 Found ${leads.length} leads needing intake tokens`);
       return leads;
     } catch (error) {
@@ -468,7 +468,7 @@ export class LeadPoller {
   async updateLeadWithIntakeToken(leadId: number, intakeToken: string): Promise<void> {
     try {
       console.log(`🎫 Updating lead ${leadId} with intake token and setting status to PENDING...`);
-      
+
       await prisma.lead.update({
         where: { id: leadId },
         data: {
@@ -476,7 +476,7 @@ export class LeadPoller {
           status: LeadStatus.PENDING,
         },
       });
-      
+
       console.log(`✅ Successfully updated lead ${leadId} with intake token`);
     } catch (error) {
       console.error(`❌ Failed to update lead ${leadId} with intake token:`, error);

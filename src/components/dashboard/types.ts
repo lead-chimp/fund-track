@@ -21,7 +21,7 @@ export interface Lead {
   taxId: string | null
   stateOfInc: string | null
   legalEntity: string | null
-  natureOfBusiness: string | null
+  industry: string | null
   hasExistingLoans: string | null
   personalAddress: string | null
   personalZip: string | null

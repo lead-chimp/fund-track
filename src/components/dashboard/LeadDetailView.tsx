@@ -52,7 +52,7 @@ interface LeadDetail {
   taxId: string | null;
   stateOfInc: string | null;
   legalEntity: string | null;
-  natureOfBusiness: string | null;
+  industry: string | null;
   hasExistingLoans: string | null;
   personalAddress: string | null;
   personalZip: string | null;
@@ -669,13 +669,13 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                   </div>
                 )}
 
-                {lead.natureOfBusiness && (
+                {lead.industry && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
-                      Nature of Business
+                      Industry
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {lead.natureOfBusiness}
+                      {lead.industry}
                     </dd>
                   </div>
                 )}
