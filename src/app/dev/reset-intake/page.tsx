@@ -13,6 +13,7 @@ interface Lead {
   intakeToken: string;
   step1CompletedAt: string | null;
   step2CompletedAt: string | null;
+  step3CompletedAt: string | null;
   intakeCompletedAt: string | null;
   createdAt: string;
 }
@@ -194,11 +195,14 @@ export default function ResetIntakePage() {
             </p>
             <ul className="list-disc list-inside text-orange-700 text-sm mt-2 space-y-1">
               <li>
-                Clear the <code>step1_completed_at</code> and{" "}
-                <code>step2_completed_at</code> timestamps
+                Clear the <code>step1_completed_at</code>, <code>step2_completed_at</code>, and{" "}
+                <code>step3_completed_at</code> timestamps
               </li>
               <li>
                 Clear the <code>intake_completed_at</code> timestamp
+              </li>
+              <li>
+                Clear digital signature and signature date
               </li>
               <li>Allow leads to go through the entire intake process again</li>
               <li>
@@ -459,6 +463,23 @@ export default function ResetIntakePage() {
                             ></div>
                             Step 2:{" "}
                             {lead.step2CompletedAt ? "Complete" : "Pending"}
+                          </div>
+                          <div
+                            className={`flex items-center ${
+                              lead.step3CompletedAt
+                                ? "text-green-600"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            <div
+                              className={`w-2 h-2 rounded-full mr-2 ${
+                                lead.step3CompletedAt
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                            Step 3:{" "}
+                            {lead.step3CompletedAt ? "Complete" : "Pending"}
                           </div>
                           <div
                             className={`flex items-center ${

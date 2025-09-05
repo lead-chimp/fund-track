@@ -45,6 +45,7 @@ export async function GET() {
         intakeToken: true,
         step1CompletedAt: true,
         step2CompletedAt: true,
+        step3CompletedAt: true,
         intakeCompletedAt: true,
         createdAt: true,
       },
@@ -188,6 +189,7 @@ export async function POST(request: NextRequest) {
           status: true,
           step1CompletedAt: true,
           step2CompletedAt: true,
+          step3CompletedAt: true,
           intakeCompletedAt: true,
         },
       });
@@ -199,6 +201,7 @@ export async function POST(request: NextRequest) {
           OR: [
             { step1CompletedAt: { not: null } },
             { step2CompletedAt: { not: null } },
+            { step3CompletedAt: { not: null } },
             { intakeCompletedAt: { not: null } },
             { status: { in: [LeadStatus.IN_PROGRESS, LeadStatus.COMPLETED] } },
           ],
@@ -206,7 +209,10 @@ export async function POST(request: NextRequest) {
         data: {
           step1CompletedAt: null,
           step2CompletedAt: null,
+          step3CompletedAt: null,
           intakeCompletedAt: null,
+          digitalSignature: null,
+          signatureDate: null,
           status: LeadStatus.PENDING, // Reset status to PENDING
           updatedAt: new Date(),
         },
@@ -225,6 +231,7 @@ export async function POST(request: NextRequest) {
           status: true,
           step1CompletedAt: true,
           step2CompletedAt: true,
+          step3CompletedAt: true,
           intakeCompletedAt: true,
         },
       });
@@ -243,6 +250,7 @@ export async function POST(request: NextRequest) {
         (lead) =>
           lead.step1CompletedAt !== null ||
           lead.step2CompletedAt !== null ||
+          lead.step3CompletedAt !== null ||
           lead.intakeCompletedAt !== null
       );
 
@@ -284,6 +292,7 @@ export async function POST(request: NextRequest) {
             (lead) =>
               lead.step1CompletedAt !== null ||
               lead.step2CompletedAt !== null ||
+              lead.step3CompletedAt !== null ||
               lead.intakeCompletedAt !== null
           ).length,
         }
