@@ -16,6 +16,17 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
 
+  // Initialize legal name with existing value or combine first/last name
+  const [legalName, setLegalName] = useState<string>(() => {
+    if (intakeSession.lead.legalName) {
+      return intakeSession.lead.legalName;
+    }
+    // Fallback to combining first and last name if legalName is empty
+    const firstName = intakeSession.lead.firstName || '';
+    const lastName = intakeSession.lead.lastName || '';
+    return `${firstName} ${lastName}`.trim();
+  });
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -100,7 +111,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
   const stopDrawing = () => {
     setIsDrawing(false);
     setLastPoint(null);
-    
+
     // Save signature as base64
     const canvas = canvasRef.current;
     if (canvas) {
@@ -127,6 +138,11 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
       return;
     }
 
+    if (!legalName.trim()) {
+      setError('Please provide your legal name');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
@@ -138,6 +154,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
         },
         body: JSON.stringify({
           digitalSignature: signature,
+          legalName: legalName.trim(),
         }),
       });
 
@@ -210,7 +227,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
                   Sign above using your mouse or finger
                 </p>
               </div>
-              
+
               <div className="flex justify-center">
                 <button
                   type="button"
@@ -232,11 +249,17 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Legal Name
+                  Legal Name <span className="text-red-500">*</span>
                 </label>
-                <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
-                  {intakeSession.lead.legalName || 'Not provided'}
-                </p>
+                <input
+                  type="text"
+                  value={legalName}
+                  onChange={(e) => setLegalName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Enter your full legal name"
+                  disabled={isSubmitting}
+                  required
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -260,12 +283,11 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting || !signature}
-              className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${
-                signature && !isSubmitting
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+              disabled={isSubmitting || !signature || !legalName.trim()}
+              className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${signature && legalName.trim() && !isSubmitting
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
             >
               {isSubmitting ? 'Submitting...' : 'Complete Application'}
             </button>
