@@ -144,6 +144,7 @@ export default function Step1Form({
 }: Step1FormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showValidationError, setShowValidationError] = useState(false);
 
   // Initialize form data with pre-filled values from intake session
   const [formData, setFormData] = useState<Step1FormData>({
@@ -258,6 +259,11 @@ export default function Step1Form({
         [fieldName]: undefined,
       }));
     }
+
+    // Clear validation error message when user starts fixing issues
+    if (showValidationError) {
+      setShowValidationError(false);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -368,8 +374,14 @@ export default function Step1Form({
     e.preventDefault();
 
     if (!validateForm()) {
+      setShowValidationError(true);
+      // Scroll to top to show the first error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+
+    // Clear validation error if form is valid
+    setShowValidationError(false);
 
     setIsSubmitting(true);
 
@@ -686,7 +698,23 @@ export default function Step1Form({
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col items-end space-y-3">
+            {showValidationError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-2">
+                    <strong>Your application is missing information.</strong>
+                    <br />
+                    Please scroll up to complete all required fields marked in red.
+                  </div>
+                </div>
+              </div>
+            )}
             <button
               type="submit"
               disabled={isSubmitting}
