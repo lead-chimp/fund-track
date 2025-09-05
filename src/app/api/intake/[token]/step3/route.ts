@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 
 interface Step3Data {
   digitalSignature: string;
+  legalName: string;
 }
 
 export async function POST(
@@ -57,6 +58,13 @@ export async function POST(
       );
     }
 
+    if (!body.legalName || !body.legalName.trim()) {
+      return NextResponse.json(
+        { error: 'Legal name is required' },
+        { status: 400 }
+      );
+    }
+
     // Validate signature format (should be a base64 data URL)
     if (!body.digitalSignature.startsWith('data:image/')) {
       return NextResponse.json(
@@ -70,6 +78,7 @@ export async function POST(
       where: { id: intakeSession.leadId },
       data: {
         digitalSignature: body.digitalSignature,
+        legalName: body.legalName.trim(),
         signatureDate: new Date(),
         step3CompletedAt: new Date(),
         updatedAt: new Date(),
