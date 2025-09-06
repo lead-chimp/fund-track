@@ -126,7 +126,7 @@ export default function DashboardPage() {
                   {session.user.role}
                 </span>
 
-                {session.user?.role === UserRole.ADMIN && <ContextMenuButton />}
+                {(session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && <ContextMenuButton />}
 
                 <button
                   onClick={() => signOut({ callbackUrl: "/auth/signin" })}
