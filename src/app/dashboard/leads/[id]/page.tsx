@@ -11,7 +11,7 @@ interface LeadDetailPageProps {
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const { id } = await params;
   return (
-    <RoleGuard allowedRoles={[UserRole.ADMIN, UserRole.USER]}>
+    <RoleGuard allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}>
       <LeadDetailView leadId={parseInt(id)} />
     </RoleGuard>
   );
