@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { IntakeSession } from "@/services/TokenService";
 import InputField from "./InputField";
 import SelectField from "./SelectField";
@@ -145,6 +145,9 @@ export default function Step1Form({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showValidationError, setShowValidationError] = useState(false);
+  
+  // Refs for focusing on fields with errors
+  const fieldRefs = useRef<{ [key: string]: HTMLInputElement | HTMLSelectElement | null }>({});
 
   // Initialize form data with pre-filled values from intake session
   const [formData, setFormData] = useState<Step1FormData>({
@@ -367,6 +370,19 @@ export default function Step1Form({
     }
 
     setErrors(newErrors);
+    
+    // Focus on the first field with an error after a small delay to ensure DOM update
+    if (Object.keys(newErrors).length > 0) {
+      setTimeout(() => {
+        const firstErrorField = Object.keys(newErrors)[0];
+        const fieldElement = fieldRefs.current[firstErrorField];
+        if (fieldElement) {
+          fieldElement.focus();
+          fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -375,8 +391,6 @@ export default function Step1Form({
 
     if (!validateForm()) {
       setShowValidationError(true);
-      // Scroll to top to show the first error
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -446,6 +460,7 @@ export default function Step1Form({
                 value={formData.businessName}
                 onChange={handleInputChange}
                 error={errors.businessName}
+                fieldRef={(el) => fieldRefs.current['businessName'] = el}
                 required
               />
               <InputField
@@ -454,6 +469,7 @@ export default function Step1Form({
                 value={formData.dba}
                 onChange={handleInputChange}
                 error={errors.dba}
+                fieldRef={(el) => fieldRefs.current['dba'] = el}
               />
               <InputField
                 id="businessAddress"
@@ -461,6 +477,7 @@ export default function Step1Form({
                 value={formData.businessAddress}
                 onChange={handleInputChange}
                 error={errors.businessAddress}
+                fieldRef={(el) => fieldRefs.current['businessAddress'] = el}
                 required
                 className="md:col-span-2"
               />
@@ -470,6 +487,7 @@ export default function Step1Form({
                 value={formData.businessCity}
                 onChange={handleInputChange}
                 error={errors.businessCity}
+                fieldRef={(el) => fieldRefs.current['businessCity'] = el}
                 required
               />
               <SelectField
@@ -479,6 +497,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={US_STATES}
                 error={errors.businessState}
+                fieldRef={(el) => fieldRefs.current['businessState'] = el}
                 required
               />
               <InputField
@@ -488,6 +507,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.businessZip}
                 placeholder="12345"
+                fieldRef={(el) => fieldRefs.current['businessZip'] = el}
                 required
               />
               <InputField
@@ -497,6 +517,7 @@ export default function Step1Form({
                 value={formData.businessPhone}
                 onChange={handleInputChange}
                 error={errors.businessPhone}
+                fieldRef={(el) => fieldRefs.current['businessPhone'] = el}
                 required
               />
               <InputField
@@ -506,6 +527,7 @@ export default function Step1Form({
                 value={formData.mobile}
                 onChange={handleInputChange}
                 error={errors.mobile}
+                fieldRef={(el) => fieldRefs.current['mobile'] = el}
                 required
               />
               <InputField
@@ -515,6 +537,7 @@ export default function Step1Form({
                 value={formData.businessEmail}
                 onChange={handleInputChange}
                 error={errors.businessEmail}
+                fieldRef={(el) => fieldRefs.current['businessEmail'] = el}
                 required
               />
               <InputField
@@ -526,6 +549,7 @@ export default function Step1Form({
                 value={formData.ownershipPercentage}
                 onChange={handleInputChange}
                 error={errors.ownershipPercentage}
+                fieldRef={(el) => fieldRefs.current['ownershipPercentage'] = el}
                 required
               />
               <InputField
@@ -535,6 +559,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.taxId}
                 placeholder="XX-XXXXXXX"
+                fieldRef={(el) => fieldRefs.current['taxId'] = el}
                 required
               />
               <SelectField
@@ -544,6 +569,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={US_STATES}
                 error={errors.stateOfInc}
+                fieldRef={(el) => fieldRefs.current['stateOfInc'] = el}
                 required
               />
 
@@ -554,6 +580,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={LEGAL_ENTITIES}
                 error={errors.legalEntity}
+                fieldRef={(el) => fieldRefs.current['legalEntity'] = el}
                 required
               />
               <InputField
@@ -562,6 +589,7 @@ export default function Step1Form({
                 value={formData.industry}
                 onChange={handleInputChange}
                 error={errors.industry}
+                fieldRef={(el) => fieldRefs.current['industry'] = el}
                 required
               />
               <SelectField
@@ -575,6 +603,7 @@ export default function Step1Form({
                   { value: "No", label: "No" },
                 ]}
                 error={errors.hasExistingLoans}
+                fieldRef={(el) => fieldRefs.current['hasExistingLoans'] = el}
                 required
               />
 
@@ -587,6 +616,7 @@ export default function Step1Form({
                 value={formData.yearsInBusiness}
                 onChange={handleInputChange}
                 error={errors.yearsInBusiness}
+                fieldRef={(el) => fieldRefs.current['yearsInBusiness'] = el}
                 required
               />
               <SelectField
@@ -596,6 +626,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={MONTHLY_REVENUE_OPTIONS}
                 error={errors.monthlyRevenue}
+                fieldRef={(el) => fieldRefs.current['monthlyRevenue'] = el}
                 required
               />
               <SelectField
@@ -605,6 +636,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={AMOUNT_REQUESTED_OPTIONS}
                 error={errors.amountNeeded}
+                fieldRef={(el) => fieldRefs.current['amountNeeded'] = el}
                 required
               />
             </div>
@@ -622,6 +654,7 @@ export default function Step1Form({
                 value={formData.firstName}
                 onChange={handleInputChange}
                 error={errors.firstName}
+                fieldRef={(el) => fieldRefs.current['firstName'] = el}
                 required
               />
               <InputField
@@ -630,6 +663,7 @@ export default function Step1Form({
                 value={formData.lastName}
                 onChange={handleInputChange}
                 error={errors.lastName}
+                fieldRef={(el) => fieldRefs.current['lastName'] = el}
                 required
               />
               <InputField
@@ -639,6 +673,7 @@ export default function Step1Form({
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 error={errors.dateOfBirth}
+                fieldRef={(el) => fieldRefs.current['dateOfBirth'] = el}
                 required
               />
               <InputField
@@ -648,6 +683,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.socialSecurity}
                 placeholder="XXX-XX-XXXX"
+                fieldRef={(el) => fieldRefs.current['socialSecurity'] = el}
                 required
               />
               <InputField
@@ -656,6 +692,7 @@ export default function Step1Form({
                 value={formData.personalAddress}
                 onChange={handleInputChange}
                 error={errors.personalAddress}
+                fieldRef={(el) => fieldRefs.current['personalAddress'] = el}
                 required
                 className="md:col-span-2"
               />
@@ -667,6 +704,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.personalZip}
                 placeholder="12345"
+                fieldRef={(el) => fieldRefs.current['personalZip'] = el}
                 required
               />
             </div>
@@ -684,6 +722,7 @@ export default function Step1Form({
                 value={formData.legalName}
                 onChange={handleInputChange}
                 error={errors.legalName}
+                fieldRef={(el) => fieldRefs.current['legalName'] = el}
                 required
               />
               <InputField
@@ -693,6 +732,7 @@ export default function Step1Form({
                 value={formData.email}
                 onChange={handleInputChange}
                 error={errors.email}
+                fieldRef={(el) => fieldRefs.current['email'] = el}
                 required
               />
             </div>

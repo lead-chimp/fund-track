@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
@@ -10,6 +10,10 @@ export default function SignInPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  
+  // Refs for focusing on fields with errors
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,12 +24,29 @@ export default function SignInPage() {
     if (!email || !password) {
       setError("Please fill in all fields")
       setIsLoading(false)
+      // Focus on the first empty field after a small delay
+      setTimeout(() => {
+        if (!email && emailRef.current) {
+          emailRef.current.focus()
+          emailRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        } else if (!password && passwordRef.current) {
+          passwordRef.current.focus()
+          passwordRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
       return
     }
 
     if (!email.includes("@")) {
       setError("Please enter a valid email address")
       setIsLoading(false)
+      // Focus on email field after a small delay
+      setTimeout(() => {
+        if (emailRef.current) {
+          emailRef.current.focus()
+          emailRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
       return
     }
 
@@ -72,6 +93,7 @@ export default function SignInPage() {
                 type="email"
                 autoComplete="email"
                 required
+                ref={emailRef}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
@@ -89,6 +111,7 @@ export default function SignInPage() {
                 type="password"
                 autoComplete="current-password"
                 required
+                ref={passwordRef}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}

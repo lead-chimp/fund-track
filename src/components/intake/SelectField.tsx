@@ -16,6 +16,7 @@ interface SelectFieldProps {
   error?: string;
   required?: boolean;
   className?: string;
+  fieldRef?: (el: HTMLSelectElement | null) => void;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -27,6 +28,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   error,
   required = false,
   className = '',
+  fieldRef,
 }) => {
   return (
     <div className={className}>
@@ -38,6 +40,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         name={id}
         value={value}
         onChange={onChange}
+        ref={fieldRef}
         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}

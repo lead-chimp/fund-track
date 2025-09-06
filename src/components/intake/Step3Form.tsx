@@ -17,6 +17,9 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
   const [hasActualSignature, setHasActualSignature] = useState(false);
   const [strokeCount, setStrokeCount] = useState(0);
+  
+  // Ref for focusing on the legal name field when there's an error
+  const legalNameRef = useRef<HTMLInputElement>(null);
 
   // Initialize legal name with existing value or combine first/last name
   const [legalName, setLegalName] = useState<string>(() => {
@@ -187,11 +190,25 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
 
     if (!isSignatureValid()) {
       setError('Please provide a valid digital signature by drawing your name in the signature box');
+      // Focus on the signature canvas area after a small delay
+      setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
     if (!legalName.trim()) {
       setError('Please provide your legal name');
+      // Focus on the legal name field after a small delay
+      setTimeout(() => {
+        if (legalNameRef.current) {
+          legalNameRef.current.focus();
+          legalNameRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
@@ -323,6 +340,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
                   type="text"
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
+                  ref={legalNameRef}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Enter your full legal name"
                   disabled={isSubmitting}
