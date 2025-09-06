@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import TruncatedText from '@/components/TruncatedText';
 
 interface AuditLogEntry {
   id: number;
@@ -114,9 +115,11 @@ export function SettingsAuditLog() {
                       {entry.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs truncate">
-                        {entry.value.length > 50 ? `${entry.value.substring(0, 50)}...` : entry.value}
-                      </div>
+                      <TruncatedText 
+                        text={entry.value} 
+                        maxLength={50}
+                        className="text-gray-900"
+                      />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {entry.user?.email || 'System'}

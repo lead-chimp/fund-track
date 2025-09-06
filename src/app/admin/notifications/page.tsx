@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { NotificationLog, NotificationStatus } from "@prisma/client";
+import TruncatedText from "@/components/TruncatedText";
 
 function formatRecipient(log: Partial<NotificationLog>) {
   return log.recipient || "-";
@@ -222,24 +223,31 @@ export default function NotificationsAdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {formatRecipient(log)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {log.subject || log.content || "-"}
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            <TruncatedText
+                              text={log.subject || log.content || ""}
+                              maxLength={60}
+                              className="text-gray-600"
+                            />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
-                              className={`inline-flex px-2 text-xs leading-5 font-semibold rounded-full ${
-                                log.status === NotificationStatus.SENT
+                              className={`inline-flex px-2 text-xs leading-5 font-semibold rounded-full ${log.status === NotificationStatus.SENT
                                   ? "bg-green-100 text-green-800"
                                   : log.status === NotificationStatus.FAILED
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-gray-100 text-gray-800"
-                              }`}
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
                             >
                               {log.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                            {log.errorMessage || "-"}
+                          <td className="px-6 py-4 text-sm text-red-600">
+                            <TruncatedText
+                              text={log.errorMessage || ""}
+                              maxLength={40}
+                              className="text-red-600"
+                            />
                           </td>
                         </tr>
                       ))}
