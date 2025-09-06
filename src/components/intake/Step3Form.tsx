@@ -15,6 +15,8 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
   const [error, setError] = useState<string>('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
+  const [hasActualSignature, setHasActualSignature] = useState(false);
+  const [strokeCount, setStrokeCount] = useState(0);
 
   // Initialize legal name with existing value or combine first/last name
   const [legalName, setLegalName] = useState<string>(() => {
@@ -54,6 +56,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
         setSignature(intakeSession.lead.digitalSignature!);
+        setHasActualSignature(true);
       };
       img.src = intakeSession.lead.digitalSignature;
     }
@@ -88,6 +91,8 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
     setIsDrawing(true);
     const point = getCanvasPoint(e);
     setLastPoint(point);
+    // Start a new stroke
+    setStrokeCount(prev => prev + 1);
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -100,10 +105,21 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
 
     const currentPoint = getCanvasPoint(e);
 
-    ctx.beginPath();
-    ctx.moveTo(lastPoint.x, lastPoint.y);
-    ctx.lineTo(currentPoint.x, currentPoint.y);
-    ctx.stroke();
+    // Only draw if there's actual movement (not just hovering)
+    const distance = Math.sqrt(
+      Math.pow(currentPoint.x - lastPoint.x, 2) +
+      Math.pow(currentPoint.y - lastPoint.y, 2)
+    );
+
+    if (distance > 1) { // Minimum movement threshold
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+      ctx.lineTo(currentPoint.x, currentPoint.y);
+      ctx.stroke();
+
+      // Mark that we have actual drawing activity
+      setHasActualSignature(true);
+    }
 
     setLastPoint(currentPoint);
   };
@@ -112,9 +128,9 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
     setIsDrawing(false);
     setLastPoint(null);
 
-    // Save signature as base64
+    // Save signature as base64 only if we have actual signature content
     const canvas = canvasRef.current;
-    if (canvas) {
+    if (canvas && hasActualSignature) {
       const dataURL = canvas.toDataURL('image/png');
       setSignature(dataURL);
     }
@@ -128,13 +144,49 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     setSignature('');
+    setHasActualSignature(false);
+    setStrokeCount(0);
+  };
+
+  // Validate that signature has meaningful content
+  const isSignatureValid = () => {
+    if (!signature || !hasActualSignature) return false;
+
+    // Check if we have enough strokes for a meaningful signature
+    if (strokeCount < 3) return false;
+
+    // Additional check: ensure the signature isn't just a blank canvas
+    const canvas = canvasRef.current;
+    if (!canvas) return false;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+
+    // Get image data and check if there are non-white pixels
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Check for any non-white pixels (accounting for anti-aliasing)
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const alpha = data[i + 3];
+
+      // If we find a pixel that's not white or transparent, we have content
+      if (alpha > 0 && (r < 250 || g < 250 || b < 250)) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!signature) {
-      setError('Please provide your digital signature');
+    if (!isSignatureValid()) {
+      setError('Please provide a valid digital signature by drawing your name in the signature box');
       return;
     }
 
@@ -211,21 +263,37 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
             </h3>
             <div className="space-y-4">
               <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-                <canvas
-                  ref={canvasRef}
-                  className="border border-gray-400 bg-white rounded cursor-crosshair w-full max-w-md mx-auto block"
-                  style={{ touchAction: 'none' }}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                  onTouchStart={startDrawing}
-                  onTouchMove={draw}
-                  onTouchEnd={stopDrawing}
-                />
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  Sign above using your mouse or finger
-                </p>
+                <div className="relative">
+                  <canvas
+                    ref={canvasRef}
+                    className="border border-gray-400 bg-white rounded cursor-crosshair w-full max-w-md mx-auto block"
+                    style={{ touchAction: 'none' }}
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    onTouchStart={startDrawing}
+                    onTouchMove={draw}
+                    onTouchEnd={stopDrawing}
+                  />
+                  {!hasActualSignature && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <p className="text-gray-400 text-sm bg-white px-2 py-1 rounded shadow-sm">
+                        Draw your signature here
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="text-center mt-2">
+                  <p className="text-xs text-gray-500">
+                    Sign above using your mouse or finger
+                  </p>
+                  {hasActualSignature && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Signature captured
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-center">
@@ -283,8 +351,8 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting || !signature || !legalName.trim()}
-              className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${signature && legalName.trim() && !isSubmitting
+              disabled={isSubmitting || !isSignatureValid() || !legalName.trim()}
+              className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${isSignatureValid() && legalName.trim() && !isSubmitting
                 ? 'bg-green-600 text-white hover:bg-green-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}

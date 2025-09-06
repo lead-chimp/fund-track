@@ -73,6 +73,15 @@ export async function POST(
       );
     }
 
+    // Validate signature has meaningful content (not just empty canvas)
+    const base64Data = body.digitalSignature.split(',')[1];
+    if (!base64Data || base64Data.length < 1000) { // Minimum size check for meaningful signature
+      return NextResponse.json(
+        { error: 'Please provide a valid signature by drawing your name in the signature box' },
+        { status: 400 }
+      );
+    }
+
     // Update the lead with signature data
     await prisma.lead.update({
       where: { id: intakeSession.leadId },
