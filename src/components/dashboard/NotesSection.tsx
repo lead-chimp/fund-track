@@ -94,7 +94,7 @@ export function NotesSection({ leadId, notes, notesCount, onNotesUpdate }: Notes
       </div>
       <div className="px-6 py-4">
         {/* Add Note Form */}
-        <RoleGuard allowedRoles={[UserRole.ADMIN, UserRole.USER]}>
+        <RoleGuard allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}>
           <div className="mb-6">
             <div className="relative">
               <textarea
@@ -180,7 +180,7 @@ export function NotesSection({ leadId, notes, notesCount, onNotesUpdate }: Notes
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V8M9 12h6" />
             </svg>
             <p className="mt-2 text-sm text-gray-500">No notes added yet.</p>
-            <RoleGuard allowedRoles={[UserRole.ADMIN, UserRole.USER]}>
+            <RoleGuard allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}>
               <p className="text-xs text-gray-400 mt-1">Add the first note to start documenting interactions.</p>
             </RoleGuard>
           </div>
