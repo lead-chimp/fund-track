@@ -11,7 +11,7 @@ function rateLimit(req: NextRequest): boolean {
     return true; // Rate limiting disabled
   }
 
-  const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
   const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'); // 15 minutes
   const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100');
   
@@ -120,9 +120,31 @@ export default withAuth(
       return addSecurityHeaders(NextResponse.next());
     }
 
-    // Allow dev endpoints in development or when explicitly enabled
-    if (pathname.startsWith("/api/dev/") && 
-        (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === 'true')) {
+    // Allow dev endpoints only for SYSTEM_ADMIN users
+    if (pathname.startsWith("/api/dev/")) {
+      // Require SYSTEM_ADMIN role
+      if (!token) {
+        return NextResponse.redirect(new URL("/auth/signin", req.url));
+      }
+      
+      if (token.role !== "SYSTEM_ADMIN") {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+      
+      return addSecurityHeaders(NextResponse.next());
+    }
+
+    // Protect dev pages - require SYSTEM_ADMIN role
+    if (pathname.startsWith("/dev/")) {
+      // Require authentication and SYSTEM_ADMIN role
+      if (!token) {
+        return NextResponse.redirect(new URL("/auth/signin", req.url));
+      }
+      
+      if (token.role !== "SYSTEM_ADMIN") {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+      
       return addSecurityHeaders(NextResponse.next());
     }
 
@@ -135,7 +157,7 @@ export default withAuth(
       }
 
       // Admin-only routes (if needed in the future)
-      if (pathname.startsWith("/admin") && token.role !== "ADMIN") {
+      if (pathname.startsWith("/admin") && token.role !== "ADMIN" && token.role !== "SYSTEM_ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
@@ -162,10 +184,14 @@ export default withAuth(
           return true
         }
 
-        // Allow dev endpoints in development or when explicitly enabled
-        if (pathname.startsWith("/api/dev/") && 
-            (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === 'true')) {
-          return true
+        // Allow dev endpoints - require authentication, role check in main middleware
+        if (pathname.startsWith("/api/dev/")) {
+          return !!token
+        }
+
+        // Allow dev pages - require authentication, role check in main middleware
+        if (pathname.startsWith("/dev/")) {
+          return !!token
         }
         
         // For protected routes, require authentication
@@ -185,6 +211,7 @@ export const config = {
     "/dashboard/:path*",
     "/api/:path*",
     "/application/:path*",
-    "/admin/:path*"
+    "/admin/:path*",
+    "/dev/:path*"
   ]
 }

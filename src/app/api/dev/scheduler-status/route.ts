@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { backgroundJobScheduler } from '@/services/BackgroundJobScheduler';
 
-// Allow access in development without authentication
-function isDevEnvironment() {
-    return process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === 'true';
-}
-
 export async function GET() {
     try {
         const status = backgroundJobScheduler.getStatus();
