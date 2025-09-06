@@ -1213,7 +1213,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                   Documents ({lead._count.documents})
                 </h2>
                 <RoleGuard
-                  allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                  allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}
                   fallback={<></>}
                 >
                   <button
@@ -1228,7 +1228,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
             <div className="px-6 py-4">
               {/* File Upload Form */}
               <RoleGuard
-                allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}
                 fallback={<></>}
               >
                 {showUploadForm && (
@@ -1311,7 +1311,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                           Download
                         </button>
                         <RoleGuard
-                          allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+                          allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}
                           fallback={<></>}
                         >
                           <button
@@ -1382,7 +1382,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
               </dl>
 
               {/* Admin Actions */}
-              <RoleGuard allowedRoles={[UserRole.ADMIN]} fallback={<></>}>
+              <RoleGuard allowedRoles={["ADMIN" as UserRole, "SYSTEM_ADMIN" as UserRole]} fallback={<></>}>
                 <div className="pt-4 mt-4 border-t border-gray-200">
                   {!showDeleteConfirm ? (
                     <button
