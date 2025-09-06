@@ -383,7 +383,7 @@ export class FollowUpScheduler {
       [FollowupType.THREE_HOUR]: {
         emailSubject:
           "Quick Reminder: Complete Your Merchant Funding Application",
-        urgency: "We wanted to follow up quickly",
+        urgency: "We wanted to follow up on",
         timeframe: "just a few hours ago",
       },
       [FollowupType.NINE_HOUR]: {
@@ -410,7 +410,7 @@ export class FollowUpScheduler {
       emailSubject: message.emailSubject,
       emailText: `Hi ${leadName},
 
-${message.urgency} your merchant funding application that you started ${message.timeframe}.
+${message.urgency} the merchant funding application that you started ${message.timeframe}.
 
 Complete your application now: ${intakeUrl}
 
@@ -423,7 +423,7 @@ Merchant Funding Team`,
       emailHtml: `
         <h2>${message.emailSubject}</h2>
         <p>Hi ${leadName},</p>
-        <p>${message.urgency} your merchant funding application that you started ${message.timeframe}.</p>
+        <p>${message.urgency} the merchant funding application that you started ${message.timeframe}.</p>
         <p><a href="${intakeUrl}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Click here to complete your application</a></p>
         <p>Don't miss this opportunity to secure funding for your business. The application only takes a few minutes to complete.</p>
         <p>If you have any questions, please don't hesitate to contact us.</p>

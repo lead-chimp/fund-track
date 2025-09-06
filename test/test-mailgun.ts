@@ -122,7 +122,7 @@ Merchant Funding Team`,
     subject: "Quick Reminder: Complete Your Merchant Funding Application",
     text: `Hi Mike,
 
-We wanted to follow up quickly your merchant funding application that you started just a few hours ago.
+We wanted to follow up on the merchant funding application that you started just a few hours ago.
 
 Complete your application now: ${TEST_INTAKE_URL}
 
