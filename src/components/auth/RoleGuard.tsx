@@ -51,7 +51,7 @@ export function AdminOnly({
   fallback?: ReactNode;
 }) {
   return (
-    <RoleGuard allowedRoles={[UserRole.ADMIN]} fallback={fallback}>
+    <RoleGuard allowedRoles={["ADMIN" as UserRole, "SYSTEM_ADMIN" as UserRole]} fallback={fallback}>
       {children}
     </RoleGuard>
   );
@@ -66,7 +66,7 @@ export function AuthenticatedOnly({
 }) {
   return (
     <RoleGuard
-      allowedRoles={[UserRole.ADMIN, UserRole.USER]}
+      allowedRoles={["ADMIN" as UserRole, "USER" as UserRole, "SYSTEM_ADMIN" as UserRole]}
       fallback={fallback}
     >
       {children}

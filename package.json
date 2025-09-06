@@ -21,7 +21,9 @@
     "health:check": "curl -f http://localhost:3000/api/health || exit 1",
     "security:audit": "npm audit --audit-level moderate",
     "security:fix": "npm audit fix",
-    "test:mailgun": "tsx test/test-mailgun.ts"
+    "test:mailgun": "tsx test/test-mailgun.ts",
+    "users:list": "node scripts/list-users.mjs",
+    "users:promote": "node scripts/promote-to-system-admin.mjs"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

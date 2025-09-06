@@ -8,7 +8,7 @@ import { hashPassword } from "@/lib/password";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== UserRole.ADMIN) {
+    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 403 }
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== UserRole.ADMIN) {
+    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 403 }
@@ -76,10 +76,41 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Check if the target user is SYSTEM_ADMIN
+    const targetUser = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: { role: true }
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Prevent changing SYSTEM_ADMIN role via UI
+    if (targetUser.role === "SYSTEM_ADMIN" && role && role !== "SYSTEM_ADMIN") {
+      return NextResponse.json(
+        { error: "SYSTEM_ADMIN role cannot be changed via UI for security reasons" },
+        { status: 403 }
+      );
+    }
+
+    // Prevent setting SYSTEM_ADMIN role via UI
+    if (role === "SYSTEM_ADMIN") {
+      return NextResponse.json(
+        { error: "SYSTEM_ADMIN role can only be assigned manually by developers" },
+        { status: 403 }
+      );
+    }
+
     const updates: any = {};
 
     if (email) updates.email = String(email).toLowerCase();
-    if (role && Object.values(UserRole).includes(role)) updates.role = role;
+    if (role && Object.values(UserRole).includes(role) && role !== "SYSTEM_ADMIN") {
+      updates.role = role;
+    }
     if (newPassword) {
       if (String(newPassword).length < 8) {
         return NextResponse.json(
@@ -115,7 +146,7 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== UserRole.ADMIN) {
+    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 403 }
@@ -139,6 +170,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Prevent creating SYSTEM_ADMIN via UI
+    if (role === "SYSTEM_ADMIN") {
+      return NextResponse.json(
+        { error: "SYSTEM_ADMIN role can only be assigned manually by developers" },
+        { status: 403 }
+      );
+    }
+
     const normalizedEmail = String(email).toLowerCase();
 
     const existing = await prisma.user.findUnique({
@@ -151,7 +190,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userRole = Object.values(UserRole).includes(role)
+    // Only allow ADMIN and USER roles via UI
+    const userRole = (Object.values(UserRole).includes(role) && role !== "SYSTEM_ADMIN")
       ? role
       : UserRole.USER;
 
@@ -185,7 +225,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== UserRole.ADMIN) {
+    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 403 }
@@ -210,6 +250,27 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { error: "You cannot delete your own account" },
         { status: 400 }
+      );
+    }
+
+    // Check if the target user is SYSTEM_ADMIN
+    const targetUser = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: { role: true }
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Prevent deletion of SYSTEM_ADMIN users via UI
+    if (targetUser.role === "SYSTEM_ADMIN") {
+      return NextResponse.json(
+        { error: "SYSTEM_ADMIN users cannot be deleted via UI for security reasons" },
+        { status: 403 }
       );
     }
 

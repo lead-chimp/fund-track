@@ -116,7 +116,7 @@ export default function AdminSettingsPage() {
   if (error) {
     if (typeof error === "string" && /unauthori/i.test(error)) {
       return (
-        <RoleGuard allowedRoles={[UserRole.ADMIN]}>
+        <RoleGuard allowedRoles={["ADMIN" as UserRole, "SYSTEM_ADMIN" as UserRole]}>
           <></>
         </RoleGuard>
       );

@@ -164,8 +164,9 @@ model SystemSetting {
 }
 
 enum UserRole {
-  ADMIN @map("admin")
-  USER  @map("user")
+  ADMIN        @map("admin")
+  USER         @map("user")
+  SYSTEM_ADMIN @map("system_admin")
 
   @@map("user_role")
 }

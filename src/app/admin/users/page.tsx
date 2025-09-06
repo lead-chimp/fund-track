@@ -253,48 +253,54 @@ export default function UsersAdminPage() {
                                 >
                                   Edit
                                 </button>
-                                <button
-                                  onClick={async () => {
-                                    if (!confirm(`Delete user ${u.email}?`))
-                                      return;
-                                    try {
-                                      setDeletingUserId(u.id);
-                                      const res = await fetch(
-                                        `/api/admin/users`,
-                                        {
-                                          method: "DELETE",
-                                          headers: {
-                                            "Content-Type": "application/json",
-                                          },
-                                          body: JSON.stringify({ id: u.id }),
-                                        }
-                                      );
-                                      if (!res.ok) {
-                                        const err = await res.json();
-                                        throw new Error(
-                                          err?.error || "Failed to delete user"
+                                {u.role !== "SYSTEM_ADMIN" ? (
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(`Delete user ${u.email}?`))
+                                        return;
+                                      try {
+                                        setDeletingUserId(u.id);
+                                        const res = await fetch(
+                                          `/api/admin/users`,
+                                          {
+                                            method: "DELETE",
+                                            headers: {
+                                              "Content-Type": "application/json",
+                                            },
+                                            body: JSON.stringify({ id: u.id }),
+                                          }
                                         );
+                                        if (!res.ok) {
+                                          const err = await res.json();
+                                          throw new Error(
+                                            err?.error || "Failed to delete user"
+                                          );
+                                        }
+                                        await fetchUsers();
+                                        alert("User deleted");
+                                      } catch (err) {
+                                        console.error(err);
+                                        alert(
+                                          err instanceof Error
+                                            ? err.message
+                                            : "Error"
+                                        );
+                                      } finally {
+                                        setDeletingUserId(null);
                                       }
-                                      await fetchUsers();
-                                      alert("User deleted");
-                                    } catch (err) {
-                                      console.error(err);
-                                      alert(
-                                        err instanceof Error
-                                          ? err.message
-                                          : "Error"
-                                      );
-                                    } finally {
-                                      setDeletingUserId(null);
-                                    }
-                                  }}
-                                  disabled={deletingUserId === u.id}
-                                  className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-sm font-medium rounded text-red-700 bg-white hover:bg-red-50 disabled:opacity-50"
-                                >
-                                  {deletingUserId === u.id
-                                    ? "Deleting..."
-                                    : "Delete"}
-                                </button>
+                                    }}
+                                    disabled={deletingUserId === u.id}
+                                    className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-sm font-medium rounded text-red-700 bg-white hover:bg-red-50 disabled:opacity-50"
+                                  >
+                                    {deletingUserId === u.id
+                                      ? "Deleting..."
+                                      : "Delete"}
+                                  </button>
+                                ) : (
+                                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-gray-400">
+                                    Protected
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -354,11 +360,20 @@ export default function UsersAdminPage() {
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                  disabled={editingUser?.role === "SYSTEM_ADMIN"}
                 >
                   <option value="">Select role</option>
-                  <option value={UserRole.ADMIN}>{UserRole.ADMIN}</option>
-                  <option value={UserRole.USER}>{UserRole.USER}</option>
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="USER">USER</option>
+                  {editingUser?.role === "SYSTEM_ADMIN" && (
+                    <option value="SYSTEM_ADMIN">SYSTEM_ADMIN (Read-only)</option>
+                  )}
                 </select>
+                {editingUser?.role === "SYSTEM_ADMIN" && (
+                  <p className="mt-1 text-sm text-amber-600">
+                    SYSTEM_ADMIN role cannot be changed via UI for security reasons
+                  </p>
+                )}
 
                 <label className="block text-sm font-medium text-gray-700 mt-4">
                   New Password
@@ -452,9 +467,12 @@ export default function UsersAdminPage() {
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                 >
                   <option value="">Select role</option>
-                  <option value={UserRole.ADMIN}>{UserRole.ADMIN}</option>
-                  <option value={UserRole.USER}>{UserRole.USER}</option>
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="USER">USER</option>
                 </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Note: SYSTEM_ADMIN role can only be assigned manually by developers
+                </p>
 
                 <label className="block text-sm font-medium text-gray-700 mt-4">
                   Password

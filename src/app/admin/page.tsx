@@ -66,7 +66,7 @@ export default function AdminIndexPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {session && session.user?.role === UserRole.ADMIN && (
+          {session && (session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && (
             <Link
               href="/admin/users"
               className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
@@ -78,7 +78,7 @@ export default function AdminIndexPage() {
             </Link>
           )}
 
-          {session && session.user?.role === UserRole.ADMIN && (
+          {session && (session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && (
             <Link
               href="/admin/settings"
               className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
