@@ -151,7 +151,7 @@ export async function POST(
     }
 
     // Validate email formats
-    const emailRegex = /^[^'''\s@]+@[^'''\s@]+\.[^'''\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedData.email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
