@@ -10,10 +10,10 @@ interface Step3Data {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params;
+    const { token } = await params;
 
     // Validate the intake token
     const intakeSession = await TokenService.validateToken(token);

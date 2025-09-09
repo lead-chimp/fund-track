@@ -4,13 +4,13 @@ import { TokenService } from "@/services/TokenService";
 import IntakeWorkflow from "@/components/intake/IntakeWorkflow";
 
 interface IntakePageProps {
-  params: {
+  params: Promise<{
     token: string;
-  };
+  }>;
 }
 
 export default async function IntakePage({ params }: IntakePageProps) {
-  const { token } = params;
+  const { token } = await params;
 
   // Validate token and get intake session data
   const intakeSession = await TokenService.validateToken(token);
