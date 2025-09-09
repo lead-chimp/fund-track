@@ -22,7 +22,7 @@ interface Step1Data {
   yearsInBusiness: string;      // Years in Business*
   monthlyRevenue: string;       // Monthly Gross Revenue*
   amountNeeded: string;         // Amount Requested*
-  
+
   // Personal Details Section
   firstName: string;            // First Name*
   lastName: string;             // Last Name*
@@ -30,7 +30,7 @@ interface Step1Data {
   socialSecurity: string;       // Social Security*
   personalAddress: string;      // Address*
   personalZip: string;          // Zip Code*
-  
+
   // Legal Information Section
   legalName: string;            // Your legal name*
   email: string;                // Email Address*
@@ -89,7 +89,7 @@ export async function POST(
       yearsInBusiness: body.yearsInBusiness?.trim() || "",
       monthlyRevenue: body.monthlyRevenue?.trim() || "",
       amountNeeded: body.amountNeeded?.trim() || "",
-      
+
       // Personal Details Section
       firstName: body.firstName?.trim() || "",
       lastName: body.lastName?.trim() || "",
@@ -97,7 +97,7 @@ export async function POST(
       socialSecurity: body.socialSecurity?.trim() || "",
       personalAddress: body.personalAddress?.trim() || "",
       personalZip: body.personalZip?.trim() || "",
-      
+
       // Legal Information Section
       legalName: body.legalName?.trim() || "",
       email: body.email?.trim() || "",
@@ -107,7 +107,7 @@ export async function POST(
     const requiredFields = [
       // Business Details Section
       "businessName",
-      "businessAddress", 
+      "businessAddress",
       "businessPhone",
       "businessEmail",
       "mobile",
@@ -123,7 +123,7 @@ export async function POST(
       "yearsInBusiness",
       "monthlyRevenue",
       "amountNeeded",
-      
+
       // Personal Details Section
       "firstName",
       "lastName",
@@ -131,7 +131,7 @@ export async function POST(
       "socialSecurity",
       "personalAddress",
       "personalZip",
-      
+
       // Legal Information Section
       "legalName",
       "email",
@@ -240,7 +240,7 @@ export async function POST(
         yearsInBusiness: yearsInBusiness,
         monthlyRevenue: trimmedData.monthlyRevenue,
         amountNeeded: trimmedData.amountNeeded,
-        
+
         // Personal Details Section
         firstName: trimmedData.firstName,
         lastName: trimmedData.lastName,
@@ -248,11 +248,11 @@ export async function POST(
         socialSecurity: trimmedData.socialSecurity,
         personalAddress: trimmedData.personalAddress,
         personalZip: trimmedData.personalZip,
-        
+
         // Legal Information Section
         legalName: trimmedData.legalName,
         email: trimmedData.email.toLowerCase(),
-        
+
         // System fields
         step1CompletedAt: new Date(),
         updatedAt: new Date(),
@@ -269,15 +269,15 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error processing step 1:", error);
-    
+
     // Log more details for debugging
     if (error instanceof Error) {
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
         details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : String(error) : undefined
       },

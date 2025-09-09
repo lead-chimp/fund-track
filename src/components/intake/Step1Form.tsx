@@ -250,6 +250,32 @@ export default function Step1Form({
       }
     }
 
+    // Format ownership percentage - only allow numbers and decimal point
+    if (fieldName === "ownershipPercentage") {
+      // Remove all non-numeric characters except decimal point
+      const cleaned = value.replace(/[^0-9.]/g, "");
+      
+      // Ensure only one decimal point
+      const parts = cleaned.split(".");
+      if (parts.length > 2) {
+        formattedValue = parts[0] + "." + parts.slice(1).join("");
+      } else {
+        formattedValue = cleaned;
+      }
+      
+      // Limit to 2 decimal places
+      if (formattedValue.includes(".")) {
+        const [whole, decimal] = formattedValue.split(".");
+        formattedValue = whole + "." + decimal.slice(0, 2);
+      }
+    }
+
+    // Format years in business - only allow whole numbers
+    if (fieldName === "yearsInBusiness") {
+      // Remove all non-numeric characters
+      formattedValue = value.replace(/[^0-9]/g, "");
+    }
+
     setFormData((prev) => ({
       ...prev,
       [fieldName]: formattedValue,
@@ -308,7 +334,7 @@ export default function Step1Form({
     });
 
     // Email validation
-    const emailRegex = /^[^'''\s@]+@[^'''\s@]+\.[^'''\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
@@ -447,7 +473,7 @@ export default function Step1Form({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8" noValidate>
           {/* Business Details Section */}
           <div className="border border-gray-200 rounded-lg p-6 mb-8">
             <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2">
@@ -513,7 +539,7 @@ export default function Step1Form({
               <InputField
                 id="businessPhone"
                 label="Business Phone"
-                type="tel"
+                type="text"
                 value={formData.businessPhone}
                 onChange={handleInputChange}
                 error={errors.businessPhone}
@@ -523,7 +549,7 @@ export default function Step1Form({
               <InputField
                 id="mobile"
                 label="Mobile"
-                type="tel"
+                type="text"
                 value={formData.mobile}
                 onChange={handleInputChange}
                 error={errors.mobile}
@@ -543,12 +569,11 @@ export default function Step1Form({
               <InputField
                 id="ownershipPercentage"
                 label="Percentage of Ownership"
-                type="number"
-                min="0"
-                max="100"
+                type="text"
                 value={formData.ownershipPercentage}
                 onChange={handleInputChange}
                 error={errors.ownershipPercentage}
+                placeholder="0-100"
                 fieldRef={(el) => fieldRefs.current['ownershipPercentage'] = el}
                 required
               />
@@ -610,12 +635,11 @@ export default function Step1Form({
               <InputField
                 id="yearsInBusiness"
                 label="Years in Business"
-                type="number"
-                min="0"
-                max="100"
+                type="text"
                 value={formData.yearsInBusiness}
                 onChange={handleInputChange}
                 error={errors.yearsInBusiness}
+                placeholder="0-100"
                 fieldRef={(el) => fieldRefs.current['yearsInBusiness'] = el}
                 required
               />

@@ -253,7 +253,7 @@ export default function Step3Form({ intakeSession, onComplete }: Step3FormProps)
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           {/* Terms and Conditions */}
           <div className="border border-gray-200 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
