@@ -86,7 +86,7 @@ export async function PUT(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -98,6 +98,7 @@ export async function POST(
       );
     }
 
+    const { key } = await params;
     const body = await request.json();
     const { action } = body;
 
@@ -105,7 +106,7 @@ export async function POST(
       const userId = session.user.id ? parseInt(session.user.id, 10) : undefined;
 
       const resetSetting = await systemSettingsService.resetSetting(
-        params.key,
+        key,
         userId && !isNaN(userId) ? userId : undefined
       );
 

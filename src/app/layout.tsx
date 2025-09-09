@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/auth/SessionProvider";
+import { ConditionalSessionProvider } from "@/components/auth/ConditionalSessionProvider";
 import { ServerInitializer } from "@/components/ServerInitializer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={`${plusJakartaSans.variable} font-sans`}>
         <ServerInitializer />
         <ErrorBoundary>
-          <SessionProvider>{children}</SessionProvider>
+          <ConditionalSessionProvider>{children}</ConditionalSessionProvider>
         </ErrorBoundary>
       </body>
     </html>

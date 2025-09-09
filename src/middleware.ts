@@ -120,6 +120,11 @@ export default withAuth(
       return addSecurityHeaders(NextResponse.next());
     }
 
+    // Allow intake API endpoints without authentication
+    if (pathname.startsWith("/api/intake/")) {
+      return addSecurityHeaders(NextResponse.next());
+    }
+
     // Allow dev endpoints only for SYSTEM_ADMIN users
     if (pathname.startsWith("/api/dev/")) {
       // Require SYSTEM_ADMIN role
@@ -148,9 +153,9 @@ export default withAuth(
       return addSecurityHeaders(NextResponse.next());
     }
 
-    // Protect dashboard and API routes (except auth routes)
+    // Protect dashboard and API routes (except auth and intake routes)
     if (pathname.startsWith("/dashboard") || 
-        (pathname.startsWith("/api") && !pathname.startsWith("/api/auth"))) {
+        (pathname.startsWith("/api") && !pathname.startsWith("/api/auth") && !pathname.startsWith("/api/intake/"))) {
       
       if (!token) {
         return NextResponse.redirect(new URL("/auth/signin", req.url));
@@ -184,6 +189,11 @@ export default withAuth(
           return true
         }
 
+        // Allow intake API endpoints without authentication
+        if (pathname.startsWith("/api/intake/")) {
+          return true
+        }
+
         // Allow dev endpoints - require authentication, role check in main middleware
         if (pathname.startsWith("/api/dev/")) {
           return !!token
@@ -196,7 +206,7 @@ export default withAuth(
         
         // For protected routes, require authentication
         if (pathname.startsWith("/dashboard") || 
-            (pathname.startsWith("/api") && !pathname.startsWith("/api/auth"))) {
+            (pathname.startsWith("/api") && !pathname.startsWith("/api/auth") && !pathname.startsWith("/api/intake/"))) {
           return !!token
         }
         
