@@ -27,6 +27,8 @@ export class FileUploadService {
   private bucketId: string;
   private bucketName: string;
   private isInitialized = false;
+  private lastAuthTime: number = 0;
+  private readonly AUTH_EXPIRY_BUFFER = 60 * 60 * 1000; // 1 hour buffer before token expires (B2 tokens last 24 hours)
 
   private readonly DEFAULT_VALIDATION: FileValidationOptions = {
     maxSizeBytes: 10 * 1024 * 1024, // 10MB
@@ -49,20 +51,136 @@ export class FileUploadService {
   }
 
   /**
-   * Initialize the B2 connection and authorize
+   * Check if we need to re-authorize (tokens expire after 24 hours)
+   */
+  private needsReauthorization(): boolean {
+    const now = Date.now();
+    const timeSinceAuth = now - this.lastAuthTime;
+    // Re-authorize if more than 23 hours have passed (1 hour buffer)
+    return !this.isInitialized || timeSinceAuth > (23 * 60 * 60 * 1000);
+  }
+
+  /**
+   * Execute a B2 operation with automatic retry on authorization errors
+   */
+  private async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    operationName: string,
+    context: Record<string, any> = {}
+  ): Promise<T> {
+    let retryCount = 0;
+    const maxRetries = 2;
+    const startTime = Date.now();
+
+    while (retryCount <= maxRetries) {
+      try {
+        await this.initialize();
+        const result = await operation();
+        
+        // Log successful operation
+        logger.externalService(
+          'Backblaze B2',
+          operationName,
+          true,
+          Date.now() - startTime,
+          { ...context, retryCount }
+        );
+        
+        return result;
+      } catch (error) {
+        const isAuthError = error instanceof Error && 
+          (error.message.includes('401') || error.message.includes('Unauthorized'));
+        
+        if (isAuthError && retryCount < maxRetries) {
+          logger.warn(`B2 authorization error during ${operationName}, forcing re-authorization`, {
+            ...context,
+            retryCount,
+            timeSinceLastAuth: Date.now() - this.lastAuthTime,
+            error: error instanceof Error ? error.message : "Unknown error"
+          });
+          
+          // Force re-authorization on next attempt
+          this.isInitialized = false;
+          this.lastAuthTime = 0;
+          retryCount++;
+          continue;
+        }
+
+        // Log failed operation
+        logger.externalService(
+          'Backblaze B2',
+          operationName,
+          false,
+          Date.now() - startTime,
+          { 
+            ...context, 
+            retryCount,
+            error: error instanceof Error ? error.message : "Unknown error",
+            errorType: isAuthError ? 'authorization' : 'other'
+          }
+        );
+        
+        throw error;
+      }
+    }
+
+    throw new Error(`${operationName} failed after retries`);
+  }
+
+  /**
+   * Initialize the B2 connection and authorize with automatic re-authorization
    */
   async initialize(): Promise<void> {
     try {
-      if (this.isInitialized) {
+      if (!this.needsReauthorization()) {
         return;
       }
 
+      const isReauth = this.isInitialized;
+      const timeSinceLastAuth = this.isInitialized ? Date.now() - this.lastAuthTime : 0;
+      
+      logger.info("Authorizing Backblaze B2 connection", { 
+        isReauth,
+        timeSinceLastAuth,
+        hoursElapsed: timeSinceLastAuth / (1000 * 60 * 60)
+      });
+
+      const startTime = Date.now();
       await this.b2.authorize();
+      const duration = Date.now() - startTime;
+      
       this.isInitialized = true;
-      logger.info("Backblaze B2 connection initialized successfully");
+      this.lastAuthTime = Date.now();
+      
+      logger.externalService(
+        'Backblaze B2',
+        'Authorization',
+        true,
+        duration,
+        {
+          isReauth,
+          authTime: new Date(this.lastAuthTime).toISOString(),
+          bucketId: this.bucketId,
+          bucketName: this.bucketName
+        }
+      );
     } catch (error) {
-      logger.error("Failed to initialize Backblaze B2 connection", { error });
-      throw new Error("File storage service initialization failed");
+      logger.externalService(
+        'Backblaze B2',
+        'Authorization',
+        false,
+        0,
+        {
+          error: error instanceof Error ? error.message : "Unknown error",
+          bucketId: this.bucketId,
+          bucketName: this.bucketName
+        }
+      );
+      
+      // Reset state on auth failure
+      this.isInitialized = false;
+      this.lastAuthTime = 0;
+      throw new Error("File storage service authorization failed");
     }
   }
 
@@ -136,63 +254,54 @@ export class FileUploadService {
     leadId: number,
     options: Partial<FileValidationOptions> = {}
   ): Promise<FileUploadResult> {
-    try {
-      await this.initialize();
+    // Validate file first (no need to retry validation)
+    this.validateFile(file, originalFileName, mimeType, options);
 
-      // Validate file
-      this.validateFile(file, originalFileName, mimeType, options);
+    return await this.executeWithRetry(
+      async () => {
+        // Generate unique file name
+        const fileName = this.generateUniqueFileName(originalFileName, leadId);
 
-      // Generate unique file name
-      const fileName = this.generateUniqueFileName(originalFileName, leadId);
+        // Get upload URL
+        const uploadUrlResponse = await this.b2.getUploadUrl({
+          bucketId: this.bucketId,
+        });
 
-      // Get upload URL
-      const uploadUrlResponse = await this.b2.getUploadUrl({
-        bucketId: this.bucketId,
-      });
+        // Upload file
+        const uploadResponse = await this.b2.uploadFile({
+          uploadUrl: uploadUrlResponse.data.uploadUrl,
+          uploadAuthToken: uploadUrlResponse.data.authorizationToken,
+          fileName: fileName,
+          data: file,
+          mime: mimeType,
+          info: {
+            originalFileName: originalFileName,
+            leadId: leadId.toString(),
+            uploadedAt: new Date().toISOString(),
+          },
+        });
 
-      // Upload file
-      const uploadResponse = await this.b2.uploadFile({
-        uploadUrl: uploadUrlResponse.data.uploadUrl,
-        uploadAuthToken: uploadUrlResponse.data.authorizationToken,
-        fileName: fileName,
-        data: file,
-        mime: mimeType,
-        info: {
-          originalFileName: originalFileName,
-          leadId: leadId.toString(),
-          uploadedAt: new Date().toISOString(),
-        },
-      });
+        const result: FileUploadResult = {
+          fileId: uploadResponse.data.fileId,
+          fileName: fileName,
+          bucketName: this.bucketName,
+          fileSize: file.length,
+          contentType: mimeType,
+          uploadTimestamp: Date.now(),
+        };
 
-      const result: FileUploadResult = {
-        fileId: uploadResponse.data.fileId,
-        fileName: fileName,
-        bucketName: this.bucketName,
-        fileSize: file.length,
-        contentType: mimeType,
-        uploadTimestamp: Date.now(),
-      };
+        logger.info("File uploaded successfully", {
+          fileId: result.fileId,
+          fileName: result.fileName,
+          leadId,
+          fileSize: result.fileSize,
+        });
 
-      logger.info("File uploaded successfully", {
-        fileId: result.fileId,
-        fileName: result.fileName,
-        leadId,
-        fileSize: result.fileSize,
-      });
-
-      return result;
-    } catch (error) {
-      logger.error("File upload failed", {
-        originalFileName,
-        leadId,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error("File upload failed");
-    }
+        return result;
+      },
+      "File upload",
+      { originalFileName, leadId }
+    );
   }
 
   /**
@@ -203,102 +312,82 @@ export class FileUploadService {
     fileName: string,
     expirationHours: number = 24
   ): Promise<FileDownloadResult> {
-    try {
-      await this.initialize();
+    return await this.executeWithRetry(
+      async () => {
+        const downloadAuth = await this.b2.getDownloadAuthorization({
+          bucketId: this.bucketId,
+          fileNamePrefix: fileName,
+          validDurationInSeconds: expirationHours * 3600,
+        });
 
-      const downloadAuth = await this.b2.getDownloadAuthorization({
-        bucketId: this.bucketId,
-        fileNamePrefix: fileName,
-        validDurationInSeconds: expirationHours * 3600,
-      });
+        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${fileName}?Authorization=${downloadAuth.data.authorizationToken}`;
 
-      const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${fileName}?Authorization=${downloadAuth.data.authorizationToken}`;
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + expirationHours);
 
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + expirationHours);
+        logger.info("Successfully generated download URL", {
+          fileId,
+          fileName,
+          expiresAt: expiresAt.toISOString(),
+        });
 
-      return {
-        downloadUrl,
-        expiresAt,
-      };
-    } catch (error) {
-      console.error("❌ B2 Download: Failed to generate download URL", {
-        fileId,
-        fileName,
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      logger.error("Failed to generate download URL", {
-        fileId,
-        fileName,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new Error("Failed to generate download URL");
-    }
+        return {
+          downloadUrl,
+          expiresAt,
+        };
+      },
+      "Generate download URL",
+      { fileId, fileName }
+    );
   }
 
   /**
    * Delete a file from Backblaze B2
    */
   async deleteFile(fileId: string, fileName: string): Promise<void> {
-    try {
-      await this.initialize();
-
-      await this.b2.deleteFileVersion({
-        fileId,
-        fileName,
-      });
-
-      logger.info("File deleted successfully", { fileId, fileName });
-    } catch (error) {
-      logger.error("File deletion failed", {
-        fileId,
-        fileName,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new Error("File deletion failed");
-    }
+    await this.executeWithRetry(
+      async () => {
+        await this.b2.deleteFileVersion({
+          fileId,
+          fileName,
+        });
+        logger.info("File deleted successfully", { fileId, fileName });
+      },
+      "File deletion",
+      { fileId, fileName }
+    );
   }
 
   /**
    * Get file information from Backblaze B2
    */
   async getFileInfo(fileId: string): Promise<any> {
-    try {
-      await this.initialize();
-
-      const response = await this.b2.getFileInfo({ fileId });
-      return response.data;
-    } catch (error) {
-      logger.error("Failed to get file info", {
-        fileId,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new Error("Failed to get file information");
-    }
+    return await this.executeWithRetry(
+      async () => {
+        const response = await this.b2.getFileInfo({ fileId });
+        return response.data;
+      },
+      "Get file info",
+      { fileId }
+    );
   }
 
   /**
    * List files for a specific lead
    */
   async listFilesForLead(leadId: number): Promise<any[]> {
-    try {
-      await this.initialize();
-
-      const response = await this.b2.listFileNames({
-        bucketId: this.bucketId,
-        prefix: `leads/${leadId}/`,
-        maxFileCount: 100,
-      });
-
-      return response.data.files || [];
-    } catch (error) {
-      logger.error("Failed to list files for lead", {
-        leadId,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new Error("Failed to list files");
-    }
+    return await this.executeWithRetry(
+      async () => {
+        const response = await this.b2.listFileNames({
+          bucketId: this.bucketId,
+          prefix: `leads/${leadId}/`,
+          maxFileCount: 100,
+        });
+        return response.data.files || [];
+      },
+      "List files for lead",
+      { leadId }
+    );
   }
 }
 
