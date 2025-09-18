@@ -60,7 +60,8 @@ export async function POST(
       }
     });
 
-    const shareUrl = `${process.env.NEXTAUTH_URL}/share/${token}`;
+    const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || '';
+    const shareUrl = `${baseUrl}/share/${token}`;
 
     return NextResponse.json({
       success: true,
@@ -120,10 +121,11 @@ export async function GET(
       }
     });
 
+    const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || '';
     const shareLinksWithUrls = shareLinks.map(link => ({
       id: link.id,
       token: link.token,
-      url: `${process.env.NEXTAUTH_URL}/share/${link.token}`,
+      url: `${baseUrl}/share/${link.token}`,
       expiresAt: link.expiresAt,
       createdAt: link.createdAt,
       accessCount: link.accessCount,
