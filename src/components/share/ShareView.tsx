@@ -108,7 +108,7 @@ export function ShareView({ shareLink }: ShareViewProps) {
   const downloadDocument = async (doc: any) => {
     try {
       setDownloadingDoc(doc.id);
-      
+
       const response = await fetch(`/api/share/${shareLink.token}/documents/${doc.id}`);
       if (!response.ok) {
         throw new Error('Download failed');
@@ -393,14 +393,12 @@ export function ShareView({ shareLink }: ShareViewProps) {
                   <div className="flex items-start justify-between">
                     {/* Step 1 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                        lead.step1CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step1CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+                        }`}>
                         {lead.step1CompletedAt ? "✓" : "1"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${
-                        lead.step1CompletedAt ? "text-green-700" : "text-gray-500"
-                      }`}>
+                      <div className={`text-sm font-medium mb-1 ${lead.step1CompletedAt ? "text-green-700" : "text-gray-500"
+                        }`}>
                         Business Info
                       </div>
                       {lead.step1CompletedAt && (
@@ -410,20 +408,17 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       )}
                     </div>
 
-                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${
-                      lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
-                    }`}></div>
+                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
+                      }`}></div>
 
                     {/* Step 2 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                        lead.step2CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step2CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+                        }`}>
                         {lead.step2CompletedAt ? "✓" : "2"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${
-                        lead.step2CompletedAt ? "text-green-700" : "text-gray-500"
-                      }`}>
+                      <div className={`text-sm font-medium mb-1 ${lead.step2CompletedAt ? "text-green-700" : "text-gray-500"
+                        }`}>
                         Document Upload
                       </div>
                       {lead.step2CompletedAt && (
@@ -433,20 +428,17 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       )}
                     </div>
 
-                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${
-                      lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
-                    }`}></div>
+                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
+                      }`}></div>
 
                     {/* Step 3 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                        lead.step3CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step3CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+                        }`}>
                         {lead.step3CompletedAt ? "✓" : "3"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${
-                        lead.step3CompletedAt ? "text-green-700" : "text-gray-500"
-                      }`}>
+                      <div className={`text-sm font-medium mb-1 ${lead.step3CompletedAt ? "text-green-700" : "text-gray-500"
+                        }`}>
                         Digital Signature
                       </div>
                       {lead.step3CompletedAt && (
