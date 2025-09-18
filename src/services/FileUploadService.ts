@@ -76,7 +76,7 @@ export class FileUploadService {
       try {
         await this.initialize();
         const result = await operation();
-        
+
         // Log successful operation
         logger.externalService(
           'Backblaze B2',
@@ -85,12 +85,12 @@ export class FileUploadService {
           Date.now() - startTime,
           { ...context, retryCount }
         );
-        
+
         return result;
       } catch (error) {
-        const isAuthError = error instanceof Error && 
+        const isAuthError = error instanceof Error &&
           (error.message.includes('401') || error.message.includes('Unauthorized'));
-        
+
         if (isAuthError && retryCount < maxRetries) {
           logger.warn(`B2 authorization error during ${operationName}, forcing re-authorization`, {
             ...context,
@@ -98,7 +98,7 @@ export class FileUploadService {
             timeSinceLastAuth: Date.now() - this.lastAuthTime,
             error: error instanceof Error ? error.message : "Unknown error"
           });
-          
+
           // Force re-authorization on next attempt
           this.isInitialized = false;
           this.lastAuthTime = 0;
@@ -112,14 +112,14 @@ export class FileUploadService {
           operationName,
           false,
           Date.now() - startTime,
-          { 
-            ...context, 
+          {
+            ...context,
             retryCount,
             error: error instanceof Error ? error.message : "Unknown error",
             errorType: isAuthError ? 'authorization' : 'other'
           }
         );
-        
+
         throw error;
       }
     }
@@ -138,8 +138,8 @@ export class FileUploadService {
 
       const isReauth = this.isInitialized;
       const timeSinceLastAuth = this.isInitialized ? Date.now() - this.lastAuthTime : 0;
-      
-      logger.info("Authorizing Backblaze B2 connection", { 
+
+      logger.info("Authorizing Backblaze B2 connection", {
         isReauth,
         timeSinceLastAuth,
         hoursElapsed: timeSinceLastAuth / (1000 * 60 * 60)
@@ -148,10 +148,10 @@ export class FileUploadService {
       const startTime = Date.now();
       await this.b2.authorize();
       const duration = Date.now() - startTime;
-      
+
       this.isInitialized = true;
       this.lastAuthTime = Date.now();
-      
+
       logger.externalService(
         'Backblaze B2',
         'Authorization',
@@ -176,7 +176,7 @@ export class FileUploadService {
           bucketName: this.bucketName
         }
       );
-      
+
       // Reset state on auth failure
       this.isInitialized = false;
       this.lastAuthTime = 0;
@@ -387,6 +387,42 @@ export class FileUploadService {
       },
       "List files for lead",
       { leadId }
+    );
+  }
+
+  /**
+   * Download file content from Backblaze B2 using file name
+   */
+  async downloadFile(fileName: string): Promise<Buffer> {
+    return await this.executeWithRetry(
+      async () => {
+        // Generate a temporary download URL and fetch the file
+        const downloadAuth = await this.b2.getDownloadAuthorization({
+          bucketId: this.bucketId,
+          fileNamePrefix: fileName,
+          validDurationInSeconds: 3600, // 1 hour
+        });
+
+        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${fileName}?Authorization=${downloadAuth.data.authorizationToken}`;
+
+        // Fetch the file content
+        const response = await fetch(downloadUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to download file: ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        logger.info("File downloaded successfully", {
+          fileName,
+          size: buffer.length
+        });
+
+        return buffer;
+      },
+      "File download",
+      { fileName }
     );
   }
 }

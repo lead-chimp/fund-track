@@ -114,6 +114,9 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLinks, setShareLinks] = useState<any[]>([]);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   // Delete lead handler
   const deleteLead = async () => {
@@ -180,6 +183,12 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
   useEffect(() => {
     fetchLead();
   }, [leadId, fetchLead]);
+
+  useEffect(() => {
+    if (showShareModal) {
+      fetchShareLinks();
+    }
+  }, [showShareModal]);
 
   const handleStatusChange = useCallback(
     async (newStatus: LeadStatus, reason?: string) => {
@@ -375,6 +384,77 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     return null;
   }
 
+  const fetchShareLinks = async () => {
+    try {
+      const response = await fetch(`/api/leads/${leadId}/share`);
+      if (response.ok) {
+        const data = await response.json();
+        setShareLinks(data.shareLinks || []);
+      }
+    } catch (error) {
+      console.error("Error fetching share links:", error);
+    }
+  };
+
+  const generateShareLink = async () => {
+    try {
+      setGeneratingLink(true);
+      const response = await fetch(`/api/leads/${leadId}/share`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate share link");
+      }
+
+      const data = await response.json();
+      await fetchShareLinks(); // Refresh the list
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(data.shareLink.url);
+      alert("Share link generated and copied to clipboard!");
+    } catch (error) {
+      console.error("Error generating share link:", error);
+      alert(error instanceof Error ? error.message : "Failed to generate share link");
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const deactivateShareLink = async (linkId: number) => {
+    if (!confirm("Are you sure you want to deactivate this share link?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/leads/${leadId}/share?linkId=${linkId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to deactivate share link");
+      }
+
+      await fetchShareLinks(); // Refresh the list
+      alert("Share link deactivated successfully");
+    } catch (error) {
+      console.error("Error deactivating share link:", error);
+      alert(error instanceof Error ? error.message : "Failed to deactivate share link");
+    }
+  };
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      alert("Failed to copy link to clipboard");
+    }
+  };
+
   const fullName =
     [lead.firstName, lead.lastName].filter(Boolean).join(" ") || "N/A";
 
@@ -410,7 +490,15 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            {/* Actions can be added here if needed */}
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+              </svg>
+              Share Lead
+            </button>
           </div>
         </div>
       </div>
@@ -1491,6 +1579,118 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Share Lead Information</h3>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  Generate a secure link to share this lead's information and documents with external parties. 
+                  Links expire after 7 days and can be deactivated at any time.
+                </p>
+                
+                <button
+                  onClick={generateShareLink}
+                  disabled={generatingLink}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {generatingLink ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Generate New Share Link
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Active Share Links */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-gray-900">Active Share Links</h4>
+                {shareLinks.length > 0 ? (
+                  <div className="space-y-3">
+                    {shareLinks.map((link) => (
+                      <div key={link.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Expires {formatDate(link.expiresAt)}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border break-all">
+                              {link.url}
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              Created {formatDate(link.createdAt)} by {link.createdBy} • 
+                              Accessed {link.accessCount} times
+                              {link.accessedAt && ` • Last accessed ${formatDate(link.accessedAt)}`}
+                            </div>
+                          </div>
+                          <div className="ml-4 flex flex-col space-y-2">
+                            <button
+                              onClick={() => copyToClipboard(link.url)}
+                              className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Copy
+                            </button>
+                            <button
+                              onClick={() => deactivateShareLink(link.id)}
+                              className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50"
+                            >
+                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                              Deactivate
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No active share links</p>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
