@@ -37,6 +37,8 @@ interface ShareViewProps {
       dateOfBirth: string | null;
       dba: string | null;
       legalName: string | null;
+      socialSecurity: string | null;
+      intakeCompletedAt: Date | null;
       status: LeadStatus;
       step1CompletedAt: Date | null;
       step2CompletedAt: Date | null;
@@ -88,13 +90,17 @@ export function ShareView({ shareLink }: ShareViewProps) {
 
   const formatDate = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(dateObj);
+    // Use a simple format that's consistent between server and client
+    const month = dateObj.toLocaleDateString("en-US", { month: "short" });
+    const day = dateObj.getDate();
+    const year = dateObj.getFullYear();
+    const hours = dateObj.getHours();
+    const minutes = dateObj.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+
+    return `${month} ${day}, ${year} ${displayHours}:${displayMinutes} ${ampm}`;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -379,6 +385,114 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       )}
                     </dd>
                   </div>
+                </dl>
+              </div>
+            </div>
+
+            {/* Personal Information */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">Personal Information</h2>
+              </div>
+              <div className="px-6 py-4">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {lead.dateOfBirth && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{lead.dateOfBirth}</dd>
+                    </div>
+                  )}
+                  {lead.socialSecurity && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Social Security</dt>
+                      <dd className="mt-1 text-sm text-gray-900">***-**-{lead.socialSecurity.slice(-4)}</dd>
+                    </div>
+                  )}
+                  {lead.personalAddress && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-sm font-medium text-gray-500">Personal Address</dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        <div>{lead.personalAddress}</div>
+                        {lead.personalZip && <div>ZIP: {lead.personalZip}</div>}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            </div>
+
+            {/* Financial Information */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">Financial Information</h2>
+              </div>
+              <div className="px-6 py-4">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Amount Requested</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {lead.amountNeeded ? `$${parseInt(lead.amountNeeded).toLocaleString()}` : "N/A"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Monthly Revenue</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {lead.monthlyRevenue ? `$${parseInt(lead.monthlyRevenue).toLocaleString()}` : "N/A"}
+                    </dd>
+                  </div>
+                  {lead.hasExistingLoans && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Existing Loans</dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === "yes"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                          }`}>
+                          {lead.hasExistingLoans}
+                        </span>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            </div>
+
+            {/* Digital Signature */}
+            {lead.digitalSignature && (
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-medium text-gray-900">Digital Signature</h2>
+                </div>
+                <div className="px-6 py-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-lg font-medium text-gray-900 mb-2">{lead.digitalSignature}</div>
+                    {lead.signatureDate && (
+                      <div className="text-sm text-gray-500">
+                        Signed on {formatDate(lead.signatureDate)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Application Timeline */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">Application Timeline</h2>
+              </div>
+              <div className="px-6 py-4">
+                <dl className="grid grid-cols-1 gap-4">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Application Created</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{formatDate(lead.createdAt)}</dd>
+                  </div>
+                  {lead.intakeCompletedAt && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Intake Completed</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{formatDate(lead.intakeCompletedAt)}</dd>
+                    </div>
+                  )}
                 </dl>
               </div>
             </div>
