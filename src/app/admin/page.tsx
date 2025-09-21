@@ -103,6 +103,20 @@ export default function AdminIndexPage() {
               </p>
             </Link>
           )}
+
+          {session && (session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && (
+            <Link
+              href="/admin/mailgun-reports"
+              className="block p-6 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md"
+            >
+              <h3 className="text-lg font-medium text-gray-900">
+                MailGun Reports
+              </h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Email delivery reports and events
+              </p>
+            </Link>
+          )}
         </div>
       </div>
     </div>
