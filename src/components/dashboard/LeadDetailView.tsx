@@ -7,6 +7,7 @@ import { LeadStatus, UserRole } from "@prisma/client";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { NotesSection } from "./NotesSection";
 import StatusHistorySection from "./StatusHistorySection";
+import { FollowUpActions } from "./FollowUpActions";
 
 interface LeadNote {
   id: number;
@@ -1438,6 +1439,15 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
             currentStatus={lead.status}
             onStatusChange={handleStatusChange}
             parentLoading={loading}
+          />
+
+          {/* Follow-Up Actions */}
+          <FollowUpActions
+            leadId={leadId}
+            leadEmail={lead.email}
+            intakeToken={lead.intakeToken}
+            hasFollowUps={lead._count.followupQueue > 0}
+            onActionComplete={fetchLead}
           />
 
           {/* Activity Summary */}
