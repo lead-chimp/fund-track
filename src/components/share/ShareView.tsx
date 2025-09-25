@@ -89,16 +89,16 @@ export function ShareView({ shareLink }: ShareViewProps) {
   const [downloadingDoc, setDownloadingDoc] = useState<number | null>(null);
 
   const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date;
     // Use a simple format that's consistent between server and client
     const month = dateObj.toLocaleDateString("en-US", { month: "short" });
     const day = dateObj.getDate();
     const year = dateObj.getFullYear();
     const hours = dateObj.getHours();
     const minutes = dateObj.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const ampm = hours >= 12 ? "PM" : "AM";
     const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, '0');
+    const displayMinutes = minutes.toString().padStart(2, "0");
 
     return `${month} ${day}, ${year} ${displayHours}:${displayMinutes} ${ampm}`;
   };
@@ -115,14 +115,16 @@ export function ShareView({ shareLink }: ShareViewProps) {
     try {
       setDownloadingDoc(doc.id);
 
-      const response = await fetch(`/api/share/${shareLink.token}/documents/${doc.id}`);
+      const response = await fetch(
+        `/api/share/${shareLink.token}/documents/${doc.id}`
+      );
       if (!response.ok) {
-        throw new Error('Download failed');
+        throw new Error("Download failed");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = doc.originalFilename;
       document.body.appendChild(a);
@@ -137,9 +139,10 @@ export function ShareView({ shareLink }: ShareViewProps) {
     }
   };
 
-  const fullName = [lead.firstName, lead.lastName].filter(Boolean).join(" ") || "N/A";
+  const fullName =
+    [lead.firstName, lead.lastName].filter(Boolean).join(" ") || "N/A";
   const expiresAt = new Date(shareLink.expiresAt);
-  const isExpiringSoon = (expiresAt.getTime() - Date.now()) < 24 * 60 * 60 * 1000; // Less than 24 hours
+  const isExpiringSoon = expiresAt.getTime() - Date.now() < 24 * 60 * 60 * 1000; // Less than 24 hours
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,7 +151,9 @@ export function ShareView({ shareLink }: ShareViewProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Lead Information</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Lead Information
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Secure access expires {formatDate(expiresAt)}
                 {isExpiringSoon && (
@@ -174,8 +179,14 @@ export function ShareView({ shareLink }: ShareViewProps) {
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900">Lead Summary</h2>
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[lead.status]}`}>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Lead Summary
+                  </h2>
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      STATUS_COLORS[lead.status]
+                    }`}
+                  >
                     {STATUS_LABELS[lead.status]}
                   </span>
                 </div>
@@ -185,15 +196,21 @@ export function ShareView({ shareLink }: ShareViewProps) {
                   {/* Financial Info */}
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600">
-                      {lead.amountNeeded ? `$${parseInt(lead.amountNeeded).toLocaleString()}` : "N/A"}
+                      {lead.amountNeeded
+                        ? `$${parseInt(lead.amountNeeded).toLocaleString()}`
+                        : "N/A"}
                     </div>
-                    <div className="text-sm text-gray-500">Amount Requested</div>
+                    <div className="text-sm text-gray-500">
+                      Amount Requested
+                    </div>
                     {lead.monthlyRevenue && (
                       <div className="mt-1">
                         <div className="text-lg font-semibold text-gray-700">
                           ${parseInt(lead.monthlyRevenue).toLocaleString()}/mo
                         </div>
-                        <div className="text-xs text-gray-500">Monthly Revenue</div>
+                        <div className="text-xs text-gray-500">
+                          Monthly Revenue
+                        </div>
                       </div>
                     )}
                   </div>
@@ -212,7 +229,9 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       </div>
                     )}
                     {lead.legalEntity && (
-                      <div className="mt-1 text-xs text-gray-500">{lead.legalEntity}</div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {lead.legalEntity}
+                      </div>
                     )}
                   </div>
 
@@ -221,14 +240,20 @@ export function ShareView({ shareLink }: ShareViewProps) {
                     <div className="text-sm text-gray-900">
                       {lead.email && (
                         <div className="mb-1">
-                          <a href={`mailto:${lead.email}`} className="text-indigo-600 hover:text-indigo-500">
+                          <a
+                            href={`mailto:${lead.email}`}
+                            className="text-indigo-600 hover:text-indigo-500"
+                          >
                             {lead.email}
                           </a>
                         </div>
                       )}
                       {lead.phone && (
                         <div className="mb-1">
-                          <a href={`tel:${lead.phone}`} className="text-indigo-600 hover:text-indigo-500">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="text-indigo-600 hover:text-indigo-500"
+                          >
                             {lead.phone}
                           </a>
                         </div>
@@ -236,7 +261,9 @@ export function ShareView({ shareLink }: ShareViewProps) {
                     </div>
                     {(lead.businessCity || lead.businessState) && (
                       <div className="text-sm text-gray-500">
-                        {[lead.businessCity, lead.businessState].filter(Boolean).join(", ")}
+                        {[lead.businessCity, lead.businessState]
+                          .filter(Boolean)
+                          .join(", ")}
                       </div>
                     )}
                   </div>
@@ -247,35 +274,53 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Contact Information */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Contact Information</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Contact Information
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Full Name</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Full Name
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">{fullName}</dd>
                   </div>
                   {lead.legalName && lead.legalName !== fullName && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Legal Name</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.legalName}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Legal Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.legalName}
+                      </dd>
                     </div>
                   )}
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Email</dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {lead.email ? (
-                        <a href={`mailto:${lead.email}`} className="text-indigo-600 hover:text-indigo-500">
+                        <a
+                          href={`mailto:${lead.email}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
                           {lead.email}
                         </a>
-                      ) : "N/A"}
+                      ) : (
+                        "N/A"
+                      )}
                     </dd>
                   </div>
                   {lead.businessEmail && lead.businessEmail !== lead.email && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Business Email</dt>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Business Email
+                      </dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        <a href={`mailto:${lead.businessEmail}`} className="text-indigo-600 hover:text-indigo-500">
+                        <a
+                          href={`mailto:${lead.businessEmail}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
                           {lead.businessEmail}
                         </a>
                       </dd>
@@ -285,32 +330,49 @@ export function ShareView({ shareLink }: ShareViewProps) {
                     <dt className="text-sm font-medium text-gray-500">Phone</dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {lead.phone ? (
-                        <a href={`tel:${lead.phone}`} className="text-indigo-600 hover:text-indigo-500">
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
                           {lead.phone}
                         </a>
-                      ) : "N/A"}
+                      ) : (
+                        "N/A"
+                      )}
                     </dd>
                   </div>
                   {lead.mobile && lead.mobile !== lead.phone && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Mobile</dt>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Mobile
+                      </dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        <a href={`tel:${lead.mobile}`} className="text-indigo-600 hover:text-indigo-500">
+                        <a
+                          href={`tel:${lead.mobile}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
                           {lead.mobile}
                         </a>
                       </dd>
                     </div>
                   )}
-                  {lead.businessPhone && lead.businessPhone !== lead.phone && lead.businessPhone !== lead.mobile && (
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Business Phone</dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        <a href={`tel:${lead.businessPhone}`} className="text-indigo-600 hover:text-indigo-500">
-                          {lead.businessPhone}
-                        </a>
-                      </dd>
-                    </div>
-                  )}
+                  {lead.businessPhone &&
+                    lead.businessPhone !== lead.phone &&
+                    lead.businessPhone !== lead.mobile && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Business Phone
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          <a
+                            href={`tel:${lead.businessPhone}`}
+                            className="text-indigo-600 hover:text-indigo-500"
+                          >
+                            {lead.businessPhone}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
                 </dl>
               </div>
             </div>
@@ -318,13 +380,19 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Business Information */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Business Information</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Business Information
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Business Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{lead.businessName || "N/A"}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Business Name
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {lead.businessName || "N/A"}
+                    </dd>
                   </div>
                   {lead.dba && lead.dba !== lead.businessName && (
                     <div>
@@ -334,42 +402,68 @@ export function ShareView({ shareLink }: ShareViewProps) {
                   )}
                   {lead.industry && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Industry</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.industry}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Industry
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.industry}
+                      </dd>
                     </div>
                   )}
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Years in Business</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Years in Business
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {lead.yearsInBusiness !== null ? `${lead.yearsInBusiness} years` : "N/A"}
+                      {lead.yearsInBusiness !== null
+                        ? `${lead.yearsInBusiness} years`
+                        : "N/A"}
                     </dd>
                   </div>
                   {lead.legalEntity && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Legal Entity</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.legalEntity}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Legal Entity
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.legalEntity}
+                      </dd>
                     </div>
                   )}
                   {lead.stateOfInc && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">State of Incorporation</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.stateOfInc}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        State of Incorporation
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.stateOfInc}
+                      </dd>
                     </div>
                   )}
                   {lead.taxId && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Tax ID</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.taxId}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Tax ID
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.taxId}
+                      </dd>
                     </div>
                   )}
                   {lead.ownershipPercentage && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Ownership Percentage</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.ownershipPercentage}%</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Ownership Percentage
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.ownershipPercentage}%
+                      </dd>
                     </div>
                   )}
                   <div className="sm:col-span-2">
-                    <dt className="text-sm font-medium text-gray-500">Business Address</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Business Address
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {lead.businessAddress ? (
                         <div>
@@ -392,25 +486,37 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Personal Information */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Personal Information</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Personal Information
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {lead.dateOfBirth && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{lead.dateOfBirth}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Date of Birth
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.dateOfBirth}
+                      </dd>
                     </div>
                   )}
                   {lead.socialSecurity && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Social Security</dt>
-                      <dd className="mt-1 text-sm text-gray-900">***-**-{lead.socialSecurity.slice(-4)}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Social Security
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.socialSecurity}
+                      </dd>
                     </div>
                   )}
                   {lead.personalAddress && (
                     <div className="sm:col-span-2">
-                      <dt className="text-sm font-medium text-gray-500">Personal Address</dt>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Personal Address
+                      </dt>
                       <dd className="mt-1 text-sm text-gray-900">
                         <div>{lead.personalAddress}</div>
                         {lead.personalZip && <div>ZIP: {lead.personalZip}</div>}
@@ -424,30 +530,45 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Financial Information */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Financial Information</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Financial Information
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Amount Requested</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Amount Requested
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {lead.amountNeeded ? `$${parseInt(lead.amountNeeded).toLocaleString()}` : "N/A"}
+                      {lead.amountNeeded
+                        ? `$${parseInt(lead.amountNeeded).toLocaleString()}`
+                        : "N/A"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Monthly Revenue</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Monthly Revenue
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {lead.monthlyRevenue ? `$${parseInt(lead.monthlyRevenue).toLocaleString()}` : "N/A"}
+                      {lead.monthlyRevenue
+                        ? `$${parseInt(lead.monthlyRevenue).toLocaleString()}`
+                        : "N/A"}
                     </dd>
                   </div>
                   {lead.hasExistingLoans && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Existing Loans</dt>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Existing Loans
+                      </dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === "yes"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                          }`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            lead.hasExistingLoans.toLowerCase() === "yes"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
                           {lead.hasExistingLoans}
                         </span>
                       </dd>
@@ -461,11 +582,15 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {lead.digitalSignature && (
               <div className="bg-white shadow rounded-lg">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">Digital Signature</h2>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Digital Signature
+                  </h2>
                 </div>
                 <div className="px-6 py-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-lg font-medium text-gray-900 mb-2">{lead.digitalSignature}</div>
+                    <div className="text-lg font-medium text-gray-900 mb-2">
+                      {lead.digitalSignature}
+                    </div>
                     {lead.signatureDate && (
                       <div className="text-sm text-gray-500">
                         Signed on {formatDate(lead.signatureDate)}
@@ -479,18 +604,28 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Application Timeline */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Application Timeline</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Application Timeline
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <dl className="grid grid-cols-1 gap-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Application Created</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{formatDate(lead.createdAt)}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Application Created
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {formatDate(lead.createdAt)}
+                    </dd>
                   </div>
                   {lead.intakeCompletedAt && (
                     <div>
-                      <dt className="text-sm font-medium text-gray-500">Intake Completed</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{formatDate(lead.intakeCompletedAt)}</dd>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Intake Completed
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {formatDate(lead.intakeCompletedAt)}
+                      </dd>
                     </div>
                   )}
                 </dl>
@@ -500,19 +635,31 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {/* Application Progress */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Application Progress</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Application Progress
+                </h2>
               </div>
               <div className="px-6 py-4">
                 <div className="relative">
                   <div className="flex items-start justify-between">
                     {/* Step 1 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step1CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                        }`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
+                          lead.step1CompletedAt
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
                         {lead.step1CompletedAt ? "✓" : "1"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${lead.step1CompletedAt ? "text-green-700" : "text-gray-500"
-                        }`}>
+                      <div
+                        className={`text-sm font-medium mb-1 ${
+                          lead.step1CompletedAt
+                            ? "text-green-700"
+                            : "text-gray-500"
+                        }`}
+                      >
                         Business Info
                       </div>
                       {lead.step1CompletedAt && (
@@ -522,17 +669,30 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       )}
                     </div>
 
-                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
-                      }`}></div>
+                    <div
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${
+                        lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
+                      }`}
+                    ></div>
 
                     {/* Step 2 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step2CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                        }`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
+                          lead.step2CompletedAt
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
                         {lead.step2CompletedAt ? "✓" : "2"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${lead.step2CompletedAt ? "text-green-700" : "text-gray-500"
-                        }`}>
+                      <div
+                        className={`text-sm font-medium mb-1 ${
+                          lead.step2CompletedAt
+                            ? "text-green-700"
+                            : "text-gray-500"
+                        }`}
+                      >
                         Document Upload
                       </div>
                       {lead.step2CompletedAt && (
@@ -542,17 +702,30 @@ export function ShareView({ shareLink }: ShareViewProps) {
                       )}
                     </div>
 
-                    <div className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
-                      }`}></div>
+                    <div
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${
+                        lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
+                      }`}
+                    ></div>
 
                     {/* Step 3 */}
                     <div className="flex flex-col items-center text-center flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step3CompletedAt ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-                        }`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
+                          lead.step3CompletedAt
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
                         {lead.step3CompletedAt ? "✓" : "3"}
                       </div>
-                      <div className={`text-sm font-medium mb-1 ${lead.step3CompletedAt ? "text-green-700" : "text-gray-500"
-                        }`}>
+                      <div
+                        className={`text-sm font-medium mb-1 ${
+                          lead.step3CompletedAt
+                            ? "text-green-700"
+                            : "text-gray-500"
+                        }`}
+                      >
                         Digital Signature
                       </div>
                       {lead.step3CompletedAt && (
@@ -580,13 +753,17 @@ export function ShareView({ shareLink }: ShareViewProps) {
                 {lead.documents.length > 0 ? (
                   <div className="space-y-3">
                     {lead.documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                      >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
                             {doc.originalFilename}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {formatFileSize(doc.fileSize)} • {formatDate(doc.uploadedAt)}
+                            {formatFileSize(doc.fileSize)} •{" "}
+                            {formatDate(doc.uploadedAt)}
                           </p>
                         </div>
                         <button
@@ -601,8 +778,18 @@ export function ShareView({ shareLink }: ShareViewProps) {
                             </>
                           ) : (
                             <>
-                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              <svg
+                                className="h-3 w-3 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
                               </svg>
                               Download
                             </>
@@ -612,7 +799,9 @@ export function ShareView({ shareLink }: ShareViewProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No documents uploaded yet</p>
+                  <p className="text-sm text-gray-500 italic">
+                    No documents uploaded yet
+                  </p>
                 )}
               </div>
             </div>
@@ -621,14 +810,20 @@ export function ShareView({ shareLink }: ShareViewProps) {
             {lead.statusHistory.length > 0 && (
               <div className="bg-white shadow rounded-lg">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">Recent Status Changes</h2>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Recent Status Changes
+                  </h2>
                 </div>
                 <div className="px-6 py-4">
                   <div className="space-y-3">
                     {lead.statusHistory.map((change) => (
                       <div key={change.id} className="text-sm">
                         <div className="flex items-center justify-between">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[change.newStatus]}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              STATUS_COLORS[change.newStatus]
+                            }`}
+                          >
                             {STATUS_LABELS[change.newStatus]}
                           </span>
                           <span className="text-xs text-gray-500">
@@ -636,9 +831,13 @@ export function ShareView({ shareLink }: ShareViewProps) {
                           </span>
                         </div>
                         {change.reason && (
-                          <p className="mt-1 text-xs text-gray-600">{change.reason}</p>
+                          <p className="mt-1 text-xs text-gray-600">
+                            {change.reason}
+                          </p>
                         )}
-                        <p className="text-xs text-gray-500">by {change.user.email}</p>
+                        <p className="text-xs text-gray-500">
+                          by {change.user.email}
+                        </p>
                       </div>
                     ))}
                   </div>
