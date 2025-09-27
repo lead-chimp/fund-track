@@ -1,39 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TokenService } from "@/services/TokenService";
 import { prisma } from "@/lib/prisma";
+import { validateEmail, validatePhoneNumber } from "@/utils/validation";
 
 interface Step1Data {
   // Business Details Section
-  businessName: string;           // Legal Business Name*
-  dba: string;                   // DBA - optional
-  businessAddress: string;        // Business Address*
-  businessPhone: string;          // Business Phone*
-  businessEmail: string;          // Company Email*
-  mobile: string;                // Mobile*
-  businessCity: string;          // City*
-  businessState: string;         // State*
-  businessZip: string;           // Zip*
-  ownershipPercentage: string;   // Percentage of Ownership*
-  taxId: string;                 // Tax ID*
-  stateOfInc: string;           // State of Inc*
-  legalEntity: string;          // Legal Entity*
-  industry: string;             // Enter Your Industry or Product Type*
-  hasExistingLoans: string;     // Do You Have Any Loans Now*
-  yearsInBusiness: string;      // Years in Business*
-  monthlyRevenue: string;       // Monthly Gross Revenue*
-  amountNeeded: string;         // Amount Requested*
+  businessName: string; // Legal Business Name*
+  dba: string; // DBA - optional
+  businessAddress: string; // Business Address*
+  businessPhone: string; // Business Phone*
+  businessEmail: string; // Company Email*
+  mobile: string; // Mobile*
+  businessCity: string; // City*
+  businessState: string; // State*
+  businessZip: string; // Zip*
+  ownershipPercentage: string; // Percentage of Ownership*
+  taxId: string; // Tax ID*
+  stateOfInc: string; // State of Inc*
+  legalEntity: string; // Legal Entity*
+  industry: string; // Enter Your Industry or Product Type*
+  hasExistingLoans: string; // Do You Have Any Loans Now*
+  yearsInBusiness: string; // Years in Business*
+  monthlyRevenue: string; // Monthly Gross Revenue*
+  amountNeeded: string; // Amount Requested*
 
   // Personal Details Section
-  firstName: string;            // First Name*
-  lastName: string;             // Last Name*
-  dateOfBirth: string;          // Date of Birth*
-  socialSecurity: string;       // Social Security*
-  personalAddress: string;      // Address*
-  personalZip: string;          // Zip Code*
+  firstName: string; // First Name*
+  lastName: string; // Last Name*
+  dateOfBirth: string; // Date of Birth*
+  socialSecurity: string; // Social Security*
+  personalAddress: string; // Address*
+  personalZip: string; // Zip Code*
 
   // Legal Information Section
-  legalName: string;            // Your legal name*
-  email: string;                // Email Address*
+  legalName: string; // Your legal name*
+  email: string; // Email Address*
 }
 
 export async function POST(
@@ -151,38 +152,37 @@ export async function POST(
     }
 
     // Validate email formats
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedData.email)) {
+    if (!validateEmail(trimmedData.email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }
       );
     }
-    if (!emailRegex.test(trimmedData.businessEmail)) {
+    if (!validateEmail(trimmedData.businessEmail)) {
       return NextResponse.json(
         { error: "Invalid business email format" },
         { status: 400 }
       );
     }
 
-    // Validate phone formats (basic validation)
-    const phoneRegex = /^[\d\s\-\(\)\+\.]{10,}$/;
-    if (!phoneRegex.test(trimmedData.businessPhone)) {
+    // Validate phone formats - only allow 10 digit phone numbers
+    if (!validatePhoneNumber(trimmedData.businessPhone)) {
       return NextResponse.json(
-        { error: "Invalid business phone number format" },
+        { error: "Invalid business phone number format - must be 10 digits" },
         { status: 400 }
       );
     }
-    if (!phoneRegex.test(trimmedData.mobile)) {
+
+    if (!validatePhoneNumber(trimmedData.mobile)) {
       return NextResponse.json(
-        { error: "Invalid mobile number format" },
+        { error: "Invalid mobile number format - must be 10 digits" },
         { status: 400 }
       );
     }
 
     // Clean phone numbers for storage
-    const cleanBusinessPhone = trimmedData.businessPhone.replace(/[\s\-\(\)\.]/g, "");
-    const cleanMobile = trimmedData.mobile.replace(/[\s\-\(\)\.]/g, "");
+    const cleanBusinessPhone = trimmedData.businessPhone.replace(/\D/g, "");
+    const cleanMobile = trimmedData.mobile.replace(/\D/g, "");
 
     // Validate dropdown selections (these are string values from dropdowns)
     if (!trimmedData.amountNeeded) {
@@ -201,7 +201,11 @@ export async function POST(
 
     // Validate ownership percentage
     const ownershipPercentage = parseFloat(trimmedData.ownershipPercentage);
-    if (isNaN(ownershipPercentage) || ownershipPercentage < 0 || ownershipPercentage > 100) {
+    if (
+      isNaN(ownershipPercentage) ||
+      ownershipPercentage < 0 ||
+      ownershipPercentage > 100
+    ) {
       return NextResponse.json(
         { error: "Invalid ownership percentage (must be between 0-100)" },
         { status: 400 }
@@ -210,7 +214,11 @@ export async function POST(
 
     // Validate years in business
     const yearsInBusiness = parseInt(trimmedData.yearsInBusiness);
-    if (isNaN(yearsInBusiness) || yearsInBusiness < 0 || yearsInBusiness > 100) {
+    if (
+      isNaN(yearsInBusiness) ||
+      yearsInBusiness < 0 ||
+      yearsInBusiness > 100
+    ) {
       return NextResponse.json(
         { error: "Invalid years in business (must be between 0-100)" },
         { status: 400 }
@@ -279,7 +287,12 @@ export async function POST(
     return NextResponse.json(
       {
         error: "Internal server error",
-        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : String(error) : undefined
+        details:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );

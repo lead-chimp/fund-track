@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TokenService } from "@/services/TokenService";
 import { prisma } from "@/lib/prisma";
+import { validateEmail, validatePhoneNumber } from "@/utils/validation";
 
 interface SaveProgressData {
   step: number;
@@ -77,23 +78,23 @@ export async function POST(
       }
 
       // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (body.data.email && !emailRegex.test(body.data.email)) {
+      if (body.data.email && !validateEmail(body.data.email)) {
         return NextResponse.json(
           { error: "Invalid email format" },
           { status: 400 }
         );
       }
 
-      // Validate phone format
-      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-      const cleanPhone = body.data.phone?.replace(/[\s\-\(\)]/g, "") || "";
-      if (body.data.phone && !phoneRegex.test(cleanPhone)) {
+      // Validate phone format - only allow 10 digit phone numbers
+      if (body.data.phone && !validatePhoneNumber(body.data.phone)) {
         return NextResponse.json(
-          { error: "Invalid phone number format" },
+          { error: "Invalid phone number format - must be 10 digits" },
           { status: 400 }
         );
       }
+
+      // Clean phone number for storage
+      const cleanPhone = body.data.phone?.replace(/\D/g, "") || "";
 
       // Update lead with step 1 data (but don't mark as completed)
       await prisma.lead.update({

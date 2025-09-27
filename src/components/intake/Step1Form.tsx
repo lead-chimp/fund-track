@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { IntakeSession } from "@/services/TokenService";
 import InputField from "./InputField";
 import SelectField from "./SelectField";
+import { validateEmail, validatePhoneNumber } from "@/utils/validation";
 
 interface Step1FormProps {
   intakeSession: IntakeSession;
@@ -115,8 +116,6 @@ const LEGAL_ENTITIES = [
   { value: "Other", label: "Other" },
 ];
 
-
-
 const MONTHLY_REVENUE_OPTIONS = [
   { value: "", label: "Select Monthly Revenue" },
   { value: "5000-10000", label: "$5,000 - $10,000" },
@@ -145,9 +144,11 @@ export default function Step1Form({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showValidationError, setShowValidationError] = useState(false);
-  
+
   // Refs for focusing on fields with errors
-  const fieldRefs = useRef<{ [key: string]: HTMLInputElement | HTMLSelectElement | null }>({});
+  const fieldRefs = useRef<{
+    [key: string]: HTMLInputElement | HTMLSelectElement | null;
+  }>({});
 
   // Initialize form data with pre-filled values from intake session
   const [formData, setFormData] = useState<Step1FormData>({
@@ -193,8 +194,16 @@ export default function Step1Form({
 
     let formattedValue = value;
 
+    // For phone fields, only allow digits
+    if (["businessPhone", "mobile"].includes(fieldName)) {
+      // Remove all non-digit characters
+      const digitsOnly = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      const limitedValue = digitsOnly.slice(0, 10);
+      formattedValue = limitedValue;
+    }
     // Format Tax ID as XX-XXXXXXX
-    if (fieldName === "taxId") {
+    else if (fieldName === "taxId") {
       // Remove all non-alphanumeric characters
       const cleaned = value.replace(/[^A-Za-z0-9]/g, "");
 
@@ -209,7 +218,7 @@ export default function Step1Form({
     }
 
     // Format zip codes as 12345 or 12345-6789
-    if (fieldName === "businessZip" || fieldName === "personalZip") {
+    else if (fieldName === "businessZip" || fieldName === "personalZip") {
       // Remove all non-digit characters
       const cleaned = value.replace(/\D/g, "");
 
@@ -224,7 +233,7 @@ export default function Step1Form({
     }
 
     // Format Social Security Number as XXX-XX-XXXX
-    if (fieldName === "socialSecurity") {
+    else if (fieldName === "socialSecurity") {
       // Remove all non-digit characters
       const cleaned = value.replace(/\D/g, "");
 
@@ -251,10 +260,10 @@ export default function Step1Form({
     }
 
     // Format ownership percentage - only allow numbers and decimal point
-    if (fieldName === "ownershipPercentage") {
+    else if (fieldName === "ownershipPercentage") {
       // Remove all non-numeric characters except decimal point
       const cleaned = value.replace(/[^0-9.]/g, "");
-      
+
       // Ensure only one decimal point
       const parts = cleaned.split(".");
       if (parts.length > 2) {
@@ -262,7 +271,7 @@ export default function Step1Form({
       } else {
         formattedValue = cleaned;
       }
-      
+
       // Limit to 2 decimal places
       if (formattedValue.includes(".")) {
         const [whole, decimal] = formattedValue.split(".");
@@ -271,7 +280,7 @@ export default function Step1Form({
     }
 
     // Format years in business - only allow whole numbers
-    if (fieldName === "yearsInBusiness") {
+    else if (fieldName === "yearsInBusiness") {
       // Remove all non-numeric characters
       formattedValue = value.replace(/[^0-9]/g, "");
     }
@@ -333,22 +342,26 @@ export default function Step1Form({
       }
     });
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
+    // Email validation with enhanced restrictions
+    if (formData.email && !validateEmail(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    if (formData.businessEmail && !emailRegex.test(formData.businessEmail)) {
+    if (formData.businessEmail && !validateEmail(formData.businessEmail)) {
       newErrors.businessEmail = "Please enter a valid email address";
     }
 
-    // Phone validation (basic)
-    const phoneRegex = /^[\d\s\-\(\)\+\.]{10,}$/;
-    if (formData.businessPhone && !phoneRegex.test(formData.businessPhone)) {
-      newErrors.businessPhone = "Please enter a valid phone number";
+    // Phone validation - only allow 10 digit phone numbers
+    if (
+      formData.businessPhone &&
+      !validatePhoneNumber(formData.businessPhone)
+    ) {
+      newErrors.businessPhone =
+        "Please enter a valid 10-digit phone number (e.g., 7488883486)";
     }
-    if (formData.mobile && !phoneRegex.test(formData.mobile)) {
-      newErrors.mobile = "Please enter a valid mobile number";
+
+    if (formData.mobile && !validatePhoneNumber(formData.mobile)) {
+      newErrors.mobile =
+        "Please enter a valid 10-digit mobile number (e.g., 7488883486)";
     }
 
     // Ownership percentage validation
@@ -396,7 +409,7 @@ export default function Step1Form({
     }
 
     setErrors(newErrors);
-    
+
     // Focus on the first field with an error after a small delay to ensure DOM update
     if (Object.keys(newErrors).length > 0) {
       setTimeout(() => {
@@ -404,11 +417,11 @@ export default function Step1Form({
         const fieldElement = fieldRefs.current[firstErrorField];
         if (fieldElement) {
           fieldElement.focus();
-          fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }, 100);
     }
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -486,7 +499,7 @@ export default function Step1Form({
                 value={formData.businessName}
                 onChange={handleInputChange}
                 error={errors.businessName}
-                fieldRef={(el) => fieldRefs.current['businessName'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessName"] = el)}
                 required
               />
               <InputField
@@ -495,7 +508,7 @@ export default function Step1Form({
                 value={formData.dba}
                 onChange={handleInputChange}
                 error={errors.dba}
-                fieldRef={(el) => fieldRefs.current['dba'] = el}
+                fieldRef={(el) => (fieldRefs.current["dba"] = el)}
               />
               <InputField
                 id="businessAddress"
@@ -503,7 +516,7 @@ export default function Step1Form({
                 value={formData.businessAddress}
                 onChange={handleInputChange}
                 error={errors.businessAddress}
-                fieldRef={(el) => fieldRefs.current['businessAddress'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessAddress"] = el)}
                 required
                 className="md:col-span-2"
               />
@@ -513,7 +526,7 @@ export default function Step1Form({
                 value={formData.businessCity}
                 onChange={handleInputChange}
                 error={errors.businessCity}
-                fieldRef={(el) => fieldRefs.current['businessCity'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessCity"] = el)}
                 required
               />
               <SelectField
@@ -523,7 +536,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={US_STATES}
                 error={errors.businessState}
-                fieldRef={(el) => fieldRefs.current['businessState'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessState"] = el)}
                 required
               />
               <InputField
@@ -533,7 +546,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.businessZip}
                 placeholder="12345"
-                fieldRef={(el) => fieldRefs.current['businessZip'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessZip"] = el)}
                 required
               />
               <InputField
@@ -543,7 +556,7 @@ export default function Step1Form({
                 value={formData.businessPhone}
                 onChange={handleInputChange}
                 error={errors.businessPhone}
-                fieldRef={(el) => fieldRefs.current['businessPhone'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessPhone"] = el)}
                 required
               />
               <InputField
@@ -553,7 +566,7 @@ export default function Step1Form({
                 value={formData.mobile}
                 onChange={handleInputChange}
                 error={errors.mobile}
-                fieldRef={(el) => fieldRefs.current['mobile'] = el}
+                fieldRef={(el) => (fieldRefs.current["mobile"] = el)}
                 required
               />
               <InputField
@@ -563,7 +576,7 @@ export default function Step1Form({
                 value={formData.businessEmail}
                 onChange={handleInputChange}
                 error={errors.businessEmail}
-                fieldRef={(el) => fieldRefs.current['businessEmail'] = el}
+                fieldRef={(el) => (fieldRefs.current["businessEmail"] = el)}
                 required
               />
               <InputField
@@ -574,7 +587,9 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.ownershipPercentage}
                 placeholder="0-100"
-                fieldRef={(el) => fieldRefs.current['ownershipPercentage'] = el}
+                fieldRef={(el) =>
+                  (fieldRefs.current["ownershipPercentage"] = el)
+                }
                 required
               />
               <InputField
@@ -584,7 +599,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.taxId}
                 placeholder="XX-XXXXXXX"
-                fieldRef={(el) => fieldRefs.current['taxId'] = el}
+                fieldRef={(el) => (fieldRefs.current["taxId"] = el)}
                 required
               />
               <SelectField
@@ -594,7 +609,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={US_STATES}
                 error={errors.stateOfInc}
-                fieldRef={(el) => fieldRefs.current['stateOfInc'] = el}
+                fieldRef={(el) => (fieldRefs.current["stateOfInc"] = el)}
                 required
               />
 
@@ -605,7 +620,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={LEGAL_ENTITIES}
                 error={errors.legalEntity}
-                fieldRef={(el) => fieldRefs.current['legalEntity'] = el}
+                fieldRef={(el) => (fieldRefs.current["legalEntity"] = el)}
                 required
               />
               <InputField
@@ -614,7 +629,7 @@ export default function Step1Form({
                 value={formData.industry}
                 onChange={handleInputChange}
                 error={errors.industry}
-                fieldRef={(el) => fieldRefs.current['industry'] = el}
+                fieldRef={(el) => (fieldRefs.current["industry"] = el)}
                 required
               />
               <SelectField
@@ -628,7 +643,7 @@ export default function Step1Form({
                   { value: "No", label: "No" },
                 ]}
                 error={errors.hasExistingLoans}
-                fieldRef={(el) => fieldRefs.current['hasExistingLoans'] = el}
+                fieldRef={(el) => (fieldRefs.current["hasExistingLoans"] = el)}
                 required
               />
 
@@ -640,7 +655,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.yearsInBusiness}
                 placeholder="0-100"
-                fieldRef={(el) => fieldRefs.current['yearsInBusiness'] = el}
+                fieldRef={(el) => (fieldRefs.current["yearsInBusiness"] = el)}
                 required
               />
               <SelectField
@@ -650,7 +665,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={MONTHLY_REVENUE_OPTIONS}
                 error={errors.monthlyRevenue}
-                fieldRef={(el) => fieldRefs.current['monthlyRevenue'] = el}
+                fieldRef={(el) => (fieldRefs.current["monthlyRevenue"] = el)}
                 required
               />
               <SelectField
@@ -660,7 +675,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 options={AMOUNT_REQUESTED_OPTIONS}
                 error={errors.amountNeeded}
-                fieldRef={(el) => fieldRefs.current['amountNeeded'] = el}
+                fieldRef={(el) => (fieldRefs.current["amountNeeded"] = el)}
                 required
               />
             </div>
@@ -678,7 +693,7 @@ export default function Step1Form({
                 value={formData.firstName}
                 onChange={handleInputChange}
                 error={errors.firstName}
-                fieldRef={(el) => fieldRefs.current['firstName'] = el}
+                fieldRef={(el) => (fieldRefs.current["firstName"] = el)}
                 required
               />
               <InputField
@@ -687,7 +702,7 @@ export default function Step1Form({
                 value={formData.lastName}
                 onChange={handleInputChange}
                 error={errors.lastName}
-                fieldRef={(el) => fieldRefs.current['lastName'] = el}
+                fieldRef={(el) => (fieldRefs.current["lastName"] = el)}
                 required
               />
               <InputField
@@ -697,7 +712,7 @@ export default function Step1Form({
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 error={errors.dateOfBirth}
-                fieldRef={(el) => fieldRefs.current['dateOfBirth'] = el}
+                fieldRef={(el) => (fieldRefs.current["dateOfBirth"] = el)}
                 required
               />
               <InputField
@@ -707,7 +722,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.socialSecurity}
                 placeholder="XXX-XX-XXXX"
-                fieldRef={(el) => fieldRefs.current['socialSecurity'] = el}
+                fieldRef={(el) => (fieldRefs.current["socialSecurity"] = el)}
                 required
               />
               <InputField
@@ -716,7 +731,7 @@ export default function Step1Form({
                 value={formData.personalAddress}
                 onChange={handleInputChange}
                 error={errors.personalAddress}
-                fieldRef={(el) => fieldRefs.current['personalAddress'] = el}
+                fieldRef={(el) => (fieldRefs.current["personalAddress"] = el)}
                 required
                 className="md:col-span-2"
               />
@@ -728,7 +743,7 @@ export default function Step1Form({
                 onChange={handleInputChange}
                 error={errors.personalZip}
                 placeholder="12345"
-                fieldRef={(el) => fieldRefs.current['personalZip'] = el}
+                fieldRef={(el) => (fieldRefs.current["personalZip"] = el)}
                 required
               />
             </div>
@@ -746,7 +761,7 @@ export default function Step1Form({
                 value={formData.legalName}
                 onChange={handleInputChange}
                 error={errors.legalName}
-                fieldRef={(el) => fieldRefs.current['legalName'] = el}
+                fieldRef={(el) => (fieldRefs.current["legalName"] = el)}
                 required
               />
               <InputField
@@ -756,7 +771,7 @@ export default function Step1Form({
                 value={formData.email}
                 onChange={handleInputChange}
                 error={errors.email}
-                fieldRef={(el) => fieldRefs.current['email'] = el}
+                fieldRef={(el) => (fieldRefs.current["email"] = el)}
                 required
               />
             </div>
@@ -767,14 +782,23 @@ export default function Step1Form({
               <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div className="ml-2">
                     <strong>Your application is missing information.</strong>
                     <br />
-                    Please scroll up to complete all required fields marked in red.
+                    Please scroll up to complete all required fields marked in
+                    red.
                   </div>
                 </div>
               </div>
