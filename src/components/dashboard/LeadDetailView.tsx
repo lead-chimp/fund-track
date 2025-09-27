@@ -8,6 +8,11 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { NotesSection } from "./NotesSection";
 import StatusHistorySection from "./StatusHistorySection";
 import { FollowUpActions } from "./FollowUpActions";
+import {
+  validateEmail,
+  validatePhoneNumber,
+  formatPhoneNumber,
+} from "@/utils/validation";
 
 interface LeadNote {
   id: number;
@@ -119,6 +124,20 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
   const [shareLinks, setShareLinks] = useState<any[]>([]);
   const [generatingLink, setGeneratingLink] = useState(false);
 
+  // Contact editing state
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    email: "",
+    phone: "",
+    mobile: "",
+    businessEmail: "",
+    businessPhone: "",
+  });
+  // Invalid field tracking
+  const [invalidFields, setInvalidFields] = useState<Record<string, boolean>>(
+    {}
+  );
+
   // Delete lead handler
   const deleteLead = async () => {
     if (!lead) return;
@@ -155,6 +174,119 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     setDeleteConfirmText("");
   };
 
+  // Initialize contact form with lead data
+  const initializeContactForm = useCallback(() => {
+    if (lead) {
+      setContactForm({
+        email: lead.email || "",
+        phone: lead.phone || "",
+        mobile: lead.mobile || "",
+        businessEmail: lead.businessEmail || "",
+        businessPhone: lead.businessPhone || "",
+      });
+      // Reset invalid fields when initializing form
+      setInvalidFields({});
+    }
+  }, [lead]);
+
+  // Handle contact form changes
+  const handleContactChange = (field: string, value: string) => {
+    // For phone fields, only allow digits
+    if (["phone", "mobile", "businessPhone"].includes(field)) {
+      // Remove all non-digit characters
+      const digitsOnly = value.replace(/\D/g, "");
+      // Limit to 10 digits
+      const limitedValue = digitsOnly.slice(0, 10);
+      setContactForm((prev) => ({ ...prev, [field]: limitedValue }));
+    } else {
+      setContactForm((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  // Save contact information
+  const saveContactInfo = async () => {
+    if (!lead) return;
+
+    try {
+      setUpdating(true);
+      // Reset invalid fields
+      setInvalidFields({});
+
+      // Track invalid fields
+      const newInvalidFields: Record<string, boolean> = {};
+
+      // Validate email formats with more restrictive validation
+      if (contactForm.email && !validateEmail(contactForm.email)) {
+        newInvalidFields.email = true;
+      }
+
+      if (
+        contactForm.businessEmail &&
+        !validateEmail(contactForm.businessEmail)
+      ) {
+        newInvalidFields.businessEmail = true;
+      }
+
+      // Validate phone numbers - must be exactly 10 digits
+      if (contactForm.phone && !validatePhoneNumber(contactForm.phone)) {
+        newInvalidFields.phone = true;
+      }
+
+      if (contactForm.mobile && !validatePhoneNumber(contactForm.mobile)) {
+        newInvalidFields.mobile = true;
+      }
+
+      if (
+        contactForm.businessPhone &&
+        !validatePhoneNumber(contactForm.businessPhone)
+      ) {
+        newInvalidFields.businessPhone = true;
+      }
+
+      // If there are invalid fields, set them and show alert
+      if (Object.keys(newInvalidFields).length > 0) {
+        setInvalidFields(newInvalidFields);
+        alert("Please correct the highlighted fields");
+        return;
+      }
+
+      const response = await fetch(`/api/leads/${leadId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactForm),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to update contact information"
+        );
+      }
+
+      const data = await response.json();
+      setLead(data.lead);
+      setIsEditingContact(false);
+      alert("Contact information updated successfully");
+    } catch (err) {
+      console.error("Error updating contact information:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to update contact information"
+      );
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const cancelContactEdit = () => {
+    setIsEditingContact(false);
+    setInvalidFields({});
+    initializeContactForm();
+  };
+
   const fetchLead = useCallback(async () => {
     try {
       setLoading(true);
@@ -184,6 +316,13 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
   useEffect(() => {
     fetchLead();
   }, [leadId, fetchLead]);
+
+  // Initialize contact form when lead data is loaded
+  useEffect(() => {
+    if (lead) {
+      initializeContactForm();
+    }
+  }, [lead, initializeContactForm]);
 
   useEffect(() => {
     if (showShareModal) {
@@ -628,128 +767,292 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
           {/* Contact Information */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
-                Contact Information
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Contact Information
+                </h2>
+                <RoleGuard
+                  allowedRoles={[
+                    "ADMIN" as UserRole,
+                    "USER" as UserRole,
+                    "SYSTEM_ADMIN" as UserRole,
+                  ]}
+                  fallback={<></>}
+                >
+                  {!isEditingContact ? (
+                    <button
+                      onClick={() => setIsEditingContact(true)}
+                      className="text-sm text-indigo-600 hover:text-indigo-500"
+                    >
+                      Edit
+                    </button>
+                  ) : null}
+                </RoleGuard>
+              </div>
             </div>
             <div className="px-6 py-4">
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Full Name
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">{fullName}</dd>
+              {isEditingContact ? (
+                // Edit mode
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Personal Email
+                      </label>
+                      <input
+                        type="email"
+                        value={contactForm.email}
+                        onChange={(e) =>
+                          handleContactChange("email", e.target.value)
+                        }
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                          invalidFields.email
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      {invalidFields.email && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid email address
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={contactForm.phone}
+                        onChange={(e) =>
+                          handleContactChange("phone", e.target.value)
+                        }
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                          invalidFields.phone
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      {invalidFields.phone && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid 10-digit phone number (e.g.,
+                          7488883486)
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Mobile
+                      </label>
+                      <input
+                        type="tel"
+                        value={contactForm.mobile}
+                        onChange={(e) =>
+                          handleContactChange("mobile", e.target.value)
+                        }
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                          invalidFields.mobile
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      {invalidFields.mobile && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid 10-digit mobile number (e.g.,
+                          7488883486)
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Business Email
+                      </label>
+                      <input
+                        type="email"
+                        value={contactForm.businessEmail}
+                        onChange={(e) =>
+                          handleContactChange("businessEmail", e.target.value)
+                        }
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                          invalidFields.businessEmail
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      {invalidFields.businessEmail && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid business email address
+                        </p>
+                      )}
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Business Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={contactForm.businessPhone}
+                        onChange={(e) =>
+                          handleContactChange("businessPhone", e.target.value)
+                        }
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                          invalidFields.businessPhone
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      {invalidFields.businessPhone && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid 10-digit business phone number
+                          (e.g., 7488883486)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={saveContactInfo}
+                      disabled={updating}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                      {updating ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Changes"
+                      )}
+                    </button>
+                    <button
+                      onClick={cancelContactEdit}
+                      disabled={updating}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                {lead.legalName && lead.legalName !== fullName && (
+              ) : (
+                // View mode
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
-                      Legal Name
+                      Full Name
                     </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      {lead.legalName}
-                    </dd>
+                    <dd className="mt-1 text-sm text-gray-900">{fullName}</dd>
                   </div>
-                )}
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Personal Email
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {lead.email ? (
-                      <a
-                        href={`mailto:${lead.email}`}
-                        className="text-indigo-600 hover:text-indigo-500"
-                      >
-                        {lead.email}
-                      </a>
-                    ) : (
-                      "N/A"
-                    )}
-                  </dd>
-                </div>
-                {lead.businessEmail && lead.businessEmail !== lead.email && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Business Email
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      <a
-                        href={`mailto:${lead.businessEmail}`}
-                        className="text-indigo-600 hover:text-indigo-500"
-                      >
-                        {lead.businessEmail}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {lead.phone ? (
-                      <a
-                        href={`tel:${lead.phone}`}
-                        className="text-indigo-600 hover:text-indigo-500"
-                      >
-                        {lead.phone}
-                      </a>
-                    ) : (
-                      "N/A"
-                    )}
-                  </dd>
-                </div>
-                {lead.mobile && lead.mobile !== lead.phone && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Mobile
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      <a
-                        href={`tel:${lead.mobile}`}
-                        className="text-indigo-600 hover:text-indigo-500"
-                      >
-                        {lead.mobile}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                {lead.businessPhone &&
-                  lead.businessPhone !== lead.phone &&
-                  lead.businessPhone !== lead.mobile && (
+                  {lead.legalName && lead.legalName !== fullName && (
                     <div>
                       <dt className="text-sm font-medium text-gray-500">
-                        Business Phone
+                        Legal Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.legalName}
+                      </dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Personal Email
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {lead.email ? (
+                        <a
+                          href={`mailto:${lead.email}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
+                          {lead.email}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </dd>
+                  </div>
+                  {lead.businessEmail && lead.businessEmail !== lead.email && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Business Email
                       </dt>
                       <dd className="mt-1 text-sm text-gray-900">
                         <a
-                          href={`tel:${lead.businessPhone}`}
+                          href={`mailto:${lead.businessEmail}`}
                           className="text-indigo-600 hover:text-indigo-500"
                         >
-                          {lead.businessPhone}
+                          {lead.businessEmail}
                         </a>
                       </dd>
                     </div>
                   )}
-                {lead.dateOfBirth && (
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Date of Birth
-                    </dt>
+                    <dt className="text-sm font-medium text-gray-500">Phone</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {lead.dateOfBirth}
+                      {lead.phone ? (
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
+                          {lead.phone}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
                     </dd>
                   </div>
-                )}
-                {lead.socialSecurity && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Social Security
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      {lead.socialSecurity}
-                    </dd>
-                  </div>
-                )}
-              </dl>
+                  {lead.mobile && lead.mobile !== lead.phone && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Mobile
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        <a
+                          href={`tel:${lead.mobile}`}
+                          className="text-indigo-600 hover:text-indigo-500"
+                        >
+                          {lead.mobile}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                  {lead.businessPhone &&
+                    lead.businessPhone !== lead.phone &&
+                    lead.businessPhone !== lead.mobile && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Business Phone
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          <a
+                            href={`tel:${lead.businessPhone}`}
+                            className="text-indigo-600 hover:text-indigo-500"
+                          >
+                            {lead.businessPhone}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                  {lead.dateOfBirth && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Date of Birth
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.dateOfBirth}
+                      </dd>
+                    </div>
+                  )}
+                  {lead.socialSecurity && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Social Security
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {lead.socialSecurity}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              )}
             </div>
           </div>
 
@@ -1667,9 +1970,9 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
               <div className="mb-6">
                 <p className="text-sm text-gray-600 mb-4">
-                  Generate a secure link to share this lead's information and
-                  documents with external parties. Links expire after 7 days and
-                  can be deactivated at any time.
+                  Generate a secure link to share this lead&#39;s information
+                  and documents with external parties. Links expire after 7 days
+                  and can be deactivated at any time.
                 </p>
 
                 <button

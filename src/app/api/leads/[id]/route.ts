@@ -38,6 +38,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LeadStatus } from "@prisma/client";
 import { leadStatusService } from "@/services/LeadStatusService";
+import { validateEmail, validatePhoneNumber } from "@/utils/validation";
 
 // Force dynamic rendering for this route
 export const dynamic = "force-dynamic";
@@ -185,8 +186,18 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { status, firstName, lastName, email, phone, businessName, reason } =
-      body;
+    const {
+      status,
+      firstName,
+      lastName,
+      email,
+      phone,
+      businessName,
+      reason,
+      mobile,
+      businessEmail,
+      businessPhone,
+    } = body;
 
     // Validate status if provided
     if (status && !Object.values(LeadStatus).includes(status)) {
@@ -196,10 +207,40 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Validate email format if provided
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // Validate email format with more restrictive validation
+    if (email && !validateEmail(email)) {
       return NextResponse.json(
-        { error: "Invalid email format" },
+        { error: "Invalid personal email format" },
+        { status: 400 }
+      );
+    }
+
+    // Validate business email format if provided
+    if (businessEmail && !validateEmail(businessEmail)) {
+      return NextResponse.json(
+        { error: "Invalid business email format" },
+        { status: 400 }
+      );
+    }
+
+    // Validate phone numbers - only allow 10 digit phone numbers
+    if (phone && !validatePhoneNumber(phone)) {
+      return NextResponse.json(
+        { error: "Invalid phone number format - must be 10 digits" },
+        { status: 400 }
+      );
+    }
+
+    if (mobile && !validatePhoneNumber(mobile)) {
+      return NextResponse.json(
+        { error: "Invalid mobile number format - must be 10 digits" },
+        { status: 400 }
+      );
+    }
+
+    if (businessPhone && !validatePhoneNumber(businessPhone)) {
+      return NextResponse.json(
+        { error: "Invalid business phone number format - must be 10 digits" },
         { status: 400 }
       );
     }
@@ -235,7 +276,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         lastName === undefined &&
         email === undefined &&
         phone === undefined &&
-        businessName === undefined
+        businessName === undefined &&
+        mobile === undefined &&
+        businessEmail === undefined &&
+        businessPhone === undefined
       ) {
         // Convert BigInt values to strings for JSON serialization
         const serializedLead = statusChangeResult.lead
@@ -262,6 +306,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (email !== undefined) updateData.email = email;
     if (phone !== undefined) updateData.phone = phone;
     if (businessName !== undefined) updateData.businessName = businessName;
+    if (mobile !== undefined) updateData.mobile = mobile;
+    if (businessEmail !== undefined) updateData.businessEmail = businessEmail;
+    if (businessPhone !== undefined) updateData.businessPhone = businessPhone;
 
     // If there are other fields to update besides status
     if (Object.keys(updateData).length > 0) {
