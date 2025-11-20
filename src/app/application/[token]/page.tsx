@@ -50,7 +50,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
             <div className="bg-white px-8 py-6 border-b">
               <div className="flex items-center justify-between">
                 <img
-                  src="https://merchantfunding.com/assets/img/merchant-funding-logo.png"
+                  src="https://www.merchantfunding.com/images/merchant-funding-logo.png"
                   alt="Merchant Funding Logo"
                   className="w-auto"
                 />

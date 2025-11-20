@@ -110,7 +110,7 @@ export default function DashboardPage() {
             <div className="flex justify-between h-16">
               <div className="flex items-center space-x-4">
                 <img
-                  src="https://merchantfunding.com/assets/img/merchant-funding-logo.png"
+                  src="https://www.merchantfunding.com/images/merchant-funding-logo.png"
                   alt="Merchant Funding Logo"
                   className="h-8 w-auto mr-3"
                 />
