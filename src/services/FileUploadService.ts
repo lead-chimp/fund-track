@@ -57,7 +57,7 @@ export class FileUploadService {
     const now = Date.now();
     const timeSinceAuth = now - this.lastAuthTime;
     // Re-authorize if more than 23 hours have passed (1 hour buffer)
-    return !this.isInitialized || timeSinceAuth > (23 * 60 * 60 * 1000);
+    return !this.isInitialized || timeSinceAuth > 23 * 60 * 60 * 1000;
   }
 
   /**
@@ -79,7 +79,7 @@ export class FileUploadService {
 
         // Log successful operation
         logger.externalService(
-          'Backblaze B2',
+          "Backblaze B2",
           operationName,
           true,
           Date.now() - startTime,
@@ -88,16 +88,21 @@ export class FileUploadService {
 
         return result;
       } catch (error) {
-        const isAuthError = error instanceof Error &&
-          (error.message.includes('401') || error.message.includes('Unauthorized'));
+        const isAuthError =
+          error instanceof Error &&
+          (error.message.includes("401") ||
+            error.message.includes("Unauthorized"));
 
         if (isAuthError && retryCount < maxRetries) {
-          logger.warn(`B2 authorization error during ${operationName}, forcing re-authorization`, {
-            ...context,
-            retryCount,
-            timeSinceLastAuth: Date.now() - this.lastAuthTime,
-            error: error instanceof Error ? error.message : "Unknown error"
-          });
+          logger.warn(
+            `B2 authorization error during ${operationName}, forcing re-authorization`,
+            {
+              ...context,
+              retryCount,
+              timeSinceLastAuth: Date.now() - this.lastAuthTime,
+              error: error instanceof Error ? error.message : "Unknown error",
+            }
+          );
 
           // Force re-authorization on next attempt
           this.isInitialized = false;
@@ -108,7 +113,7 @@ export class FileUploadService {
 
         // Log failed operation
         logger.externalService(
-          'Backblaze B2',
+          "Backblaze B2",
           operationName,
           false,
           Date.now() - startTime,
@@ -116,7 +121,7 @@ export class FileUploadService {
             ...context,
             retryCount,
             error: error instanceof Error ? error.message : "Unknown error",
-            errorType: isAuthError ? 'authorization' : 'other'
+            errorType: isAuthError ? "authorization" : "other",
           }
         );
 
@@ -137,12 +142,14 @@ export class FileUploadService {
       }
 
       const isReauth = this.isInitialized;
-      const timeSinceLastAuth = this.isInitialized ? Date.now() - this.lastAuthTime : 0;
+      const timeSinceLastAuth = this.isInitialized
+        ? Date.now() - this.lastAuthTime
+        : 0;
 
       logger.info("Authorizing Backblaze B2 connection", {
         isReauth,
         timeSinceLastAuth,
-        hoursElapsed: timeSinceLastAuth / (1000 * 60 * 60)
+        hoursElapsed: timeSinceLastAuth / (1000 * 60 * 60),
       });
 
       const startTime = Date.now();
@@ -152,30 +159,18 @@ export class FileUploadService {
       this.isInitialized = true;
       this.lastAuthTime = Date.now();
 
-      logger.externalService(
-        'Backblaze B2',
-        'Authorization',
-        true,
-        duration,
-        {
-          isReauth,
-          authTime: new Date(this.lastAuthTime).toISOString(),
-          bucketId: this.bucketId,
-          bucketName: this.bucketName
-        }
-      );
+      logger.externalService("Backblaze B2", "Authorization", true, duration, {
+        isReauth,
+        authTime: new Date(this.lastAuthTime).toISOString(),
+        bucketId: this.bucketId,
+        bucketName: this.bucketName,
+      });
     } catch (error) {
-      logger.externalService(
-        'Backblaze B2',
-        'Authorization',
-        false,
-        0,
-        {
-          error: error instanceof Error ? error.message : "Unknown error",
-          bucketId: this.bucketId,
-          bucketName: this.bucketName
-        }
-      );
+      logger.externalService("Backblaze B2", "Authorization", false, 0, {
+        error: error instanceof Error ? error.message : "Unknown error",
+        bucketId: this.bucketId,
+        bucketName: this.bucketName,
+      });
 
       // Reset state on auth failure
       this.isInitialized = false;
@@ -320,7 +315,13 @@ export class FileUploadService {
           validDurationInSeconds: expirationHours * 3600,
         });
 
-        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${fileName}?Authorization=${downloadAuth.data.authorizationToken}`;
+        // Encode each path segment of the file name to safely include spaces, commas, and other
+        // characters that would otherwise break URL parsing or percent-decoding.
+        const encodedFileName = fileName
+          .split("/")
+          .map(encodeURIComponent)
+          .join("/");
+        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${encodedFileName}?Authorization=${downloadAuth.data.authorizationToken}`;
 
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + expirationHours);
@@ -403,7 +404,11 @@ export class FileUploadService {
           validDurationInSeconds: 3600, // 1 hour
         });
 
-        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${fileName}?Authorization=${downloadAuth.data.authorizationToken}`;
+        const encodedFileName = fileName
+          .split("/")
+          .map(encodeURIComponent)
+          .join("/");
+        const downloadUrl = `${this.b2.downloadUrl}/file/${this.bucketName}/${encodedFileName}?Authorization=${downloadAuth.data.authorizationToken}`;
 
         // Fetch the file content
         const response = await fetch(downloadUrl);
@@ -416,7 +421,7 @@ export class FileUploadService {
 
         logger.info("File downloaded successfully", {
           fileName,
-          size: buffer.length
+          size: buffer.length,
         });
 
         return buffer;
