@@ -1,6 +1,7 @@
 export const PUBLIC_ROUTES = [
   "/api/health",
   "/auth/",
+  "/api/auth/",
   "/application/",
   "/api/intake/",
 ];

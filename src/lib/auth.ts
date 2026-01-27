@@ -16,38 +16,54 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("[Auth Debug] Authorize called with email:", credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
           logger.auth("Login attempt failed: Missing credentials")
+          console.log("[Auth Debug] Missing credentials");
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        try {
+          console.log("[Auth Debug] Attempting to find user in DB...");
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          })
+          console.log("[Auth Debug] DB query complete. User found:", !!user);
+
+          if (!user) {
+            logger.auth("Login attempt failed: User not found", undefined, { email: credentials.email })
+            console.log("[Auth Debug] User not found");
+            return null
           }
-        })
 
-        if (!user) {
-          logger.auth("Login attempt failed: User not found", undefined, { email: credentials.email })
-          return null
-        }
+          console.log("[Auth Debug] Verifying password...");
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.passwordHash
+          )
+          console.log("[Auth Debug] Password verification result:", isPasswordValid);
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        )
+          if (!isPasswordValid) {
+            logger.auth("Login attempt failed: Invalid password", user.id.toString(), { email: user.email })
+            console.log("[Auth Debug] Invalid password");
+            return null
+          }
 
-        if (!isPasswordValid) {
-          logger.auth("Login attempt failed: Invalid password", user.id.toString(), { email: user.email })
-          return null
-        }
+          logger.auth("Login successful", user.id.toString(), { email: user.email })
+          console.log("[Auth Debug] Login successful, returning user object");
 
-        logger.auth("Login successful", user.id.toString(), { email: user.email })
-
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          role: user.role,
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            role: user.role,
+          }
+        } catch (error) {
+           console.error("[Auth Debug] Unexpected error in authorize:", error);
+           logger.error("Unexpected error in authorize callback", error as Error);
+           return null;
         }
       }
     })
