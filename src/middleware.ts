@@ -16,68 +16,99 @@ import {
 
 export default withAuth(
   function middleware(req) {
-    const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
-
-    // 1. Validation
-    validateEnvironment();
-
-    // 2. Rate Limiting
-    const rateLimitResponse = checkRateLimit(req);
-    if (rateLimitResponse) return rateLimitResponse;
-
-    // 3. HTTPS Enforcement
-    const httpsRedirect = checkHttpsEnforcement(req);
-    if (httpsRedirect) return httpsRedirect;
-
-    // 4. Bot Protection
-    const botProtectionResponse = checkBotProtection(req);
-    if (botProtectionResponse) return botProtectionResponse;
-
-    // 5. Route Authorization Logic
-    // Note: Basic authentication is handled by the `authorized` callback below.
-    // This section handles Role-Based Access Control (RBAC) and specific redirects.
-
-    // System Admin Routes
-    if (isSystemAdminRoute(pathname)) {
-      if (!token) {
-        return NextResponse.redirect(new URL("/auth/signin", req.url));
-      }
-      if (token.role !== "SYSTEM_ADMIN") {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
+    
+    // IMMEDIATELY bypass our middleware logic for NextAuth internal routes
+    if (pathname.startsWith("/api/auth/")) {
+      return NextResponse.next();
     }
 
-    // Admin Routes
-    if (isAdminRoute(pathname)) {
-      if (!token) {
-        return NextResponse.redirect(new URL("/auth/signin", req.url));
-      }
-      if (token.role !== "ADMIN" && token.role !== "SYSTEM_ADMIN") {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
-    }
+    console.log("[Middleware Debug] Processing request:", pathname);
+    
+    const token = req.nextauth.token;
 
-    // 6. Final Response with Headers
-    return addSecurityHeaders(req, NextResponse.next());
+    try {
+      // 1. Validation
+      validateEnvironment();
+
+      // 2. Rate Limiting
+      console.log("[Middleware Debug] Checking rate limit...");
+      const rateLimitResponse = checkRateLimit(req);
+      if (rateLimitResponse) {
+        console.log("[Middleware Debug] Rate limit exceeded for:", pathname);
+        return rateLimitResponse;
+      }
+
+      // 3. HTTPS Enforcement
+      console.log("[Middleware Debug] Checking HTTPS...");
+      const httpsRedirect = checkHttpsEnforcement(req);
+      if (httpsRedirect) {
+        console.log("[Middleware Debug] Redirecting to HTTPS:", pathname);
+        return httpsRedirect;
+      }
+
+      // 4. Bot Protection
+      console.log("[Middleware Debug] Checking bot protection...");
+      const botProtectionResponse = checkBotProtection(req);
+      if (botProtectionResponse) {
+        console.log("[Middleware Debug] Bot protection blocked:", pathname);
+        return botProtectionResponse;
+      }
+
+      // 5. Route Authorization Logic
+      console.log("[Middleware Debug] Checking RBAC for:", pathname, "Role:", token?.role);
+      
+      // System Admin Routes
+      if (isSystemAdminRoute(pathname)) {
+        if (!token) {
+          console.log("[Middleware Debug] No token for system admin route, redirecting to signin");
+          return NextResponse.redirect(new URL("/auth/signin", req.url));
+        }
+        if (token.role !== "SYSTEM_ADMIN") {
+          console.log("[Middleware Debug] Insufficient role for system admin route, redirecting to dashboard");
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+      }
+
+      // Admin Routes
+      if (isAdminRoute(pathname)) {
+        if (!token) {
+          console.log("[Middleware Debug] No token for admin route, redirecting to signin");
+          return NextResponse.redirect(new URL("/auth/signin", req.url));
+        }
+        if (token.role !== "ADMIN" && token.role !== "SYSTEM_ADMIN") {
+          console.log("[Middleware Debug] Insufficient role for admin route, redirecting to dashboard");
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+      }
+
+      // 6. Final Response with Headers
+      console.log("[Middleware Debug] Request allowed:", pathname);
+      return addSecurityHeaders(req, NextResponse.next());
+    } catch (error) {
+      console.error("[Middleware Debug] Error in middleware:", error);
+      return addSecurityHeaders(req, NextResponse.next());
+    }
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
+        const isPublic = isPublicRoute(pathname);
+        const isProtected = isProtectedRoute(pathname);
+        
+        console.log("[Middleware Debug] Authorized check:", pathname, "isPublic:", isPublic, "isProtected:", isProtected, "hasToken:", !!token);
 
         // Public routes are always authorized
-        if (isPublicRoute(pathname)) {
+        if (isPublic) {
           return true;
         }
 
         // Protected routes require a token
-        if (isProtectedRoute(pathname)) {
+        if (isProtected) {
           return !!token;
         }
 
-        // Default to allowing access if not explicitly protected
-        // (This allows Next.js to serve static files, images, etc. freely)
         return true;
       },
     },
