@@ -84,31 +84,34 @@ export const authOptions: NextAuthOptions = {
       },
     },
   },
-  events: {
-    async signOut({ token }) {
-      if (token && typeof token.id === 'string') {
-        logger.auth("User signed out", token.id)
-      }
-    },
-  },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      if (trigger === "update" && session) {
-        return { ...token, ...session.user };
-      }
+      try {
+        if (trigger === "update" && session) {
+          return { ...token, ...session.user };
+        }
 
-      if (user) {
-        token.id = user.id
-        token.role = user.role
+        if (user) {
+          token.id = user.id
+          token.role = user.role
+        }
+        return token
+      } catch (error) {
+        logger.error("Error in JWT callback", error as Error)
+        return token
       }
-      return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as UserRole
+      try {
+        if (token) {
+          session.user.id = token.id as string
+          session.user.role = token.role as UserRole
+        }
+        return session
+      } catch (error) {
+        logger.error("Error in Session callback", error as Error)
+        return session
       }
-      return session
     },
   },
   pages: {
