@@ -7,7 +7,7 @@ import { UserRole } from "@prisma/client"
 import { logger } from "@/lib/logger"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
