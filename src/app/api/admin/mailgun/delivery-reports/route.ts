@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from "@/lib/auth";
+
 import { UserRole } from '@prisma/client';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
@@ -8,7 +8,7 @@ import formData from 'form-data';
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and admin role
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.SYSTEM_ADMIN)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

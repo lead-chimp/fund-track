@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from "@/lib/auth";
+
 import { prisma } from '@/lib/prisma';
 import { LeadStatus } from '@prisma/client';
 import { withErrorHandler, AuthenticationError, ValidationError } from '@/lib/errors';
@@ -16,7 +16,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const startTime = Date.now();
   
   // Check authentication
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session) {
     throw new AuthenticationError();
   }

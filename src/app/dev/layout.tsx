@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
+
 import { redirect } from "next/navigation"
 
 export default async function DevLayout({
@@ -7,7 +7,7 @@ export default async function DevLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   // Double-check authorization on the server side
   if (!session?.user || session.user.role !== "SYSTEM_ADMIN") {
@@ -42,26 +42,26 @@ export default async function DevLayout({
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <nav className="flex space-x-6">
-            <a 
-              href="/dev/test-legacy-db" 
+            <a
+              href="/dev/test-legacy-db"
               className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
             >
               Legacy DB Testing
             </a>
-            <a 
-              href="/dev/test-notifications" 
+            <a
+              href="/dev/test-notifications"
               className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
             >
               Notification Testing
             </a>
-            <a 
-              href="/dev/reset-intake" 
+            <a
+              href="/dev/reset-intake"
               className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
             >
               Reset Intake
             </a>
-            <a 
-              href="/dashboard" 
+            <a
+              href="/dashboard"
               className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50 ml-auto"
             >
               ← Back to Dashboard

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma";
 import { followUpScheduler } from "@/services/FollowUpScheduler";
 import { notificationService } from "@/services/NotificationService";
@@ -15,7 +15,7 @@ interface RouteParams {
 // POST /api/leads/[id]/follow-ups - Restart follow-up sequence
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

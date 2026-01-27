@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma";
 
 // Force dynamic rendering for this route
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   try {
     // Check authentication
-    session = await getServerSession(authOptions);
+    session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -139,7 +139,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
   try {
     // Check authentication
-    session = await getServerSession(authOptions);
+    session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

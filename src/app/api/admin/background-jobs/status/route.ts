@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { backgroundJobScheduler } from '@/services/BackgroundJobScheduler';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from "@/lib/auth";
+
 
 export async function GET() {
   try {
     // Check if user is authenticated and is admin
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

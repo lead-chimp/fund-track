@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { logger } from "@/lib/logger";
 import { LeadStatus } from "@prisma/client";
 
@@ -72,7 +72,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Get session for audit trail
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     let userId = session?.user?.id ? parseInt(session.user.id) : null;
 
     // If no session user, find any admin user for dev operations

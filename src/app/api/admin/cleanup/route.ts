@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { notificationCleanupService } from "@/services/NotificationCleanupService";
 import { followUpScheduler } from "@/services/FollowUpScheduler";
 import { UserRole } from "@prisma/client";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(

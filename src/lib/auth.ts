@@ -1,13 +1,15 @@
-import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import NextAuth from "next-auth"
+import Credentials from "next-auth/providers/credentials"
+
 import { prisma } from "@/lib/prisma"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
 import { logger } from "@/lib/logger"
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+
   providers: [
-    CredentialsProvider({
+    Credentials({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -15,34 +17,27 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         console.log("[Auth Debug] Authorize called with email:", credentials?.email);
-        
-        // DEBUG BYPASS: Rule out DB/Bcrypt issues
-        if (credentials?.email === "debug@test.com" && credentials?.password === "debug123") {
-          console.log("[Auth Debug] DEBUG BYPASS SUCCESS");
-          return {
-            id: "999",
-            email: "debug@test.com",
-            role: "SYSTEM_ADMIN" as UserRole,
-          }
-        }
-        
+
         if (!credentials?.email || !credentials?.password) {
           logger.auth("Login attempt failed: Missing credentials")
           console.log("[Auth Debug] Missing credentials");
           return null
         }
 
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+
         try {
           console.log("[Auth Debug] Attempting to find user in DB...");
           const user = await prisma.user.findUnique({
             where: {
-              email: credentials.email
+              email
             }
           })
           console.log("[Auth Debug] DB query complete. User found:", !!user);
 
           if (!user) {
-            logger.auth("Login attempt failed: User not found", undefined, { email: credentials.email })
+            logger.auth("Login attempt failed: User not found", undefined, { email })
             console.log("[Auth Debug] User not found");
             return null
           }
@@ -54,7 +49,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           const isPasswordValid = await bcrypt.compare(
-            credentials.password,
+            password,
             user.passwordHash
           )
           console.log("[Auth Debug] Password verification result:", isPasswordValid);
@@ -74,9 +69,9 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           }
         } catch (error) {
-           console.error("[Auth Debug] Unexpected error in authorize:", error);
-           logger.error("Unexpected error in authorize callback", error as Error);
-           return null;
+          console.error("[Auth Debug] Unexpected error in authorize:", error);
+          logger.error("Unexpected error in authorize callback", error as Error);
+          return null;
         }
       }
     })
@@ -103,7 +98,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       try {
-        if (token) {
+        if (token && session.user) {
           session.user.id = token.id as string
           session.user.role = token.role as UserRole
         }
@@ -118,4 +113,4 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   secret: process.env.NEXTAUTH_SECRET,
-}
+})

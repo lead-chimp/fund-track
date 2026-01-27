@@ -31,6 +31,8 @@ export const prisma =
 // });
 
 // Global error handler for unhandled database errors
+// Note: process.on is not available in Edge runtime where middleware runs
+/*
 process.on('beforeExit', async () => {
   try {
     await prisma.$disconnect();
@@ -39,6 +41,7 @@ process.on('beforeExit', async () => {
     logger.error('Error disconnecting Prisma client', error as Error);
   }
 });
+*/
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { UserRole } from "@prisma/client";
 import { hashPassword } from "@/lib/password";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
@@ -145,7 +145,7 @@ export async function PUT(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },

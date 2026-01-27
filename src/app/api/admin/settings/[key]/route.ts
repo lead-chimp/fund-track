@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+
 import { systemSettingsService } from "@/services/SystemSettingsService";
 import { UserRole } from "@prisma/client";
 
@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function PUT(
   const { key } = await params;
 
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(
   { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
       return NextResponse.json(
