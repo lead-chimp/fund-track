@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { UserRole } from "@prisma/client"
+import { logger } from "@/lib/logger"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -16,6 +17,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          logger.auth("Login attempt failed: Missing credentials")
           return null
         }
 
@@ -26,6 +28,7 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
+          logger.auth("Login attempt failed: User not found", undefined, { email: credentials.email })
           return null
         }
 
@@ -35,8 +38,11 @@ export const authOptions: NextAuthOptions = {
         )
 
         if (!isPasswordValid) {
+          logger.auth("Login attempt failed: Invalid password", user.id.toString(), { email: user.email })
           return null
         }
+
+        logger.auth("Login successful", user.id.toString(), { email: user.email })
 
         return {
           id: user.id.toString(),
@@ -48,9 +54,33 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
+    updateAge: 60 * 60, // 1 hour
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+  events: {
+    async signOut({ token }) {
+      if (token && typeof token.id === 'string') {
+        logger.auth("User signed out", token.id)
+      }
+    },
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session) {
+        return { ...token, ...session.user };
+      }
+
       if (user) {
         token.id = user.id
         token.role = user.role
