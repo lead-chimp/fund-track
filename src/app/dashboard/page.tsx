@@ -9,7 +9,8 @@ import { AuthenticatedOnly } from "@/components/auth/RoleGuard";
 import { LeadDashboard } from "@/components/dashboard/LeadDashboard";
 import { UserRole } from "@prisma/client";
 import PageLoading from "@/components/PageLoading";
-import { serverSignOut } from "@/lib/actions/auth";
+// Removing serverSignOut in favor of standard client-side signOut which is exempt from middleware rate-limits
+// import { serverSignOut } from "@/lib/actions/auth";
 
 function ContextMenuButton() {
   const [open, setOpen] = useState(false);
@@ -88,20 +89,18 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      console.log("[Client] Initiating signout via Server Action...");
+      console.log("[Client] Initiating signout via NextAuth standard signOut...");
 
-      const result = await serverSignOut();
+      // Using the standard signOut method which POSTs to /api/auth/signout
+      // This endpoint is bypassed by middleware and thus avoids custom rate-limiting
+      await signOut({
+        redirect: true,
+        callbackUrl: "/auth/signin"
+      });
 
-      if (result.success) {
-        console.log("[Client] Signout successful, redirecting...");
-        window.location.href = "/auth/signin";
-      } else {
-        console.error("[Client] Server Signout failed:", result.error);
-        // Fallback: try to redirect anyway as the session might still be cleared
-        window.location.href = "/auth/signin";
-      }
     } catch (error) {
       console.error("[Client] Unexpected error during signout:", error);
+      // Fallback: hard redirect
       window.location.href = "/auth/signin";
     } finally {
       setIsSigningOut(false);

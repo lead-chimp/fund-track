@@ -34,7 +34,11 @@ export default auth((req) => {
     console.log("[Middleware Debug] Checking rate limit...");
     const rateLimitResponse = checkRateLimit(req);
     if (rateLimitResponse) {
-      console.log("[Middleware Debug] Rate limit exceeded for:", pathname);
+      console.warn(`[Middleware Debug] RATE LIMIT EXCEEDED:
+        - IP: ${req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"}
+        - Path: ${pathname}
+        - User Agent: ${req.headers.get("user-agent")}
+      `);
       return rateLimitResponse;
     }
 
