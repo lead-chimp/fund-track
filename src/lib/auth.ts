@@ -7,6 +7,7 @@ import { UserRole } from "@prisma/client"
 import { logger } from "@/lib/logger"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  basePath: "/api/auth",
   trustHost: true,
   providers: [
     Credentials({
@@ -111,6 +112,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/auth/signin",
+  },
+  events: {
+    async signOut(message) {
+      console.log("[Auth Debug] SignOut event triggered:", message);
+      const userId = ('token' in message && message.token?.sub) ? message.token.sub as string : undefined;
+      logger.auth("User signed out", userId);
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 })

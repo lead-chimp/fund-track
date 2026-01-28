@@ -9,6 +9,7 @@ import { AuthenticatedOnly } from "@/components/auth/RoleGuard";
 import { LeadDashboard } from "@/components/dashboard/LeadDashboard";
 import { UserRole } from "@prisma/client";
 import PageLoading from "@/components/PageLoading";
+import "@/lib/test-signout"; // Load signout diagnostic tool
 
 function ContextMenuButton() {
   const [open, setOpen] = useState(false);
@@ -76,12 +77,50 @@ function ContextMenuButton() {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
+
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      console.log("[Client] Initiating signout...");
+
+      // Try the standard NextAuth signOut first
+      try {
+        await signOut({ callbackUrl: "/auth/signin" });
+      } catch (signOutError) {
+        console.error("[Client] NextAuth signOut failed:", signOutError);
+
+        // Fallback: Try manual signout via fetch
+        console.log("[Client] Attempting fallback signout...");
+        const response = await fetch("/api/auth/signout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          console.log("[Client] Fallback signout successful, redirecting...");
+          window.location.href = "/auth/signin";
+        } else {
+          console.error("[Client] Fallback signout failed:", await response.text());
+          alert("Signout failed. Please try again or clear your cookies.");
+        }
+      }
+    } catch (error) {
+      console.error("[Client] Unexpected error during signout:", error);
+      alert("An error occurred during signout. Please try again.");
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   if (status === "loading") return <PageLoading />;
 
@@ -129,10 +168,11 @@ export default function DashboardPage() {
                 {(session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && <ContextMenuButton />}
 
                 <button
-                  onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign Out
+                  {isSigningOut ? "Signing Out..." : "Sign Out"}
                 </button>
               </div>
             </div>

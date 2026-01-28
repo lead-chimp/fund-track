@@ -35,7 +35,7 @@ const nextConfig = {
       "connect-src 'self' https://*.backblazeb2.com",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://fund-track.merchantfunding.com",
       "frame-ancestors 'none'",
     ];
 
