@@ -100,11 +100,11 @@ export default auth((req) => {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/api/:path*",
     "/admin/:path*",
     "/dev/:path*",
     "/application/:path*",
-    // Note: We include all routes that need middleware processing.
-    // Static assets are generally excluded by Next.js automatically from middleware unless configured otherwise.
+    // Explicitly match API routes EXCEPT /api/auth/* to avoid circular dependency
+    // NextAuth routes must not be processed by the auth() middleware wrapper
+    "/api/((?!auth).)*",
   ],
 };
