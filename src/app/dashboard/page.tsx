@@ -9,7 +9,7 @@ import { AuthenticatedOnly } from "@/components/auth/RoleGuard";
 import { LeadDashboard } from "@/components/dashboard/LeadDashboard";
 import { UserRole } from "@prisma/client";
 import PageLoading from "@/components/PageLoading";
-import "@/lib/test-signout"; // Load signout diagnostic tool
+import { serverSignOut } from "@/lib/actions/auth";
 
 function ContextMenuButton() {
   const [open, setOpen] = useState(false);
@@ -88,18 +88,20 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      console.log("[Client] Initiating signout...");
+      console.log("[Client] Initiating signout via Server Action...");
 
-      // Use NextAuth's built-in signOut with redirect: false
-      // This automatically includes the CSRF token
-      await signOut({ redirect: false });
+      const result = await serverSignOut();
 
-      console.log("[Client] Signout successful, redirecting...");
-      // Manually redirect after successful signout
-      window.location.href = "/auth/signin";
+      if (result.success) {
+        console.log("[Client] Signout successful, redirecting...");
+        window.location.href = "/auth/signin";
+      } else {
+        console.error("[Client] Server Signout failed:", result.error);
+        // Fallback: try to redirect anyway as the session might still be cleared
+        window.location.href = "/auth/signin";
+      }
     } catch (error) {
-      console.error("[Client] Signout error:", error);
-      // Even if there's an error, try to redirect (session might be cleared)
+      console.error("[Client] Unexpected error during signout:", error);
       window.location.href = "/auth/signin";
     } finally {
       setIsSigningOut(false);
