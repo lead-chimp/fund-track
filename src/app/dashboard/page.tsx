@@ -90,41 +90,17 @@ export default function DashboardPage() {
       setIsSigningOut(true);
       console.log("[Client] Initiating signout...");
 
-      // IMPORTANT: Use redirect: false to prevent browser from cancelling the request
-      // This fixes the "Provisional headers are shown" error
-      try {
-        console.log("[Client] Calling NextAuth signOut with redirect: false...");
-        await signOut({
-          redirect: false  // Don't auto-redirect, we'll handle it manually
-        });
+      // Use NextAuth's built-in signOut with redirect: false
+      // This automatically includes the CSRF token
+      await signOut({ redirect: false });
 
-        console.log("[Client] NextAuth signOut successful, redirecting manually...");
-        // Manually redirect after successful signout
-        window.location.href = "/auth/signin";
-      } catch (signOutError) {
-        console.error("[Client] NextAuth signOut failed:", signOutError);
-
-        // Fallback: Try manual signout via fetch
-        console.log("[Client] Attempting fallback signout...");
-        const response = await fetch("/api/auth/signout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          console.log("[Client] Fallback signout successful, redirecting...");
-          window.location.href = "/auth/signin";
-        } else {
-          console.error("[Client] Fallback signout failed:", await response.text());
-          alert("Signout failed. Please try again or clear your cookies.");
-        }
-      }
+      console.log("[Client] Signout successful, redirecting...");
+      // Manually redirect after successful signout
+      window.location.href = "/auth/signin";
     } catch (error) {
-      console.error("[Client] Unexpected error during signout:", error);
-      alert("An error occurred during signout. Please try again.");
+      console.error("[Client] Signout error:", error);
+      // Even if there's an error, try to redirect (session might be cleared)
+      window.location.href = "/auth/signin";
     } finally {
       setIsSigningOut(false);
     }
