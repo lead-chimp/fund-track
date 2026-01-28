@@ -33,19 +33,48 @@ export async function testSignout() {
             c.startsWith("__Host-next-auth")
     );
     console.log("Auth cookies found:", authCookies.length);
+    if (authCookies.length === 0) {
+        console.log("⚠️  No cookies visible to JavaScript.");
+        console.log("   This is NORMAL if using httpOnly cookies (secure)");
+        console.log("   Check Network tab to see if cookies are sent with requests");
+    }
     authCookies.forEach((cookie) => console.log("  -", cookie.split("=")[0]));
+
+    // Check for tokens in storage
+    console.log("\n   Checking alternative storage locations:");
+    const localStorageKeys = Object.keys(localStorage).filter(k =>
+        k.includes('next-auth') || k.includes('session') || k.includes('token')
+    );
+    const sessionStorageKeys = Object.keys(sessionStorage).filter(k =>
+        k.includes('next-auth') || k.includes('session') || k.includes('token')
+    );
+    console.log("   localStorage keys:", localStorageKeys.length, localStorageKeys);
+    console.log("   sessionStorage keys:", sessionStorageKeys.length, sessionStorageKeys);
 
     // 3. Test signout endpoint directly
     console.log("\n3️⃣ Testing signout endpoint...");
+    console.log("⏱️  Starting request (10 second timeout)...");
+    const startTime = Date.now();
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+            console.error("❌ Request TIMEOUT after 10 seconds!");
+            console.error("   This is likely the cause of 'Provisional headers shown'");
+        }, 10000);
+
         const signoutResponse = await fetch("/api/auth/signout", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include",
+            signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
+        const elapsed = Date.now() - startTime;
+        console.log(`✅ Response received in ${elapsed}ms`);
         console.log("Response status:", signoutResponse.status);
         console.log("Response ok:", signoutResponse.ok);
         console.log(
@@ -60,7 +89,13 @@ export async function testSignout() {
             console.error("Signout failed:", await signoutResponse.text());
         }
     } catch (error) {
-        console.error("Signout request error:", error);
+        const elapsed = Date.now() - startTime;
+        if (error instanceof Error && error.name === 'AbortError') {
+            console.error(`❌ Request ABORTED after ${elapsed}ms - This is the smoking gun!`);
+            console.error("   The request never completes, causing 'Provisional headers shown'");
+        } else {
+            console.error(`❌ Signout request error after ${elapsed}ms:`, error);
+        }
     }
 
     // 4. Check CSRF token

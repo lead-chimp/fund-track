@@ -90,9 +90,17 @@ export default function DashboardPage() {
       setIsSigningOut(true);
       console.log("[Client] Initiating signout...");
 
-      // Try the standard NextAuth signOut first
+      // IMPORTANT: Use redirect: false to prevent browser from cancelling the request
+      // This fixes the "Provisional headers are shown" error
       try {
-        await signOut({ callbackUrl: "/auth/signin" });
+        console.log("[Client] Calling NextAuth signOut with redirect: false...");
+        await signOut({
+          redirect: false  // Don't auto-redirect, we'll handle it manually
+        });
+
+        console.log("[Client] NextAuth signOut successful, redirecting manually...");
+        // Manually redirect after successful signout
+        window.location.href = "/auth/signin";
       } catch (signOutError) {
         console.error("[Client] NextAuth signOut failed:", signOutError);
 
