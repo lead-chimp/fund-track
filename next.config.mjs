@@ -25,8 +25,8 @@ const nextConfig = {
   // Security headers for production
   async headers() {
     const isProduction = process.env.NODE_ENV === "production";
-
     let productionDomain = "fund-track.merchantfunding.com";
+
     if (process.env.NEXT_PUBLIC_BASE_URL) {
       try {
         productionDomain = new URL(process.env.NEXT_PUBLIC_BASE_URL).host;
@@ -97,6 +97,16 @@ const nextConfig = {
 
   // Redirect HTTP to HTTPS in production
   async redirects() {
+    let productionDomain = "fund-track.merchantfunding.com";
+
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+      try {
+        productionDomain = new URL(process.env.NEXT_PUBLIC_BASE_URL).host;
+      } catch (e) {
+        console.warn("Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain");
+      }
+    }
+
     if (
       process.env.NODE_ENV === "production" &&
       process.env.FORCE_HTTPS === "true"

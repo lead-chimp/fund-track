@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { LeadStatus, UserRole } from "@prisma/client";
@@ -328,7 +329,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     if (showShareModal) {
       fetchShareLinks();
     }
-  }, [showShareModal]);
+  }, [showShareModal, fetchShareLinks]);
 
   const handleStatusChange = useCallback(
     async (newStatus: LeadStatus, reason?: string) => {
@@ -524,7 +525,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     return null;
   }
 
-  const fetchShareLinks = async () => {
+  const fetchShareLinks = useCallback(async () => {
     try {
       const response = await fetch(`/api/leads/${leadId}/share`);
       if (response.ok) {
@@ -534,7 +535,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     } catch (error) {
       console.error("Error fetching share links:", error);
     }
-  };
+  }, [leadId]);
 
   const generateShareLink = async () => {
     try {
@@ -1387,11 +1388,14 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                           Signature
                         </dt>
                         <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                          <img
+                          <Image
                             src={lead.digitalSignature}
                             alt="Digital Signature"
-                            className="max-w-full h-auto max-h-32 border border-gray-300 rounded bg-white"
+                            width={500}
+                            height={200}
+                            className="w-auto h-auto max-w-full max-h-32 border border-gray-300 rounded bg-white"
                             style={{ imageRendering: "crisp-edges" }}
+                            unoptimized
                           />
                         </div>
                       </div>

@@ -90,7 +90,7 @@ function MailGunReportsContent() {
     end: '',
   });
 
-  const fetchReports = async () => {
+  const fetchReports = React.useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -140,7 +140,7 @@ function MailGunReportsContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const fetchAllReports = () => {
     setExpandedRows(new Set());
@@ -192,7 +192,7 @@ function MailGunReportsContent() {
 
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [fetchReports]);
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp * 1000);

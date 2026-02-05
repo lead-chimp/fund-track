@@ -151,7 +151,7 @@ export default function AuthTestPage() {
                                 🟢 Method 2: Default NextAuth behavior
                             </h3>
                             <p className="text-sm text-gray-600 mb-3">
-                                Uses <code className="bg-gray-100 px-2 py-1 rounded">signOut(&#123; callbackUrl: "/auth/signin" &#125;)</code>
+                                Uses <code className="bg-gray-100 px-2 py-1 rounded">signOut(&#123; callbackUrl: &quot;/auth/signin&quot; &#125;)</code>
                             </p>
                             <button
                                 onClick={handleMethod2}

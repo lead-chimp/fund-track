@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { AdminOnly } from "@/components/auth/RoleGuard";
@@ -17,6 +17,7 @@ export default function UsersAdminPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -30,18 +31,14 @@ export default function UsersAdminPage() {
 
   const { data: session } = useSession();
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const query = new URLSearchParams({
         page: String(page),
         limit: String(limit),
       });
-      if (search) query.set("search", search);
+      if (appliedSearch) query.set("search", appliedSearch);
       const res = await fetch(`/api/admin/users?${query.toString()}`);
       if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
@@ -52,7 +49,11 @@ export default function UsersAdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit, appliedSearch]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const startEdit = (user: any) => {
     setEditingUser(user);
@@ -97,10 +98,10 @@ export default function UsersAdminPage() {
     }
   };
 
-  const handleSearch = async (e?: React.FormEvent) => {
+  const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
+    setAppliedSearch(search);
     setPage(1);
-    await fetchUsers();
   };
 
   return (
