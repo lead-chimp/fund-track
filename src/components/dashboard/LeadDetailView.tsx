@@ -314,6 +314,18 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     }
   }, [leadId]);
 
+  const fetchShareLinks = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/leads/${leadId}/share`);
+      if (response.ok) {
+        const data = await response.json();
+        setShareLinks(data.shareLinks || []);
+      }
+    } catch (error) {
+      console.error("Error fetching share links:", error);
+    }
+  }, [leadId]);
+
   useEffect(() => {
     fetchLead();
   }, [leadId, fetchLead]);
@@ -350,10 +362,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              notes: updatedNotes,
-              _count: { ...prev._count, notes: newCount },
-            }
+            ...prev,
+            notes: updatedNotes,
+            _count: { ...prev._count, notes: newCount },
+          }
           : null
       );
     },
@@ -412,10 +424,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              documents: prev.documents.filter((d) => d.id !== doc.id),
-              _count: { ...prev._count, documents: prev._count.documents - 1 },
-            }
+            ...prev,
+            documents: prev.documents.filter((d) => d.id !== doc.id),
+            _count: { ...prev._count, documents: prev._count.documents - 1 },
+          }
           : null
       );
 
@@ -449,10 +461,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
       setLead((prev) =>
         prev
           ? {
-              ...prev,
-              documents: [data.document, ...prev.documents],
-              _count: { ...prev._count, documents: prev._count.documents + 1 },
-            }
+            ...prev,
+            documents: [data.document, ...prev.documents],
+            _count: { ...prev._count, documents: prev._count.documents + 1 },
+          }
           : null
       );
       setShowUploadForm(false);
@@ -525,17 +537,7 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
     return null;
   }
 
-  const fetchShareLinks = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/leads/${leadId}/share`);
-      if (response.ok) {
-        const data = await response.json();
-        setShareLinks(data.shareLinks || []);
-      }
-    } catch (error) {
-      console.error("Error fetching share links:", error);
-    }
-  }, [leadId]);
+
 
   const generateShareLink = async () => {
     try {
@@ -750,11 +752,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                   {lead.hasExistingLoans && (
                     <div className="mt-2">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.hasExistingLoans.toLowerCase() === "yes"
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === "yes"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-green-100 text-green-800"
-                        }`}
+                          }`}
                       >
                         Existing Loans: {lead.hasExistingLoans}
                       </span>
@@ -806,11 +807,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         onChange={(e) =>
                           handleContactChange("email", e.target.value)
                         }
-                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                          invalidFields.email
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${invalidFields.email
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                          }`}
                       />
                       {invalidFields.email && (
                         <p className="mt-1 text-sm text-red-600">
@@ -828,11 +828,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         onChange={(e) =>
                           handleContactChange("phone", e.target.value)
                         }
-                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                          invalidFields.phone
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${invalidFields.phone
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                          }`}
                       />
                       {invalidFields.phone && (
                         <p className="mt-1 text-sm text-red-600">
@@ -851,11 +850,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         onChange={(e) =>
                           handleContactChange("mobile", e.target.value)
                         }
-                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                          invalidFields.mobile
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${invalidFields.mobile
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                          }`}
                       />
                       {invalidFields.mobile && (
                         <p className="mt-1 text-sm text-red-600">
@@ -874,11 +872,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         onChange={(e) =>
                           handleContactChange("businessEmail", e.target.value)
                         }
-                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                          invalidFields.businessEmail
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${invalidFields.businessEmail
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                          }`}
                       />
                       {invalidFields.businessEmail && (
                         <p className="mt-1 text-sm text-red-600">
@@ -896,11 +893,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         onChange={(e) =>
                           handleContactChange("businessPhone", e.target.value)
                         }
-                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                          invalidFields.businessPhone
+                        className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${invalidFields.businessPhone
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                          }`}
                       />
                       {invalidFields.businessPhone && (
                         <p className="mt-1 text-sm text-red-600">
@@ -1181,20 +1177,18 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     {/* Step 1 */}
                     <div className="flex flex-col items-center text-center flex-1">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                          lead.step1CompletedAt
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step1CompletedAt
                             ? "bg-green-500 text-white"
                             : "bg-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {lead.step1CompletedAt ? "✓" : "1"}
                       </div>
                       <div
-                        className={`text-sm font-medium mb-1 ${
-                          lead.step1CompletedAt
+                        className={`text-sm font-medium mb-1 ${lead.step1CompletedAt
                             ? "text-green-700"
                             : "text-gray-500"
-                        }`}
+                          }`}
                       >
                         Business Info
                       </div>
@@ -1207,28 +1201,25 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
                     {/* Connecting Line */}
                     <div
-                      className={`flex-1 h-0.5 mt-5 mx-4 ${
-                        lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
-                      }`}
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step2CompletedAt ? "bg-green-500" : "bg-gray-300"
+                        }`}
                     ></div>
 
                     {/* Step 2 */}
                     <div className="flex flex-col items-center text-center flex-1">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                          lead.step2CompletedAt
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step2CompletedAt
                             ? "bg-green-500 text-white"
                             : "bg-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {lead.step2CompletedAt ? "✓" : "2"}
                       </div>
                       <div
-                        className={`text-sm font-medium mb-1 ${
-                          lead.step2CompletedAt
+                        className={`text-sm font-medium mb-1 ${lead.step2CompletedAt
                             ? "text-green-700"
                             : "text-gray-500"
-                        }`}
+                          }`}
                       >
                         Document Upload
                       </div>
@@ -1241,28 +1232,25 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
                     {/* Connecting Line */}
                     <div
-                      className={`flex-1 h-0.5 mt-5 mx-4 ${
-                        lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
-                      }`}
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${lead.step3CompletedAt ? "bg-green-500" : "bg-gray-300"
+                        }`}
                     ></div>
 
                     {/* Step 3 */}
                     <div className="flex flex-col items-center text-center flex-1">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                          lead.step3CompletedAt
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.step3CompletedAt
                             ? "bg-green-500 text-white"
                             : "bg-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {lead.step3CompletedAt ? "✓" : "3"}
                       </div>
                       <div
-                        className={`text-sm font-medium mb-1 ${
-                          lead.step3CompletedAt
+                        className={`text-sm font-medium mb-1 ${lead.step3CompletedAt
                             ? "text-green-700"
                             : "text-gray-500"
-                        }`}
+                          }`}
                       >
                         Digital Signature
                       </div>
@@ -1275,28 +1263,25 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
 
                     {/* Connecting Line */}
                     <div
-                      className={`flex-1 h-0.5 mt-5 mx-4 ${
-                        lead.intakeCompletedAt ? "bg-green-500" : "bg-gray-300"
-                      }`}
+                      className={`flex-1 h-0.5 mt-5 mx-4 ${lead.intakeCompletedAt ? "bg-green-500" : "bg-gray-300"
+                        }`}
                     ></div>
 
                     {/* Final Step */}
                     <div className="flex flex-col items-center text-center flex-1">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
-                          lead.intakeCompletedAt
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${lead.intakeCompletedAt
                             ? "bg-green-500 text-white"
                             : "bg-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {lead.intakeCompletedAt ? "✓" : "✓"}
                       </div>
                       <div
-                        className={`text-sm font-medium mb-1 ${
-                          lead.intakeCompletedAt
+                        className={`text-sm font-medium mb-1 ${lead.intakeCompletedAt
                             ? "text-green-700"
                             : "text-gray-500"
-                        }`}
+                          }`}
                       >
                         Application Complete
                       </div>
@@ -1459,11 +1444,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.hasExistingLoans.toLowerCase() === "yes"
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${lead.hasExistingLoans.toLowerCase() === "yes"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-green-100 text-green-800"
-                        }`}
+                          }`}
                       >
                         {lead.hasExistingLoans}
                       </span>
@@ -1563,13 +1547,12 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${
-                              completionPercentage >= 80
+                            className={`h-2 rounded-full ${completionPercentage >= 80
                                 ? "bg-green-500"
                                 : completionPercentage >= 60
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
                             style={{ width: `${completionPercentage}%` }}
                           ></div>
                         </div>
@@ -1881,11 +1864,10 @@ export function LeadDetailView({ leadId }: LeadDetailViewProps) {
                         <button
                           onClick={deleteLead}
                           disabled={deleteConfirmText !== "DELETE LEAD"}
-                          className={`flex-1 px-3 py-2 text-sm rounded-md transition-colors duration-200 ${
-                            deleteConfirmText === "DELETE LEAD"
+                          className={`flex-1 px-3 py-2 text-sm rounded-md transition-colors duration-200 ${deleteConfirmText === "DELETE LEAD"
                               ? "bg-red-600 text-white hover:bg-red-700"
                               : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          }`}
+                            }`}
                         >
                           Confirm Delete
                         </button>
