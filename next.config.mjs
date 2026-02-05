@@ -26,6 +26,15 @@ const nextConfig = {
   async headers() {
     const isProduction = process.env.NODE_ENV === "production";
 
+    let productionDomain = "fund-track.merchantfunding.com";
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+      try {
+        productionDomain = new URL(process.env.NEXT_PUBLIC_BASE_URL).host;
+      } catch (e) {
+        console.warn("Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain");
+      }
+    }
+
     const cspDirectives = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
@@ -35,7 +44,7 @@ const nextConfig = {
       "connect-src 'self' https://*.backblazeb2.com",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self' https://fund-track.merchantfunding.com",
+      `form-action 'self' https://${productionDomain}`,
       "frame-ancestors 'none'",
     ];
 
@@ -102,7 +111,7 @@ const nextConfig = {
               value: "http",
             },
           ],
-          destination: "https://fund-track.merchantfunding.com/:path*",
+          destination: `https://${productionDomain}/:path*`,
           permanent: true,
         },
       ];
