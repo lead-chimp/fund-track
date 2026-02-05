@@ -16,13 +16,14 @@ import {
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const requestId = Math.random().toString(36).substring(7);
 
   // IMMEDIATELY bypass our middleware logic for NextAuth internal routes
   if (pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
   }
 
-  console.log("[Middleware Debug] Processing request:", pathname);
+  console.log(`[Middleware Debug][${requestId}] Processing request:`, pathname);
 
   const token = req.auth; // In v5, req.auth is the session/token
 
@@ -31,11 +32,12 @@ export default auth((req) => {
     validateEnvironment();
 
     // 2. Rate Limiting
-    console.log("[Middleware Debug] Checking rate limit...");
+    console.log(`[Middleware Debug][${requestId}] Checking rate limit...`);
     const rateLimitResponse = checkRateLimit(req);
     if (rateLimitResponse) {
-      console.warn(`[Middleware Debug] RATE LIMIT EXCEEDED:
-        - IP: ${req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"}
+      const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      console.warn(`[Middleware Debug][${requestId}] RATE LIMIT EXCEEDED:
+        - IP: ${ip}
         - Path: ${pathname}
         - User Agent: ${req.headers.get("user-agent")}
       `);
@@ -93,10 +95,10 @@ export default auth((req) => {
     }
 
     // 6. Final Response with Headers
-    console.log("[Middleware Debug] Request allowed:", pathname);
+    console.log(`[Middleware Debug][${requestId}] Request allowed:`, pathname);
     return addSecurityHeaders(req, NextResponse.next());
   } catch (error) {
-    console.error("[Middleware Debug] Error in middleware:", error);
+    console.error(`[Middleware Debug][${requestId}] Error in middleware:`, error);
     return addSecurityHeaders(req, NextResponse.next());
   }
 });

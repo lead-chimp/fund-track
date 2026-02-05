@@ -11,6 +11,8 @@ export class BackgroundJobScheduler {
   private followUpTask: cron.ScheduledTask | null = null;
   private cleanupTask: cron.ScheduledTask | null = null;
   private isRunning = false;
+  private isPollingActive = false;
+  private isFollowUpActive = false;
 
   /**
    * Start the background job scheduler
@@ -117,6 +119,12 @@ export class BackgroundJobScheduler {
    * Execute the lead polling job
    */
   private async executeLeadPollingJob(): Promise<void> {
+    if (this.isPollingActive) {
+      logger.warn("Lead polling job is already in progress, skipping this run");
+      return;
+    }
+
+    this.isPollingActive = true;
     const jobStartTime = Date.now();
     logger.backgroundJob("Starting scheduled lead polling job", "lead-polling");
 
@@ -168,6 +176,8 @@ export class BackgroundJobScheduler {
           error: logError instanceof Error ? logError.message : "Unknown error",
         });
       }
+    } finally {
+      this.isPollingActive = false;
     }
   }
 
@@ -335,6 +345,12 @@ export class BackgroundJobScheduler {
    * Execute the follow-up processing job
    */
   private async executeFollowUpJob(): Promise<void> {
+    if (this.isFollowUpActive) {
+      logger.warn("Follow-up processing job is already in progress, skipping this run");
+      return;
+    }
+
+    this.isFollowUpActive = true;
     const jobStartTime = Date.now();
     logger.backgroundJob(
       "Starting scheduled follow-up processing job",
@@ -357,6 +373,8 @@ export class BackgroundJobScheduler {
         error: error instanceof Error ? error.message : "Unknown error",
         processingTime: `${Date.now() - jobStartTime}ms`,
       });
+    } finally {
+      this.isFollowUpActive = false;
     }
   }
 

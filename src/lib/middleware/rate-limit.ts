@@ -14,13 +14,13 @@ export function checkRateLimit(req: NextRequest): NextResponse | null {
     return null; // Rate limiting disabled
   }
 
-  const ip =
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
-    "unknown";
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const ip = forwardedFor
+    ? forwardedFor.split(',')[0].trim()
+    : req.headers.get("x-real-ip") || "unknown";
     
   const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"); // 15 minutes
-  const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100");
+  const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "1000");
 
   const now = Date.now();
   const windowStart = now - windowMs;
