@@ -7,7 +7,6 @@ import { UserRole } from "@prisma/client"
 import { logger } from "@/lib/logger"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  basePath: "/api/auth",
   trustHost: true,
   providers: [
     Credentials({
@@ -21,7 +20,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!credentials?.email || !credentials?.password) {
           logger.auth("Login attempt failed: Missing credentials")
-          console.log("[Auth Debug] Missing credentials");
           return null
         }
 
@@ -29,23 +27,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials.password as string;
 
         try {
-          console.log("[Auth Debug] Attempting to find user in DB...");
           const user = await prisma.user.findUnique({
             where: {
               email
             }
           })
-          console.log("[Auth Debug] DB query complete. User found:", !!user);
 
           if (!user) {
             logger.auth("Login attempt failed: User not found", undefined, { email })
-            console.log("[Auth Debug] User not found");
             return null
           }
 
-          console.log("[Auth Debug] Verifying password...");
           if (!user.passwordHash) {
-            console.log("[Auth Debug] User has no password hash");
             return null;
           }
 
@@ -53,16 +46,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             password,
             user.passwordHash
           )
-          console.log("[Auth Debug] Password verification result:", isPasswordValid);
 
           if (!isPasswordValid) {
             logger.auth("Login attempt failed: Invalid password", user.id.toString(), { email: user.email })
-            console.log("[Auth Debug] Invalid password");
             return null
           }
 
           logger.auth("Login successful", user.id.toString(), { email: user.email })
-          console.log("[Auth Debug] Login successful, returning user object");
 
           return {
             id: user.id.toString(),
@@ -115,9 +105,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async signOut(message) {
-      console.log("[Auth Debug] SignOut event triggered:", message);
+      console.log("[Auth Debug] SignOut event triggered");
+      // Fire and forget logging to avoid blocking the response
       const userId = ('token' in message && message.token?.sub) ? message.token.sub as string : undefined;
-      logger.auth("User signed out", userId);
+      setTimeout(() => {
+        logger.auth("User signed out", userId);
+      }, 0);
     },
   },
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,

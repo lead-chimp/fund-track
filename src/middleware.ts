@@ -18,8 +18,9 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const requestId = Math.random().toString(36).substring(7);
 
-  // IMMEDIATELY bypass our middleware logic for NextAuth internal routes
-  if (pathname.startsWith("/api/auth/")) {
+  // CRITICAL: IMMEDIATELY bypass EVERYTHING for NextAuth routes
+  // No session lookup, no rate limiting, no checks - absolute bypass
+  if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
@@ -103,14 +104,17 @@ export default auth((req) => {
   }
 });
 
+// Configure matcher to exclude auth routes and static assets
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/admin/:path*",
-    "/dev/:path*",
-    "/application/:path*",
-    // Explicitly match API routes EXCEPT /api/auth/* to avoid circular dependency
-    // NextAuth routes must not be processed by the auth() middleware wrapper
-    "/api/((?!auth).)*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/auth (NextAuth endpoints)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - robots.txt
+     */
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt).*)",
   ],
 };
