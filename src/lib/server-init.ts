@@ -36,10 +36,12 @@ export function initializeServer(): void {
       logger.info("Notification service configuration validated successfully");
     }
 
-    // Start background job scheduler only in production or when explicitly enabled
+    // Start background job scheduler only in production or when explicitly enabled.
+    // Set ENABLE_BACKGROUND_JOBS=false to disable even in production (e.g. when using Postgres cron).
     const shouldStartScheduler =
-      process.env.NODE_ENV === "production" ||
-      process.env.ENABLE_BACKGROUND_JOBS === "true";
+      process.env.ENABLE_BACKGROUND_JOBS !== "false" &&
+      (process.env.NODE_ENV === "production" ||
+        process.env.ENABLE_BACKGROUND_JOBS === "true");
 
     console.log("📅 Scheduler startup decision:", {
       nodeEnv: process.env.NODE_ENV,
@@ -74,7 +76,7 @@ export function initializeServer(): void {
     } else {
       console.log("❌ Scheduler disabled by environment");
       logger.info(
-        "Background job scheduler disabled (set ENABLE_BACKGROUND_JOBS=true to enable in development)"
+        "Background job scheduler disabled (set ENABLE_BACKGROUND_JOBS=true to enable, or false when using Postgres cron)"
       );
     }
 

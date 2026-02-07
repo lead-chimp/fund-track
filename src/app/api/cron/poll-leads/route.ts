@@ -4,8 +4,15 @@ import { notificationService } from "@/services/NotificationService";
 import { TokenService } from "@/services/TokenService";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { validateCronRequest, createUnauthorizedResponse } from "@/lib/cron-auth";
 
 export async function POST(request: NextRequest) {
+  // Validate cron request authentication
+  if (!validateCronRequest(request)) {
+    logger.warn("Unauthorized cron request to poll-leads endpoint");
+    return createUnauthorizedResponse();
+  }
+
   try {
     logger.info("Starting manual lead polling process via API endpoint");
 
@@ -26,9 +33,9 @@ export async function POST(request: NextRequest) {
         where: {
           status: "PENDING",
           intakeToken: { not: null },
-          // Get leads imported in the last 5 minutes to catch this batch
+          // Get leads imported in the last 20 minutes to catch this batch
           importedAt: {
-            gte: new Date(Date.now() - 5 * 60 * 1000),
+            gte: new Date(Date.now() - 20 * 60 * 1000),
           },
           // Only get leads that haven't had notifications sent yet
           notificationLog: {
@@ -70,7 +77,7 @@ export async function POST(request: NextRequest) {
         const intakeUrl = `${baseUrl}/application/${lead.intakeToken}`;
         const leadName = lead.firstName
           ? lead.firstName.charAt(0).toUpperCase() +
-            lead.firstName.slice(1).toLowerCase()
+          lead.firstName.slice(1).toLowerCase()
           : lead.businessName || "there";
 
         // Send email notification if email exists
@@ -152,6 +159,9 @@ export async function POST(request: NextRequest) {
             });
           }
         }
+
+        // Small delay between notifications to reduce rate-limit risk
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       logger.info("Notification sending completed", notificationResults);

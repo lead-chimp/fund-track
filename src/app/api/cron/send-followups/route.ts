@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { followUpScheduler } from '@/services/FollowUpScheduler';
 import { logger } from '@/lib/logger';
+import { validateCronRequest, createUnauthorizedResponse } from '@/lib/cron-auth';
 
 /**
  * POST /api/cron/send-followups
  * Process the follow-up queue and send due notifications
  */
 export async function POST(request: NextRequest) {
+  // Validate cron request authentication
+  if (!validateCronRequest(request)) {
+    logger.warn("Unauthorized cron request to send-followups endpoint");
+    return createUnauthorizedResponse();
+  }
+
   const startTime = Date.now();
-  
+
   try {
     logger.backgroundJob('Starting follow-up processing job', 'follow-ups');
 
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const processingTime = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     logger.error('Follow-up processing job failed', {
       error: errorMessage,
       processingTime: `${processingTime}ms`
@@ -92,7 +99,7 @@ export async function GET() {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     logger.error('Failed to get follow-up stats', { error: errorMessage });
 
     return NextResponse.json({
