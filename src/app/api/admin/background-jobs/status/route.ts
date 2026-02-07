@@ -1,48 +1,50 @@
-import { NextResponse } from 'next/server';
-import { backgroundJobScheduler } from '@/services/BackgroundJobScheduler';
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-
 
 export async function GET() {
   try {
-    // Check if user is authenticated and is admin
     const session = await auth();
-    
+
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
-    if (session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      );
     }
-    
-    // Get scheduler status
-    const status = backgroundJobScheduler.getStatus();
-    
-    // Add environment info
+
+    const scheduler = {
+      isRunning: false,
+      scheduledExternally: true,
+      message: "Tasks run via Coolify scheduled tasks",
+    };
+
     const environmentInfo = {
       nodeEnv: process.env.NODE_ENV,
-      enableBackgroundJobs: process.env.ENABLE_BACKGROUND_JOBS,
-      leadPollingPattern: process.env.LEAD_POLLING_CRON_PATTERN || '*/15 * * * *',
-      followUpPattern: process.env.FOLLOWUP_CRON_PATTERN || '*/5 * * * *',
+      cronSecretConfigured: Boolean(process.env.CRON_SECRET),
       campaignIds: process.env.MERCHANT_FUNDING_CAMPAIGN_IDS,
-      batchSize: process.env.LEAD_POLLING_BATCH_SIZE || '100',
-      timezone: process.env.TZ || 'America/New_York'
+      batchSize: process.env.LEAD_POLLING_BATCH_SIZE ?? "100",
+      timezone: process.env.TZ ?? "America/New_York",
     };
-    
+
     return NextResponse.json({
       success: true,
-      scheduler: status,
+      scheduler,
       environment: environmentInfo,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
   } catch (error) {
-    console.error('Failed to get background job status:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }, { status: 500 });
+    console.error("Failed to get background job status:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      },
+      { status: 500 }
+    );
   }
 }
