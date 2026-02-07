@@ -6,6 +6,9 @@
 .pnp.js
 .yarn/install-state.gz
 
+# Use yarn only; do not commit npm lockfile (supply-chain / malware risk)
+package-lock.json
+
 # testing
 /coverage
 /test-results/
