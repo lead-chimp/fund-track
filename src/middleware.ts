@@ -24,6 +24,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Cron routes: called by Coolify with CRON_SECRET; no HTTPS/rate-limit/bot/auth here
+  if (pathname.startsWith("/api/cron")) {
+    return addSecurityHeaders(req, NextResponse.next());
+  }
+
   console.log(`[Middleware Debug][${requestId}] Processing request:`, pathname);
 
   const token = req.auth; // In v5, req.auth is the session/token
