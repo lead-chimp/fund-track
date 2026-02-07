@@ -139,6 +139,18 @@ if (typeof process !== "undefined") {
 
 // Alternative initialization method that can be called from API routes
 export function forceInitializeScheduler(): void {
+  const shouldStartScheduler =
+    process.env.ENABLE_BACKGROUND_JOBS !== "false" &&
+    (process.env.NODE_ENV === "production" ||
+      process.env.ENABLE_BACKGROUND_JOBS === "true");
+
+  if (!shouldStartScheduler) {
+    logger.info(
+      "Skipping force initialization: scheduler disabled (ENABLE_BACKGROUND_JOBS=false or not in production)"
+    );
+    return;
+  }
+
   console.log(" Force initializing scheduler...");
 
   try {
@@ -168,9 +180,14 @@ export function forceInitializeScheduler(): void {
   }
 }
 
-// Auto-initialize if this module is imported in production
-if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
-  console.log("🌍 Production environment detected, auto-initializing...");
+// Auto-initialize if this module is imported in production and scheduler is enabled
+// Skip when ENABLE_BACKGROUND_JOBS=false (e.g. when using Coolify/Postgres cron)
+if (
+  typeof process !== "undefined" &&
+  process.env.NODE_ENV === "production" &&
+  process.env.ENABLE_BACKGROUND_JOBS !== "false"
+) {
+  console.log("🌍 Production environment detected, auto-initializing scheduler...");
 
   // Delay initialization to ensure all modules are loaded
   setTimeout(() => {
