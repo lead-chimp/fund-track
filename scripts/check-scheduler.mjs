@@ -1,72 +1,61 @@
 #!/usr/bin/env node
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-// Script to check background job scheduler status
-const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+// Script to check cron/scheduler status (tasks are run via Coolify scheduled tasks)
+const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 const url = `${baseUrl}/api/dev/scheduler-status`;
 
-console.log('🔍 Checking Background Job Scheduler Status...\n');
+console.log("🔍 Checking scheduler / cron status...\n");
 
 try {
   const response = await fetch(url);
   const data = await response.json();
 
   if (data.error) {
-    console.log('❌ Error:', data.error);
+    console.log("❌ Error:", data.error);
     if (data.details) {
-      console.log('Details:', data.details);
+      console.log("Details:", data.details);
     }
     process.exit(1);
   }
 
-  console.log('📊 Scheduler Status:');
-  console.log('==================');
-  console.log(`Running: ${data.scheduler.isRunning ? '✅ YES' : '❌ NO'}`);
-  console.log(`Lead Polling Pattern: ${data.scheduler.leadPollingPattern}`);
-  console.log(`Follow-up Pattern: ${data.scheduler.followUpPattern}`);
-  
-  if (data.scheduler.nextLeadPolling) {
-    const nextPolling = new Date(data.scheduler.nextLeadPolling);
-    const now = new Date();
-    const minutesUntil = Math.round((nextPolling - now) / (1000 * 60));
-    console.log(`Next Lead Polling: ${nextPolling.toLocaleString()} (in ${minutesUntil} minutes)`);
-  }
-  
-  if (data.scheduler.nextFollowUp) {
-    const nextFollowUp = new Date(data.scheduler.nextFollowUp);
-    const now = new Date();
-    const minutesUntil = Math.round((nextFollowUp - now) / (1000 * 60));
-    console.log(`Next Follow-up: ${nextFollowUp.toLocaleString()} (in ${minutesUntil} minutes)`);
-  }
+  const result = data.result ?? data;
+  const scheduler = result.scheduler ?? {};
+  const environment = result.environment ?? {};
 
-  console.log('\n🔧 Environment Configuration:');
-  console.log('=============================');
-  console.log(`Node Environment: ${data.environment.nodeEnv}`);
-  console.log(`Background Jobs Enabled: ${data.environment.backgroundJobsEnabled}`);
-  console.log(`Lead Polling Pattern: ${data.environment.leadPollingPattern}`);
-  console.log(`Campaign IDs: ${data.environment.campaignIds}`);
+  console.log("📊 Scheduler status:");
+  console.log("===================");
+  console.log(
+    `Scheduled externally: ${scheduler.scheduledExternally ? "✅ YES" : "❌ NO"}`
+  );
+  if (scheduler.message) {
+    console.log(`Message: ${scheduler.message}`);
+  }
+  console.log(`In-process running: ${scheduler.isRunning ? "✅ YES" : "❌ NO"}`);
 
-  console.log('\n💡 Tips:');
-  console.log('========');
-  if (!data.scheduler.isRunning) {
-    console.log('- Scheduler is not running. Check if ENABLE_BACKGROUND_JOBS=true in your .env file');
-    console.log('- Restart your development server after changing environment variables');
+  console.log("\n🔧 Environment:");
+  console.log("===============");
+  console.log(`Node env: ${environment.nodeEnv ?? "—"}`);
+  console.log(
+    `Cron secret configured: ${environment.cronSecretConfigured ? "✅ YES" : "❌ NO"}`
+  );
+  console.log(`Campaign IDs: ${environment.campaignIds ?? "—"}`);
+
+  console.log("\n💡 Tips:");
+  console.log("========");
+  if (scheduler.scheduledExternally) {
+    console.log("- Cron jobs are run by Coolify scheduled tasks (e.g. curl to /api/cron/*)");
+    console.log("- Trigger lead polling manually: POST /api/dev/scheduler-status with { \"action\": \"poll\" }");
+    console.log("- Or use admin UI to trigger polling");
   } else {
-    console.log('- Scheduler is running and will automatically poll for leads');
-    console.log('- Lead polling runs every 15 minutes by default');
-    console.log('- Check your console logs for background job activity');
+    console.log("- Check CRON_SECRET is set if calling cron endpoints");
   }
 
-  console.log('\n🧪 Manual Testing:');
-  console.log('==================');
-  console.log('- Use the web interface at /dev/test-legacy-db');
-  console.log('- Run: node scripts/test-lead-polling.mjs poll');
-  console.log('- POST to /api/dev/scheduler-status to trigger manual polling');
-
+  console.log("\n🧪 Manual trigger:");
+  console.log("==================");
+  console.log("- POST to /api/dev/scheduler-status with body: { \"action\": \"poll\" }");
+  console.log("- Or call cron endpoints with x-cron-secret header (e.g. from Coolify)");
 } catch (error) {
-  console.error('❌ Network error:', error.message);
-  console.log('\n💡 Make sure your development server is running on http://localhost:3000');
+  console.error("❌ Network error:", error.message);
+  console.log("\n💡 Make sure the app is running (e.g. yarn dev)");
   process.exit(1);
 }
