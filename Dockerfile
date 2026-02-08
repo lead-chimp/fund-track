@@ -4,7 +4,7 @@
     
     # Use development so devDependencies (prisma, typescript, etc.) are installed for build
     ENV NODE_ENV=development
-    
+
     # 1. Enable Corepack to detect Yarn 4 from your package.json
     RUN corepack enable
     
@@ -21,7 +21,8 @@
     # Ensure public exists so runner COPY succeeds (app may have no public folder)
     RUN mkdir -p public
     RUN yarn db:generate
-    RUN yarn build
+    # Build with NODE_ENV=production so Next.js prerender and standalone output match Nixpacks (Coolify may not set NODE_ENV for RUN)
+    RUN NODE_ENV=production yarn build
     
     # ------------------- Runner stage (secure) -------------------
     FROM node:22-bookworm-slim AS runner

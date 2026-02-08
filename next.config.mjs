@@ -12,8 +12,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Only use standalone output in production
-  ...(process.env.NODE_ENV === "production" && { output: "standalone" }),
+  // Standalone output for production or when explicitly requested (e.g. Docker build with NODE_ENV=development)
+  ...((process.env.NODE_ENV === "production" || process.env.BUILD_STANDALONE === "1") && {
+    output: "standalone",
+  }),
 
   // Ensure API routes don't try to connect to database during build
   serverExternalPackages: ["@prisma/client"],
