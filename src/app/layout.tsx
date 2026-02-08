@@ -24,8 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${plusJakartaSans.variable} font-sans`}>
-        <ServerInitializer />
-        <ErrorBoundary>
+        <ServerInitializer key="server-initializer" />
+        <ErrorBoundary key="error-boundary">
           <ConditionalSessionProvider>{children}</ConditionalSessionProvider>
         </ErrorBoundary>
       </body>
