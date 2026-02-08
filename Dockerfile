@@ -9,7 +9,10 @@
     COPY package.json yarn.lock* ./
     
     # Install dependencies (frozen-lockfile ensures no dev-only changes)
-    RUN yarn install --frozen-lockfile
+    # RUN yarn install --frozen-lockfile
+
+    # IF you are using Yarn 2/3/4 (Berry), use:
+    RUN yarn install --immutable
     
     # Copy source and build
     COPY . .
