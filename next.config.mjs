@@ -30,7 +30,9 @@ const nextConfig = {
       try {
         productionDomain = new URL(process.env.NEXT_PUBLIC_BASE_URL).host;
       } catch (e) {
-        console.warn("Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain");
+        console.warn(
+          "Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain",
+        );
       }
     }
 
@@ -63,11 +65,11 @@ const nextConfig = {
           },
           ...(isProduction
             ? [
-              {
-                key: "Strict-Transport-Security",
-                value: "max-age=63072000; includeSubDomains; preload",
-              },
-            ]
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=63072000; includeSubDomains; preload",
+                },
+              ]
             : []),
           {
             key: "X-XSS-Protection",
@@ -102,7 +104,9 @@ const nextConfig = {
       try {
         productionDomain = new URL(process.env.NEXT_PUBLIC_BASE_URL).host;
       } catch (e) {
-        console.warn("Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain");
+        console.warn(
+          "Invalid NEXT_PUBLIC_BASE_URL, falling back to default domain",
+        );
       }
     }
 
