@@ -29,6 +29,9 @@
     
     ENV NODE_ENV=production
     ENV NEXT_TELEMETRY_DISABLED=1
+    # Listen on all interfaces so reverse proxy (Coolify/traefik) can reach the app
+    ENV HOSTNAME=0.0.0.0
+    ENV PORT=3000
     
     # OpenSSL required by Prisma for DB connections
     RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
