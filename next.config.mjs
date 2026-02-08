@@ -1,16 +1,15 @@
 import path from "path";
 import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // App Router is enabled by default in Next.js 13+
 
-  // Skip TypeScript and ESLint checks during build for production deployment
+  // Skip TypeScript checks during build for production deployment
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 
   // Only use standalone output in production
@@ -133,9 +132,15 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Ensure the '@' alias resolves to the `src` directory during build
+  // Ensure the '@' alias resolves to the `src` directory (Turbopack is default in Next.js 16)
+  turbopack: {
+    resolveAlias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
+
+  // Webpack fallback (e.g. when using --webpack flag)
   webpack(config) {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...(config.resolve.alias || {}),

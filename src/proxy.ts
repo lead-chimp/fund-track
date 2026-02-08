@@ -10,8 +10,7 @@ import {
 import {
   isPublicRoute,
   isAdminRoute,
-  isSystemAdminRoute,
-  isProtectedRoute
+  isSystemAdminRoute
 } from "@/lib/middleware/route-matchers";
 
 export default auth((req) => {
@@ -29,7 +28,7 @@ export default auth((req) => {
     return addSecurityHeaders(req, NextResponse.next());
   }
 
-  console.log(`[Middleware Debug][${requestId}] Processing request:`, pathname);
+  console.log(`[Proxy Debug][${requestId}] Processing request:`, pathname);
 
   const token = req.auth; // In v5, req.auth is the session/token
 
@@ -38,11 +37,11 @@ export default auth((req) => {
     validateEnvironment();
 
     // 2. Rate Limiting
-    console.log(`[Middleware Debug][${requestId}] Checking rate limit...`);
+    console.log(`[Proxy Debug][${requestId}] Checking rate limit...`);
     const rateLimitResponse = checkRateLimit(req);
     if (rateLimitResponse) {
       const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-      console.warn(`[Middleware Debug][${requestId}] RATE LIMIT EXCEEDED:
+      console.warn(`[Proxy Debug][${requestId}] RATE LIMIT EXCEEDED:
         - IP: ${ip}
         - Path: ${pathname}
         - User Agent: ${req.headers.get("user-agent")}
@@ -51,34 +50,34 @@ export default auth((req) => {
     }
 
     // 3. HTTPS Enforcement
-    console.log("[Middleware Debug] Checking HTTPS...");
+    console.log("[Proxy Debug] Checking HTTPS...");
     const httpsRedirect = checkHttpsEnforcement(req);
     if (httpsRedirect) {
-      console.log("[Middleware Debug] Redirecting to HTTPS:", pathname);
+      console.log("[Proxy Debug] Redirecting to HTTPS:", pathname);
       return httpsRedirect;
     }
 
     // 4. Bot Protection
-    console.log("[Middleware Debug] Checking bot protection...");
+    console.log("[Proxy Debug] Checking bot protection...");
     const botProtectionResponse = checkBotProtection(req);
     if (botProtectionResponse) {
-      console.log("[Middleware Debug] Bot protection blocked:", pathname);
+      console.log("[Proxy Debug] Bot protection blocked:", pathname);
       return botProtectionResponse;
     }
 
     // 5. Route Authorization Logic
-    console.log("[Middleware Debug] Checking RBAC for:", pathname, "Role:", token?.user?.role);
+    console.log("[Proxy Debug] Checking RBAC for:", pathname, "Role:", token?.user?.role);
 
     // Public routes are always authorized
     const isPublic = isPublicRoute(pathname);
     if (isPublic) {
-      console.log("[Middleware Debug] Public route allowed");
+      console.log("[Proxy Debug] Public route allowed");
       return addSecurityHeaders(req, NextResponse.next());
     }
 
     // Protected routes requiring authentication
     if (!token) {
-      console.log("[Middleware Debug] No token for protected route, redirecting to signin");
+      console.log("[Proxy Debug] No token for protected route, redirecting to signin");
       const signInUrl = new URL("/auth/signin", req.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(signInUrl);
@@ -87,7 +86,7 @@ export default auth((req) => {
     // System Admin Routes
     if (isSystemAdminRoute(pathname)) {
       if (token.user?.role !== "SYSTEM_ADMIN") {
-        console.log("[Middleware Debug] Insufficient role for system admin route, redirecting to dashboard");
+        console.log("[Proxy Debug] Insufficient role for system admin route, redirecting to dashboard");
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
@@ -95,16 +94,16 @@ export default auth((req) => {
     // Admin Routes
     if (isAdminRoute(pathname)) {
       if (token.user?.role !== "ADMIN" && token.user?.role !== "SYSTEM_ADMIN") {
-        console.log("[Middleware Debug] Insufficient role for admin route, redirecting to dashboard");
+        console.log("[Proxy Debug] Insufficient role for admin route, redirecting to dashboard");
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
 
     // 6. Final Response with Headers
-    console.log(`[Middleware Debug][${requestId}] Request allowed:`, pathname);
+    console.log(`[Proxy Debug][${requestId}] Request allowed:`, pathname);
     return addSecurityHeaders(req, NextResponse.next());
   } catch (error) {
-    console.error(`[Middleware Debug][${requestId}] Error in middleware:`, error);
+    console.error(`[Proxy Debug][${requestId}] Error in proxy:`, error);
     return addSecurityHeaders(req, NextResponse.next());
   }
 });
