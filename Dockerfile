@@ -30,9 +30,15 @@
         && useradd --system --uid 1001 --gid nodejs --shell /bin/false nextjs \
         && mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
     
-    # Copy only standalone output
-    COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+    # 1. Copy public folder ONLY if it exists (using a wildcard trick to prevent crash)
+    # This prevents the "not found" error if the folder is empty or missing
+    COPY --from=builder --chown=nextjs:nodejs /app/public* ./public/
+
+    # 2. Copy the standalone build (the heart of the app)
     COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+    # 3. Copy static files (CSS/JS chunks) into the correct subfolder
+    # Standalone needs these inside .next/static to serve them
     COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
     
     USER nextjs
