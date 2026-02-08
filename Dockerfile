@@ -2,6 +2,9 @@
     FROM node:22-bookworm-slim AS builder
     WORKDIR /app
     
+    # Use development so devDependencies (prisma, typescript, etc.) are installed for build
+    ENV NODE_ENV=development
+    
     # 1. Enable Corepack to detect Yarn 4 from your package.json
     RUN corepack enable
     
