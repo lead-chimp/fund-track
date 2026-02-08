@@ -27,6 +27,10 @@
     ENV NODE_ENV=production
     ENV NEXT_TELEMETRY_DISABLED=1
     
+    # OpenSSL required by Prisma for DB connections
+    RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+        && rm -rf /var/lib/apt/lists/*
+    
     # Create non-root user
     RUN groupadd --system --gid 1001 nodejs \
         && useradd --system --uid 1001 --gid nodejs --shell /bin/false nextjs \
