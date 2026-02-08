@@ -15,6 +15,7 @@
     RUN yarn install --immutable --inline-builds
     
     COPY . .
+    RUN yarn db:generate
     RUN yarn build
     
     # ------------------- Runner stage (secure) -------------------
