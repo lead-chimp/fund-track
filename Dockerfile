@@ -2,13 +2,18 @@
     FROM node:20-bookworm-slim AS builder
     WORKDIR /app
     
-    # Install dependencies
-    COPY package*.json ./
-    RUN npm ci --only=production=false   # or yarn/pnpm equivalent
+    # Enable Corepack to use the version of Yarn specified in your package.json
+    RUN corepack enable
     
-    # Build (Next.js standalone output recommended)
+    # Copy lockfile and package.json first for layer caching
+    COPY package.json yarn.lock* ./
+    
+    # Install dependencies (frozen-lockfile ensures no dev-only changes)
+    RUN yarn install --frozen-lockfile
+    
+    # Copy source and build
     COPY . .
-    RUN npm run build
+    RUN yarn build
     
     # ------------------- Runner stage (secure) -------------------
     FROM node:20-bookworm-slim AS runner
@@ -22,7 +27,7 @@
         && useradd --system --uid 1001 --gid nodejs --shell /bin/false nextjs \
         && mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
     
-    # Copy only what's needed (standalone output is smallest & safest)
+    # Copy only standalone output
     COPY --from=builder --chown=nextjs:nodejs /app/public ./public
     COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
     COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
