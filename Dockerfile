@@ -1,5 +1,5 @@
 # ------------------- Builder stage -------------------
-    FROM node:20-bookworm-slim AS builder
+    FROM node:22-bookworm-slim AS builder
     WORKDIR /app
     
     # 1. Enable Corepack to detect Yarn 4 from your package.json
@@ -15,11 +15,13 @@
     RUN yarn install --immutable --inline-builds
     
     COPY . .
+    # Ensure public exists so runner COPY succeeds (app may have no public folder)
+    RUN mkdir -p public
     RUN yarn db:generate
     RUN yarn build
     
     # ------------------- Runner stage (secure) -------------------
-    FROM node:20-bookworm-slim AS runner
+    FROM node:22-bookworm-slim AS runner
     WORKDIR /app
     
     ENV NODE_ENV=production
@@ -30,9 +32,8 @@
         && useradd --system --uid 1001 --gid nodejs --shell /bin/false nextjs \
         && mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
     
-    # 1. Copy public folder ONLY if it exists (using a wildcard trick to prevent crash)
-    # This prevents the "not found" error if the folder is empty or missing
-    COPY --from=builder --chown=nextjs:nodejs /app/public* ./public/
+    # 1. Copy public folder (ensured to exist in builder)
+    COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
     # 2. Copy the standalone build (the heart of the app)
     COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

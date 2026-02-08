@@ -1,0 +1,36 @@
+# Dependencies and build output (reinstalled in image)
+node_modules
+.next
+out
+build
+
+# Lockfile: use yarn.lock only (do not copy npm lockfile)
+package-lock.json
+
+# Env and secrets (injected at runtime)
+.env*
+!.env.example
+
+# Git and IDE
+.git
+.github
+.vscode
+.idea
+
+# Docs and tooling (not needed in image)
+docs
+.qoder
+.kiro
+*.md
+!README.md
+
+# Tests and scripts not needed at runtime
+test
+coverage
+playwright-report
+.github-disabled
+
+# Misc
+.DS_Store
+*.log
+*.tsbuildinfo
