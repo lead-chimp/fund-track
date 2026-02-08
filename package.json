@@ -65,5 +65,6 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }

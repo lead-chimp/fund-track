@@ -2,19 +2,18 @@
     FROM node:20-bookworm-slim AS builder
     WORKDIR /app
     
-    # Enable Corepack to use the version of Yarn specified in your package.json
+    # 1. Enable Corepack to detect Yarn 4 from your package.json
     RUN corepack enable
     
-    # Copy lockfile and package.json first for layer caching
-    COPY package.json yarn.lock* ./
+    # 2. Copy ALL Yarn 4 configuration files
+    # You need .yarnrc.yml and the .yarn folder (which contains the yarn binary)
+    COPY package.json yarn.lock* .yarnrc.yml* ./
+    COPY .yarn ./.yarn
     
-    # Install dependencies (frozen-lockfile ensures no dev-only changes)
-    # RUN yarn install --frozen-lockfile
-
-    # IF you are using Yarn 2/3/4 (Berry), use:
-    RUN yarn install --immutable
+    # 3. If you still get error 1, try this "Debug" version of install:
+    # --inline-builds will show the ACTUAL error message in the logs
+    RUN yarn install --immutable --inline-builds
     
-    # Copy source and build
     COPY . .
     RUN yarn build
     
