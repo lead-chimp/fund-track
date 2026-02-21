@@ -4,10 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 // Note: In serverless, this Map is not shared across instances and resets on cold starts.
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
-interface RateLimitConfig {
-  windowMs: number;
-  maxRequests: number;
-}
+// Rate limiting configuration
+const windowMs = 15 * 60 * 1000; // 15 minutes
+const maxRequests = 100; // limit each IP to 100 requests per windowMs
 
 export function checkRateLimit(req: NextRequest): NextResponse | null {
   if (process.env.ENABLE_RATE_LIMITING !== "true") {
@@ -16,9 +15,9 @@ export function checkRateLimit(req: NextRequest): NextResponse | null {
 
   const forwardedFor = req.headers.get("x-forwarded-for");
   const ip = forwardedFor
-    ? forwardedFor.split(',')[0].trim()
+    ? forwardedFor.split(",")[0].trim()
     : req.headers.get("x-real-ip") || "unknown";
-    
+
   const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"); // 15 minutes
   const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "1000");
 
@@ -28,7 +27,7 @@ export function checkRateLimit(req: NextRequest): NextResponse | null {
   // Clean up old entries
   // Optimization: specific cleanup instead of full iteration could be better for high traffic,
   // but for this simple implementation, we'll cleanup only when accessing.
-  
+
   const current = rateLimitStore.get(ip);
 
   if (!current || current.resetTime < windowStart) {
@@ -44,12 +43,17 @@ export function checkRateLimit(req: NextRequest): NextResponse | null {
   return null; // Proceed
 }
 
-function createRateLimitResponse(req: NextRequest, maxRequests: number): NextResponse {
+function createRateLimitResponse(
+  req: NextRequest,
+  maxRequests: number,
+): NextResponse {
   const { pathname } = req.nextUrl;
   const retryAfter = 900; // 15 minutes in seconds
 
   const headers = {
-    "Content-Type": pathname.startsWith("/api/") ? "application/json" : "text/html",
+    "Content-Type": pathname.startsWith("/api/")
+      ? "application/json"
+      : "text/html",
     "Retry-After": String(retryAfter),
     "X-RateLimit-Limit": String(maxRequests),
     "X-RateLimit-Remaining": "0",
@@ -64,7 +68,7 @@ function createRateLimitResponse(req: NextRequest, maxRequests: number): NextRes
         message: "Rate limit exceeded. Please try again later.",
         retryAfter,
       }),
-      { status: 429, headers }
+      { status: 429, headers },
     );
   } else {
     return new NextResponse(
@@ -93,7 +97,7 @@ function createRateLimitResponse(req: NextRequest, maxRequests: number): NextRes
   </div>
 </body>
 </html>`,
-      { status: 429, headers }
+      { status: 429, headers },
     );
   }
 }

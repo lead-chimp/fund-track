@@ -39,7 +39,7 @@ export const validateEmail = (email: string): boolean => {
   if (email.includes("..")) return false;
 
   // Split into local and domain parts
-  const [localPart, domainPart] = email.split("@");
+  const [, domainPart] = email.split("@");
 
   // Check that domain has at least one dot and valid TLD
   if (!domainPart || !domainPart.includes(".")) return false;

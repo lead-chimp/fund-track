@@ -5,12 +5,12 @@ import { checkBotProtection } from "@/lib/middleware/bot-protection";
 import {
   validateEnvironment,
   addSecurityHeaders,
-  checkHttpsEnforcement
+  checkHttpsEnforcement,
 } from "@/lib/middleware/utils";
 import {
   isPublicRoute,
   isAdminRoute,
-  isSystemAdminRoute
+  isSystemAdminRoute,
 } from "@/lib/middleware/route-matchers";
 
 export default auth((req) => {
@@ -40,7 +40,10 @@ export default auth((req) => {
     console.log(`[Proxy Debug][${requestId}] Checking rate limit...`);
     const rateLimitResponse = checkRateLimit(req);
     if (rateLimitResponse) {
-      const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      const ip =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        "unknown";
       console.warn(`[Proxy Debug][${requestId}] RATE LIMIT EXCEEDED:
         - IP: ${ip}
         - Path: ${pathname}
@@ -66,7 +69,12 @@ export default auth((req) => {
     }
 
     // 5. Route Authorization Logic
-    console.log("[Proxy Debug] Checking RBAC for:", pathname, "Role:", token?.user?.role);
+    console.log(
+      "[Proxy Debug] Checking RBAC for:",
+      pathname,
+      "Role:",
+      token?.user?.role,
+    );
 
     // Public routes are always authorized
     const isPublic = isPublicRoute(pathname);
@@ -77,7 +85,9 @@ export default auth((req) => {
 
     // Protected routes requiring authentication
     if (!token) {
-      console.log("[Proxy Debug] No token for protected route, redirecting to signin");
+      console.log(
+        "[Proxy Debug] No token for protected route, redirecting to signin",
+      );
       const signInUrl = new URL("/auth/signin", req.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(signInUrl);
@@ -86,7 +96,9 @@ export default auth((req) => {
     // System Admin Routes
     if (isSystemAdminRoute(pathname)) {
       if (token.user?.role !== "SYSTEM_ADMIN") {
-        console.log("[Proxy Debug] Insufficient role for system admin route, redirecting to dashboard");
+        console.log(
+          "[Proxy Debug] Insufficient role for system admin route, redirecting to dashboard",
+        );
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
@@ -94,7 +106,9 @@ export default auth((req) => {
     // Admin Routes
     if (isAdminRoute(pathname)) {
       if (token.user?.role !== "ADMIN" && token.user?.role !== "SYSTEM_ADMIN") {
-        console.log("[Proxy Debug] Insufficient role for admin route, redirecting to dashboard");
+        console.log(
+          "[Proxy Debug] Insufficient role for admin route, redirecting to dashboard",
+        );
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
