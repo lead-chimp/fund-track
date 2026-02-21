@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { UserRole } from '@prisma/client';
-import PageLoading from '@/components/PageLoading';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@prisma/client";
+import PageLoading from "@/components/PageLoading";
 
 interface MailGunEvent {
   id: string;
@@ -13,11 +13,11 @@ interface MailGunEvent {
   recipient: string;
   message?: {
     headers: {
-      'message-id': string;
+      "message-id": string;
       subject: string;
     };
   };
-  'delivery-status'?: {
+  "delivery-status"?: {
     message: string;
     code: number;
   };
@@ -54,16 +54,22 @@ export default function MailGunReportsPage() {
   const { data: session, status } = useSession();
 
   // Check if user is admin first
-  if (status === 'loading') {
+  if (status === "loading") {
     return <PageLoading message="Loading..." />;
   }
 
-  if (!session?.user || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.SYSTEM_ADMIN)) {
+  if (
+    !session?.user ||
+    (session.user.role !== UserRole.ADMIN &&
+      session.user.role !== UserRole.SYSTEM_ADMIN)
+  ) {
     return (
       <div className="p-8">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
           <h3 className="text-lg font-medium text-red-800">Access Denied</h3>
-          <p className="text-red-600">You must be a system administrator to access this page.</p>
+          <p className="text-red-600">
+            You must be a system administrator to access this page.
+          </p>
         </div>
       </div>
     );
@@ -78,16 +84,17 @@ function MailGunReportsContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredReports, setFilteredReports] = useState<MailGunEvent[]>([]);
-  const [deduplicationMode] = useState<'none' | 'final-status' | 'latest-per-email'>('none');
+  const [deduplicationMode] = useState<
+    "none" | "final-status" | "latest-per-email"
+  >("none");
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-
   const [filters, setFilters] = useState({
-    event: '',
-    begin: '',
-    end: '',
+    event: "",
+    begin: "",
+    end: "",
   });
 
   const fetchReports = React.useCallback(async () => {
@@ -97,25 +104,32 @@ function MailGunReportsContent() {
     try {
       const params = new URLSearchParams();
 
-      if (filters.event) params.append('event', filters.event);
-      if (filters.begin) params.append('begin', filters.begin);
-      if (filters.end) params.append('end', filters.end);
+      if (filters.event) params.append("event", filters.event);
+      if (filters.begin) params.append("begin", filters.begin);
+      if (filters.end) params.append("end", filters.end);
 
-      console.log('Fetching reports with params:', Object.fromEntries(params));
+      console.log(
+        "[Mailgun Reports] Fetching reports with params:",
+        Object.fromEntries(params),
+      );
 
-      const response = await fetch(`/api/admin/mailgun/delivery-reports?${params}`);
+      const response = await fetch(
+        `/api/admin/mailgun/delivery-reports?${params}`,
+      );
       const data: DeliveryReportsResponse = await response.json();
 
-      console.log('API Response:', {
+      console.log("[Mailgun Reports] API Response:", {
         ok: response.ok,
         status: response.status,
         success: data.success,
         itemCount: data.data?.items?.length,
-        debug: data.debug
+        debug: data.debug,
       });
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}: Failed to fetch reports`);
+        throw new Error(
+          data.error || `HTTP ${response.status}: Failed to fetch reports`,
+        );
       }
 
       if (data.success && data.data?.items) {
@@ -124,19 +138,19 @@ function MailGunReportsContent() {
         setDebugInfo(data.debug);
 
         // Log debug information
-        console.log('Reports fetched successfully:', {
+        console.log("[Mailgun Reports] Reports fetched successfully:", {
           totalItems: data.data.items.length,
           maxPossible: 300,
           dateRange: data.debug?.dateRange,
           firstItem: data.data.items[0],
-          lastItem: data.data.items[data.data.items.length - 1]
+          lastItem: data.data.items[data.data.items.length - 1],
         });
       } else {
-        throw new Error('Invalid response format: ' + JSON.stringify(data));
+        throw new Error("Invalid response format: " + JSON.stringify(data));
       }
     } catch (err) {
-      console.error('Error fetching reports:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      console.error("Error fetching reports:", err);
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -144,7 +158,7 @@ function MailGunReportsContent() {
 
   const fetchAllReports = () => {
     setExpandedRows(new Set());
-    setSearchTerm('');
+    setSearchTerm("");
     fetchReports();
   };
 
@@ -155,22 +169,26 @@ function MailGunReportsContent() {
     }
 
     const lowercaseSearch = searchTerm.toLowerCase();
-    return reports.filter(event => {
-      const recipient = event.recipient?.toLowerCase() || '';
-      const subject = event.message?.headers?.subject?.toLowerCase() || '';
-      const eventType = event.event?.toLowerCase() || '';
-      const messageId = event.message?.headers?.['message-id']?.toLowerCase() || '';
-      const deliveryMessage = event['delivery-status']?.message?.toLowerCase() || '';
-      const reason = event.reason?.toLowerCase() || '';
-      const tags = event.tags?.join(' ').toLowerCase() || '';
+    return reports.filter((event) => {
+      const recipient = event.recipient?.toLowerCase() || "";
+      const subject = event.message?.headers?.subject?.toLowerCase() || "";
+      const eventType = event.event?.toLowerCase() || "";
+      const messageId =
+        event.message?.headers?.["message-id"]?.toLowerCase() || "";
+      const deliveryMessage =
+        event["delivery-status"]?.message?.toLowerCase() || "";
+      const reason = event.reason?.toLowerCase() || "";
+      const tags = event.tags?.join(" ").toLowerCase() || "";
 
-      return recipient.includes(lowercaseSearch) ||
+      return (
+        recipient.includes(lowercaseSearch) ||
         subject.includes(lowercaseSearch) ||
         eventType.includes(lowercaseSearch) ||
         messageId.includes(lowercaseSearch) ||
         deliveryMessage.includes(lowercaseSearch) ||
         reason.includes(lowercaseSearch) ||
-        tags.includes(lowercaseSearch);
+        tags.includes(lowercaseSearch)
+      );
     });
   };
 
@@ -198,28 +216,38 @@ function MailGunReportsContent() {
     const date = new Date(timestamp * 1000);
 
     // Always use Eastern Time (US) - UTC-5 (EST) or UTC-4 (EDT)
-    return date.toLocaleString('en-US', {
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }) + ' ET';
+    return (
+      date.toLocaleString("en-US", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }) + " ET"
+    );
   };
 
   const getEventColor = (event: string) => {
     switch (event) {
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'bounced': return 'bg-orange-100 text-orange-800';
-      case 'complained': return 'bg-purple-100 text-purple-800';
-      case 'unsubscribed': return 'bg-gray-100 text-gray-800';
-      case 'clicked': return 'bg-blue-100 text-blue-800';
-      case 'opened': return 'bg-indigo-100 text-indigo-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "delivered":
+        return "bg-green-100 text-green-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      case "bounced":
+        return "bg-orange-100 text-orange-800";
+      case "complained":
+        return "bg-purple-100 text-purple-800";
+      case "unsubscribed":
+        return "bg-gray-100 text-gray-800";
+      case "clicked":
+        return "bg-blue-100 text-blue-800";
+      case "opened":
+        return "bg-indigo-100 text-indigo-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -276,7 +304,9 @@ function MailGunReportsContent() {
             </div>
 
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900">MailGun Delivery Reports</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900">
+                MailGun Delivery Reports
+              </h1>
               <p className="mt-1 text-gray-500">
                 Monitor email delivery status and events (Max 300 events)
               </p>
@@ -287,13 +317,23 @@ function MailGunReportsContent() {
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-amber-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-amber-700">
-                    <strong>Data Retention:</strong> MailGun only retains event data for the last 5 days. Events older than 5 days are not available.
+                    <strong>Data Retention:</strong> MailGun only retains event
+                    data for the last 5 days. Events older than 5 days are not
+                    available.
                   </p>
                 </div>
               </div>
@@ -312,8 +352,18 @@ function MailGunReportsContent() {
                 {/* Search Bar */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg
+                      className="h-4 w-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                   </div>
                   <input
@@ -325,11 +375,21 @@ function MailGunReportsContent() {
                   />
                   {searchTerm && (
                     <button
-                      onClick={() => setSearchTerm('')}
+                      onClick={() => setSearchTerm("")}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="h-4 w-4 text-gray-400 hover:text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   )}
@@ -338,10 +398,14 @@ function MailGunReportsContent() {
                 {/* Filters Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Event Type</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Event Type
+                    </label>
                     <select
                       value={filters.event}
-                      onChange={(e) => setFilters({ ...filters, event: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, event: e.target.value })
+                      }
                       className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm"
                     >
                       <option value="">All Events</option>
@@ -357,28 +421,34 @@ function MailGunReportsContent() {
 
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Begin Date <span className="text-gray-500">(Last 5 days)</span>
+                      Begin Date{" "}
+                      <span className="text-gray-500">(Last 5 days)</span>
                     </label>
                     <input
                       type="datetime-local"
                       value={filters.begin}
                       min={getMinDate()}
                       max={getMaxDate()}
-                      onChange={(e) => setFilters({ ...filters, begin: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, begin: e.target.value })
+                      }
                       className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      End Date <span className="text-gray-500">(Last 5 days)</span>
+                      End Date{" "}
+                      <span className="text-gray-500">(Last 5 days)</span>
                     </label>
                     <input
                       type="datetime-local"
                       value={filters.end}
                       min={getMinDate()}
                       max={getMaxDate()}
-                      onChange={(e) => setFilters({ ...filters, end: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, end: e.target.value })
+                      }
                       className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm"
                     />
                   </div>
@@ -392,13 +462,15 @@ function MailGunReportsContent() {
                       disabled={loading}
                       className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {loading ? 'Loading...' : 'Fetch All (Max 300)'}
+                      {loading ? "Loading..." : "Fetch All (Max 300)"}
                     </button>
 
                     <button
                       onClick={() => {
                         const now = new Date();
-                        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                        const oneHourAgo = new Date(
+                          now.getTime() - 60 * 60 * 1000,
+                        );
                         setFilters({
                           ...filters,
                           begin: oneHourAgo.toISOString().slice(0, 16),
@@ -413,7 +485,9 @@ function MailGunReportsContent() {
                     <button
                       onClick={() => {
                         const now = new Date();
-                        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                        const yesterday = new Date(
+                          now.getTime() - 24 * 60 * 60 * 1000,
+                        );
                         setFilters({
                           ...filters,
                           begin: yesterday.toISOString().slice(0, 16),
@@ -428,7 +502,9 @@ function MailGunReportsContent() {
                     <button
                       onClick={() => {
                         const now = new Date();
-                        const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+                        const fiveDaysAgo = new Date(
+                          now.getTime() - 5 * 24 * 60 * 60 * 1000,
+                        );
                         setFilters({
                           ...filters,
                           begin: fiveDaysAgo.toISOString().slice(0, 16),
@@ -443,7 +519,9 @@ function MailGunReportsContent() {
 
                   <div className="text-xs text-gray-600">
                     {searchTerm ? (
-                      <>Filtered: {filteredReports.length} of {reports.length}</>
+                      <>
+                        Filtered: {filteredReports.length} of {reports.length}
+                      </>
                     ) : (
                       <>Total: {reports.length}</>
                     )}
@@ -462,13 +540,18 @@ function MailGunReportsContent() {
           )}
 
           {/* Debug Info */}
-          {process.env.NODE_ENV === 'development' && reports.length > 0 && (
+          {process.env.NODE_ENV === "development" && reports.length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <h3 className="text-sm font-medium text-blue-800 mb-2">Debug: Fetch Info</h3>
+              <h3 className="text-sm font-medium text-blue-800 mb-2">
+                Debug: Fetch Info
+              </h3>
               <div className="text-xs text-blue-700 space-y-1">
                 <div>Reports Count: {reports.length} (Max: 300)</div>
                 <div>Filtered Count: {filteredReports.length}</div>
-                <div>Debug Info: {debugInfo ? JSON.stringify(debugInfo, null, 2) : 'None'}</div>
+                <div>
+                  Debug Info:{" "}
+                  {debugInfo ? JSON.stringify(debugInfo, null, 2) : "None"}
+                </div>
               </div>
             </div>
           )}
@@ -491,10 +574,12 @@ function MailGunReportsContent() {
                 </div>
               ) : filteredReports.length === 0 ? (
                 <div className="text-center text-gray-500">
-                  <div className="mb-2">No events match your search criteria.</div>
+                  <div className="mb-2">
+                    No events match your search criteria.
+                  </div>
                   {searchTerm && (
                     <button
-                      onClick={() => setSearchTerm('')}
+                      onClick={() => setSearchTerm("")}
                       className="text-blue-600 hover:text-blue-800 text-sm underline"
                     >
                       Clear search
@@ -526,8 +611,12 @@ function MailGunReportsContent() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredReports.map((event) => {
                         const isExpanded = expandedRows.has(event.id);
-                        const subject = event.message?.headers?.subject || 'N/A';
-                        const details = event['delivery-status']?.message || event.reason || 'N/A';
+                        const subject =
+                          event.message?.headers?.subject || "N/A";
+                        const details =
+                          event["delivery-status"]?.message ||
+                          event.reason ||
+                          "N/A";
 
                         return (
                           <React.Fragment key={event.id}>
@@ -536,15 +625,22 @@ function MailGunReportsContent() {
                                 <button
                                   onClick={() => toggleRowExpansion(event.id)}
                                   className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                                  aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+                                  aria-label={
+                                    isExpanded ? "Collapse row" : "Expand row"
+                                  }
                                 >
                                   <svg
-                                    className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                                    className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-90" : ""}`}
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                   >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 5l7 7-7 7"
+                                    />
                                   </svg>
                                 </button>
                               </td>
@@ -552,7 +648,9 @@ function MailGunReportsContent() {
                                 {formatTimestamp(event.timestamp)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEventColor(event.event)}`}>
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEventColor(event.event)}`}
+                                >
                                   {event.event}
                                 </span>
                               </td>
@@ -560,41 +658,53 @@ function MailGunReportsContent() {
                                 {event.recipient}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-900">
-                                <div className="truncate">
-                                  {subject}
-                                </div>
+                                <div className="truncate">{subject}</div>
                               </td>
                             </tr>
                             {isExpanded && (
-                              <tr key={`${event.id}-expanded`} className="bg-gray-50">
+                              <tr
+                                key={`${event.id}-expanded`}
+                                className="bg-gray-50"
+                              >
                                 <td colSpan={5} className="px-6 py-4">
                                   <div className="space-y-4">
                                     <div>
-                                      <h4 className="text-sm font-medium text-gray-900 mb-2">Full Subject:</h4>
+                                      <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                        Full Subject:
+                                      </h4>
                                       <div className="bg-white p-3 rounded border text-sm text-gray-700 break-words">
                                         {subject}
                                       </div>
                                     </div>
                                     <div>
-                                      <h4 className="text-sm font-medium text-gray-900 mb-2">Full Details:</h4>
+                                      <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                        Full Details:
+                                      </h4>
                                       <div className="bg-white p-3 rounded border text-sm text-gray-700 break-words">
                                         {details}
                                       </div>
                                     </div>
-                                    {event.message?.headers?.['message-id'] && (
+                                    {event.message?.headers?.["message-id"] && (
                                       <div>
-                                        <h4 className="text-sm font-medium text-gray-900 mb-2">Message ID:</h4>
+                                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                          Message ID:
+                                        </h4>
                                         <div className="bg-white p-3 rounded border text-sm text-gray-700 font-mono break-all">
-                                          {event.message.headers['message-id']}
+                                          {event.message.headers["message-id"]}
                                         </div>
                                       </div>
                                     )}
                                     {event.tags && event.tags.length > 0 && (
                                       <div>
-                                        <h4 className="text-sm font-medium text-gray-900 mb-2">Tags:</h4>
+                                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                          Tags:
+                                        </h4>
                                         <div className="flex flex-wrap gap-1">
                                           {event.tags.map((tag, index) => (
-                                            <span key={index} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                                            <span
+                                              key={index}
+                                              className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                                            >
                                               {tag}
                                             </span>
                                           ))}

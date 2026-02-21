@@ -13,8 +13,11 @@ export function initializeServer(): void {
     return;
   }
 
-  console.log(" initializeServer() called at:", new Date().toISOString());
-  console.log("📊 Environment check:", {
+  console.log(
+    "[Server Init] initializeServer() called at:",
+    new Date().toISOString(),
+  );
+  console.log("[Server Init] Environment check:", {
     NODE_ENV: process.env.NODE_ENV,
     TZ: process.env.TZ,
   });
@@ -23,24 +26,24 @@ export function initializeServer(): void {
 
   try {
     // Validate notification service configuration
-    console.log("🔧 Validating notification service...");
+    console.log("[Server Init] Validating notification service...");
     const notificationConfigValid = notificationService.validateConfiguration();
     if (!notificationConfigValid) {
       logger.warn(
-        "Notification service configuration is invalid. Some features may not work properly."
+        "Notification service configuration is invalid. Some features may not work properly.",
       );
     } else {
       logger.info("Notification service configuration validated successfully");
     }
 
     isInitialized = true;
-    console.log("✅ Server initialization completed successfully");
+    console.log("[Server Init] Server initialization completed successfully");
     logger.info("Server initialization completed successfully");
   } catch (error) {
     console.error("❌ Server initialization failed with error:", error);
     console.error(
       "❌ Error stack:",
-      error instanceof Error ? error.stack : "No stack trace"
+      error instanceof Error ? error.stack : "No stack trace",
     );
     logger.error("Server initialization failed", {
       error: error instanceof Error ? error.message : "Unknown error",

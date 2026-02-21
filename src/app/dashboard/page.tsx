@@ -89,15 +89,16 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      console.log("[Client] Initiating signout via NextAuth standard signOut...");
+      console.log(
+        "[Client Auth] Initiating signout via NextAuth standard signOut...",
+      );
 
       // Using the standard signOut method which POSTs to /api/auth/signout
       // This endpoint is bypassed by middleware and thus avoids custom rate-limiting
       await signOut({
         redirect: true,
-        callbackUrl: "/auth/signin"
+        callbackUrl: "/auth/signin",
       });
-
     } catch (error) {
       console.error("[Client] Unexpected error during signout:", error);
       // Fallback: hard redirect
@@ -150,7 +151,10 @@ export default function DashboardPage() {
                   {session.user.role}
                 </span>
 
-                {(session.user?.role === "ADMIN" || session.user?.role === "SYSTEM_ADMIN") && <ContextMenuButton />}
+                {(session.user?.role === "ADMIN" ||
+                  session.user?.role === "SYSTEM_ADMIN") && (
+                  <ContextMenuButton />
+                )}
 
                 <button
                   onClick={handleSignOut}

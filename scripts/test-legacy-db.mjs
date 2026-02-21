@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 // Simple CLI script for testing legacy database operations
@@ -30,29 +30,31 @@ Environment variables required:
 
 const [command] = args;
 
-if (!['insert', 'delete', 'cleanup', 'status'].includes(command)) {
-  console.error('Error: Command must be "insert", "delete", "cleanup", or "status"');
+if (!["insert", "delete", "cleanup", "status"].includes(command)) {
+  console.error(
+    'Error: Command must be "insert", "delete", "cleanup", or "status"',
+  );
   process.exit(1);
 }
 
 // Make the API call
-const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 const url = `${baseUrl}/api/dev/test-legacy-db`;
 
 console.log(`Executing ${command} operation...`);
 
 try {
   let response;
-  
-  if (command === 'status') {
+
+  if (command === "status") {
     response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
     });
   } else {
     response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         action: command,
@@ -62,37 +64,45 @@ try {
 
   const result = await response.json();
 
-  if (command === 'status') {
-    console.log('📊 Current Status:');
-    console.log('================');
-    console.log(`Legacy Database Records: ${result.existingLegacyRecords?.length || 0}`);
-    console.log(`App Database Records: ${result.relatedAppRecords?.length || 0}`);
-    
+  if (command === "status") {
+    console.log("[Legacy DB Test] Current Status:");
+    console.log("================");
+    console.log(
+      `Legacy Database Records: ${result.existingLegacyRecords?.length || 0}`,
+    );
+    console.log(
+      `App Database Records: ${result.relatedAppRecords?.length || 0}`,
+    );
+
     if (result.existingLegacyRecords?.length > 0) {
-      console.log('\n🗄️ Legacy Records:');
+      console.log("\n[Legacy DB Test] Legacy Records:");
       result.existingLegacyRecords.forEach((record, index) => {
-        console.log(`  ${index + 1}. Lead ID: ${record.LeadID}, Campaign: ${record.CampaignID}, Created: ${new Date(record.PostDT).toLocaleString()}`);
+        console.log(
+          `  ${index + 1}. Lead ID: ${record.LeadID}, Campaign: ${record.CampaignID}, Created: ${new Date(record.PostDT).toLocaleString()}`,
+        );
       });
     }
-    
+
     if (result.relatedAppRecords?.length > 0) {
-      console.log('\n📱 App Records:');
+      console.log("\n[Legacy DB Test] App Records:");
       result.relatedAppRecords.forEach((record, index) => {
-        console.log(`  ${index + 1}. App ID: ${record.id}, Legacy ID: ${record.legacyLeadId}, Status: ${record.status}`);
+        console.log(
+          `  ${index + 1}. App ID: ${record.id}, Legacy ID: ${record.legacyLeadId}, Status: ${record.status}`,
+        );
       });
     }
   } else {
     if (result.success) {
-      console.log('✅ Success!');
+      console.log("[Legacy DB Test] Success!");
       console.log(`Action: ${result.action}`);
       console.log(`Timestamp: ${result.timestamp}`);
-      
+
       if (result.result) {
-        console.log('\nResult Details:');
+        console.log("\nResult Details:");
         console.log(JSON.stringify(result.result, null, 2));
       }
     } else {
-      console.log('❌ Failed!');
+      console.log("[Legacy DB Test] Failed!");
       console.log(`Error: ${result.error}`);
       if (result.details) {
         console.log(`Details: ${result.details}`);
@@ -100,6 +110,6 @@ try {
     }
   }
 } catch (error) {
-  console.error('❌ Network error:', error.message);
+  console.error("❌ Network error:", error.message);
   process.exit(1);
 }

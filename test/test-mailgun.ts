@@ -242,13 +242,13 @@ function getTestName(testNumber: number): string {
 }
 
 async function runMailgunTests() {
-  console.log("🚀 Fund Track - MailGun Integration Test");
+  console.log("[Mailgun Test] Fund Track - MailGun Integration Test");
   console.log("=========================================\n");
 
   // Validate test email format
   if (!TEST_EMAIL || !TEST_EMAIL.includes("@")) {
     console.error(
-      "❌ Please set a valid TEST_EMAIL constant in this script before running."
+      "[Mailgun Test] Please set a valid TEST_EMAIL constant in this script before running.",
     );
     console.error(`   Current value: ${TEST_EMAIL}\n`);
     process.exit(1);
@@ -256,16 +256,20 @@ async function runMailgunTests() {
 
   try {
     // Validate configuration first
-    console.log("🔧 Validating NotificationService configuration...");
+    console.log(
+      "[Mailgun Test] Validating NotificationService configuration...",
+    );
     const isValid = await notificationService.validateConfiguration();
 
     if (!isValid) {
-      console.error("❌ NotificationService configuration is invalid.");
+      console.error(
+        "[Mailgun Test] NotificationService configuration is invalid.",
+      );
       console.error("   Check your environment variables in .env.local\n");
       process.exit(1);
     }
 
-    console.log("✅ Configuration is valid\n");
+    console.log("[Mailgun Test] Configuration is valid\n");
 
     // Test each notification
     const testResults = {
@@ -278,50 +282,56 @@ async function runMailgunTests() {
       const notification = testNotifications[i];
       const testName = getTestName(i + 1);
 
-      console.log(`📧 Test ${i + 1}/${testNotifications.length}: ${testName}`);
+      console.log(
+        `[Mailgun Test] Test ${i + 1}/${testNotifications.length}: ${testName}`,
+      );
       console.log(`   Subject: ${notification.subject}`);
 
       try {
         const result = await notificationService.sendEmail(notification);
 
         if (result.success) {
-          console.log(`   ✅ Success - Message ID: ${result.externalId}`);
+          console.log(
+            `   [Mailgun Test] Success - Message ID: ${result.externalId}`,
+          );
           testResults.successful++;
         } else {
-          console.log(`   ❌ Failed - Error: ${result.error}`);
+          console.log(`   [Mailgun Test] Failed - Error: ${result.error}`);
           testResults.failed++;
           testResults.errors.push(`${testName}: ${result.error}`);
         }
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : "Unknown error";
-        console.log(`   💥 Exception: ${errorMsg}`);
+        console.log(`   [Mailgun Test] Exception: ${errorMsg}`);
         testResults.failed++;
         testResults.errors.push(`${testName}: ${errorMsg}`);
       }
 
       // Small delay between tests to avoid rate limiting
       if (i < testNotifications.length - 1) {
-        console.log("   ⏳ Waiting 3 seconds before next test...\n");
+        console.log(
+          "   [Mailgun Test] Waiting 3 seconds before next test...\n",
+        );
         await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
 
     // Summary
-    console.log("\n📊 Test Summary:");
-    console.log(`   ✅ Successful: ${testResults.successful}`);
-    console.log(`   ❌ Failed: ${testResults.failed}`);
-    console.log(`   📧 Total Tests: ${testNotifications.length}`);
+    console.log("\n[Mailgun Test] Test Summary:");
+    console.log(`   [Mailgun Test] Successful: ${testResults.successful}`);
+    console.log(`   [Mailgun Test] Failed: ${testResults.failed}`);
+    console.log(`   [Mailgun Test] Total Tests: ${testNotifications.length}`);
 
     if (testResults.errors.length > 0) {
-      console.log("\n❌ Errors encountered:");
+      console.log("\n[Mailgun Test] Errors encountered:");
       testResults.errors.forEach((error, index) => {
         console.log(`   ${index + 1}. ${error}`);
       });
     }
 
     // Get recent notification logs
-    console.log("\n📊 Recent notification logs:");
+    console.log("\n[Mailgun Test] Recent notification logs:");
     try {
       const recentLogs = await notificationService.getRecentNotifications(5);
 
@@ -330,7 +340,7 @@ async function runMailgunTests() {
       } else {
         recentLogs.forEach((log, index) => {
           console.log(
-            `   ${index + 1}. ${log.type} to ${log.recipient} - ${log.status}`
+            `   ${index + 1}. ${log.type} to ${log.recipient} - ${log.status}`,
           );
           if (log.errorMessage) {
             console.log(`      Error: ${log.errorMessage}`);
@@ -339,13 +349,13 @@ async function runMailgunTests() {
       }
     } catch (error) {
       console.log(
-        `   ⚠️  Could not fetch logs: ${
+        `   [Mailgun Test] Could not fetch logs: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   } catch (error) {
-    console.error("\n💥 Test failed with unexpected error:");
+    console.error("\n[Mailgun Test] Test failed with unexpected error:");
     console.error(error);
     process.exit(1);
   }
@@ -359,17 +369,19 @@ function checkEnvironment() {
     "MAILGUN_FROM_EMAIL",
   ];
 
-  console.log("🔍 Environment Check:");
+  console.log("[Mailgun Test] Environment Check:");
   const missing = requiredVars.filter((varName) => !process.env[varName]);
 
   requiredVars.forEach((varName) => {
     const value = process.env[varName];
-    console.log(`   ${varName}: ${value ? "✅ Set" : "❌ Missing"}`);
+    console.log(
+      `   ${varName}: ${value ? "[Mailgun Test] Set" : "[Mailgun Test] Missing"}`,
+    );
   });
 
   if (missing.length > 0) {
     console.error(
-      `\n❌ Missing required environment variables: ${missing.join(", ")}`
+      `\n[Mailgun Test] Missing required environment variables: ${missing.join(", ")}`,
     );
     console.error("   Make sure your .env.local file contains these values.\n");
     return false;
@@ -387,12 +399,12 @@ if (require.main === module) {
 
   runMailgunTests()
     .then(() => {
-      console.log("\n🎉 MailGun tests completed!");
+      console.log("\n[Mailgun Test] MailGun tests completed!");
       console.log("   Check your email inbox for test messages.");
       process.exit(0);
     })
     .catch((error) => {
-      console.error("\n💥 Tests failed:", error);
+      console.error("\n[Mailgun Test] Tests failed:", error);
       process.exit(1);
     });
 }

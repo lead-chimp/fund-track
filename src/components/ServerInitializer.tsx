@@ -7,8 +7,8 @@ import { initializeServer } from "@/lib/server-init";
 export function ServerInitializer() {
   // Add logging to see if this component is executing
   console.log(
-    "🔄 ServerInitializer component executing at:",
-    new Date().toISOString()
+    "[Server Init] ServerInitializer component executing at:",
+    new Date().toISOString(),
   );
 
   // Initialize server services

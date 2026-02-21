@@ -1,8 +1,8 @@
-import { getLegacyDatabase, LegacyLead } from '@/lib/legacy-db';
-import { prisma } from '@/lib/prisma';
-import { Lead, LeadStatus } from '@prisma/client';
-import { TokenService } from './TokenService';
-import { followUpScheduler } from './FollowUpScheduler';
+import { getLegacyDatabase, LegacyLead } from "@/lib/legacy-db";
+import { prisma } from "@/lib/prisma";
+import { Lead, LeadStatus } from "@prisma/client";
+import { TokenService } from "./TokenService";
+import { followUpScheduler } from "./FollowUpScheduler";
 
 export interface LeadPollerConfig {
   campaignIds: number[];
@@ -46,45 +46,52 @@ export class LeadPoller {
     };
 
     try {
-      console.log('🔄 Starting lead polling process...', {
+      console.log("[Lead Poller] Starting lead polling process...", {
         campaignIds: this.config.campaignIds,
         batchSize: this.config.batchSize,
-        maxRetries: this.config.maxRetries
+        maxRetries: this.config.maxRetries,
       });
 
       // Connect to legacy database
-      console.log('📡 Connecting to legacy database...');
+      console.log("[Lead Poller] Connecting to legacy database...");
       await this.legacyDb.connect();
-      console.log('✅ Successfully connected to legacy database');
+      console.log("[Lead Poller] Successfully connected to legacy database");
 
       // Get the latest legacy lead ID we have already imported
       const latestLead = await prisma.lead.findFirst({
-        orderBy: { legacyLeadId: 'desc' },
+        orderBy: { legacyLeadId: "desc" },
         where: { legacyLeadId: { not: BigInt(0) } },
       });
       const maxLegacyId = latestLead ? Number(latestLead.legacyLeadId) : 0;
-      console.log(`📈 Latest legacy lead ID in our database is: ${maxLegacyId}. Fetching new leads since then.`);
-
+      console.log(
+        `[Lead Poller] Latest legacy lead ID in our database is: ${maxLegacyId}. Fetching new leads since then.`,
+      );
 
       // Get leads from legacy database
-      console.log('🔍 Fetching new leads from legacy database...');
+      console.log("[Lead Poller] Fetching new leads from legacy database...");
       const legacyLeads = await this.fetchLeadsFromLegacy(maxLegacyId);
       result.totalProcessed = legacyLeads.length;
 
-      console.log(`📊 Found ${legacyLeads.length} new leads in legacy database for campaigns: ${this.config.campaignIds.join(', ')}`);
+      console.log(
+        `[Lead Poller] Found ${legacyLeads.length} new leads in legacy database for campaigns: ${this.config.campaignIds.join(", ")}`,
+      );
 
       if (legacyLeads.length === 0) {
-        console.log('ℹ️ No new leads found to process');
+        console.log("[Lead Poller] No new leads found to process");
         return result;
       }
 
       // Process leads in batches
       const batches = this.createBatches(legacyLeads, this.config.batchSize!);
-      console.log(`📦 Processing ${batches.length} batches of up to ${this.config.batchSize} leads each`);
+      console.log(
+        `[Lead Poller] Processing ${batches.length} batches of up to ${this.config.batchSize} leads each`,
+      );
 
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
-        console.log(`🔄 Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`);
+        console.log(
+          `[Lead Poller] Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`,
+        );
 
         try {
           const batchResult = await this.processBatch(batch);
@@ -92,13 +99,13 @@ export class LeadPoller {
           result.duplicatesSkipped += batchResult.duplicatesSkipped;
           result.errors.push(...batchResult.errors);
 
-          console.log(`✅ Batch ${i + 1} completed:`, {
+          console.log(`[Lead Poller] Batch ${i + 1} completed:`, {
             newLeads: batchResult.newLeads,
             duplicatesSkipped: batchResult.duplicatesSkipped,
-            errors: batchResult.errors.length
+            errors: batchResult.errors.length,
           });
         } catch (error) {
-          const errorMessage = `Batch ${i + 1} processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          const errorMessage = `Batch ${i + 1} processing failed: ${error instanceof Error ? error.message : "Unknown error"}`;
           console.error(`❌ ${errorMessage}`);
           result.errors.push(errorMessage);
         }
@@ -106,34 +113,38 @@ export class LeadPoller {
 
       result.processingTime = Date.now() - startTime;
 
-      console.log(`🎉 Lead polling completed successfully:`, {
+      console.log(`[Lead Poller] Lead polling completed successfully:`, {
         totalProcessed: result.totalProcessed,
         newLeads: result.newLeads,
         duplicatesSkipped: result.duplicatesSkipped,
         errors: result.errors.length,
         processingTime: `${result.processingTime}ms`,
-        averageTimePerLead: result.totalProcessed > 0 ? `${Math.round(result.processingTime / result.totalProcessed)}ms` : 'N/A'
+        averageTimePerLead:
+          result.totalProcessed > 0
+            ? `${Math.round(result.processingTime / result.totalProcessed)}ms`
+            : "N/A",
       });
 
       return result;
-
     } catch (error) {
-      const errorMessage = `Lead polling failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      const errorMessage = `Lead polling failed: ${error instanceof Error ? error.message : "Unknown error"}`;
       console.error(`💥 ${errorMessage}`);
       result.errors.push(errorMessage);
       result.processingTime = Date.now() - startTime;
       return result;
     } finally {
-      console.log('🔌 Disconnecting from legacy database...');
+      console.log("[Lead Poller] Disconnecting from legacy database...");
       await this.legacyDb.disconnect();
-      console.log('✅ Legacy database connection closed');
+      console.log("[Lead Poller] Legacy database connection closed");
     }
   }
 
   /**
    * Fetch leads from legacy database filtered by campaign IDs
    */
-  private async fetchLeadsFromLegacy(minLeadId: number = 0): Promise<LegacyLead[]> {
+  private async fetchLeadsFromLegacy(
+    minLeadId: number = 0,
+  ): Promise<LegacyLead[]> {
     const allLeads: LegacyLead[] = [];
 
     // Query each campaign table separately since they have variable names
@@ -165,25 +176,30 @@ export class LeadPoller {
         ORDER BY l.LeadID ASC
       `;
 
-      console.log(`📋 Executing legacy database query for campaign ${campaignId}:`, {
-        tableName,
-        query: query.replace(/\s+/g, ' ').trim()
-      });
+      console.log(
+        `[Lead Poller] Executing legacy database query for campaign ${campaignId}:`,
+        {
+          tableName,
+          query: query.replace(/\s+/g, " ").trim(),
+        },
+      );
 
       try {
         const queryStart = Date.now();
         const leads = await this.legacyDb.query<LegacyLead>(query);
         const queryTime = Date.now() - queryStart;
 
-        console.log(`⚡ Query for ${tableName} executed successfully in ${queryTime}ms, returned ${leads.length} leads`);
+        console.log(
+          `[Lead Poller] Query for ${tableName} executed successfully in ${queryTime}ms, returned ${leads.length} leads`,
+        );
 
         if (leads.length > 0) {
           const sampleLead = leads[0];
-          console.log(`📄 Sample lead data from ${tableName}:`, {
+          console.log(`[Lead Poller] Sample lead data from ${tableName}:`, {
             ID: sampleLead.ID,
             CampaignID: sampleLead.CampaignID,
-            Email: sampleLead.Email ? '***@***.***' : null,
-            Phone: sampleLead.Phone ? '***-***-****' : null,
+            Email: sampleLead.Email ? "***@***.***" : null,
+            Phone: sampleLead.Phone ? "***-***-****" : null,
             FirstName: sampleLead.FirstName || null,
             LastName: sampleLead.LastName || null,
             BusinessName: sampleLead.BusinessName || null,
@@ -194,7 +210,7 @@ export class LeadPoller {
             City: sampleLead.City || null,
             State: sampleLead.State || null,
             ZipCode: sampleLead.ZipCode || null,
-            CreatedDate: sampleLead.CreatedDate
+            CreatedDate: sampleLead.CreatedDate,
           });
         }
 
@@ -202,14 +218,18 @@ export class LeadPoller {
       } catch (error) {
         console.error(`❌ Failed to fetch leads from ${tableName}:`, error);
         // Continue with other campaigns even if one fails
-        console.log(`⚠️ Skipping campaign ${campaignId} due to error, continuing with others...`);
+        console.log(
+          `[Lead Poller] Skipping campaign ${campaignId} due to error, continuing with others...`,
+        );
       }
     }
 
     // Sort all leads by ID to maintain order
     allLeads.sort((a, b) => a.ID - b.ID);
 
-    console.log(`📊 Total leads fetched from all campaigns: ${allLeads.length}`);
+    console.log(
+      `[Lead Poller] Total leads fetched from all campaigns: ${allLeads.length}`,
+    );
     return allLeads;
   }
 
@@ -231,31 +251,38 @@ export class LeadPoller {
       errors: [],
     };
 
-    console.log(`🔄 Processing batch of ${legacyLeads.length} leads...`);
+    console.log(
+      `[Lead Poller] Processing batch of ${legacyLeads.length} leads...`,
+    );
     const batchStart = Date.now();
 
     for (let i = 0; i < legacyLeads.length; i++) {
       const legacyLead = legacyLeads[i];
-      console.log(`📝 Processing lead ${i + 1}/${legacyLeads.length}: ID ${legacyLead.ID} (Campaign: ${legacyLead.CampaignID})`);
+      console.log(
+        `[Lead Poller] Processing lead ${i + 1}/${legacyLeads.length}: ID ${legacyLead.ID} (Campaign: ${legacyLead.CampaignID})`,
+      );
 
       try {
         // Since we only fetch new leads, we can import directly
         await this.importLead(legacyLead);
         result.newLeads++;
       } catch (error) {
-        const errorMessage = `Failed to import lead ${legacyLead.ID}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        const errorMessage = `Failed to import lead ${legacyLead.ID}: ${error instanceof Error ? error.message : "Unknown error"}`;
         console.error(`❌ ${errorMessage}`);
         result.errors.push(errorMessage);
       }
     }
 
     const batchTime = Date.now() - batchStart;
-    console.log(`📊 Batch processing completed in ${batchTime}ms:`, {
+    console.log(`[Lead Poller] Batch processing completed in ${batchTime}ms:`, {
       processed: legacyLeads.length,
       newLeads: result.newLeads,
       duplicatesSkipped: result.duplicatesSkipped,
       errors: result.errors.length,
-      averageTimePerLead: legacyLeads.length > 0 ? `${Math.round(batchTime / legacyLeads.length)}ms` : 'N/A'
+      averageTimePerLead:
+        legacyLeads.length > 0
+          ? `${Math.round(batchTime / legacyLeads.length)}ms`
+          : "N/A",
     });
 
     return result;
@@ -266,21 +293,21 @@ export class LeadPoller {
    */
   private async importLead(legacyLead: LegacyLead): Promise<void> {
     try {
-      console.log(`🆕 Importing new lead ${legacyLead.ID}...`);
+      console.log(`[Lead Poller] Importing new lead ${legacyLead.ID}...`);
 
       // Transform and create new lead with intake token
       const transformedLead = this.transformLegacyLead(legacyLead);
 
-      console.log(`🔄 Transformed lead data:`, {
+      console.log(`[Lead Poller] Transformed lead data:`, {
         legacyLeadId: transformedLead.legacyLeadId.toString(),
         campaignId: transformedLead.campaignId,
-        email: transformedLead.email ? '***@***.***' : null,
-        phone: transformedLead.phone ? '***-***-****' : null,
+        email: transformedLead.email ? "***@***.***" : null,
+        phone: transformedLead.phone ? "***-***-****" : null,
         firstName: transformedLead.firstName,
         lastName: transformedLead.lastName,
         businessName: transformedLead.businessName,
         status: transformedLead.status,
-        intakeToken: transformedLead.intakeToken ? '***' : null
+        intakeToken: transformedLead.intakeToken ? "***" : null,
       });
 
       const createStart = Date.now();
@@ -289,19 +316,30 @@ export class LeadPoller {
       });
       const createTime = Date.now() - createStart;
 
-      console.log(`💾 Lead created in database in ${createTime}ms with ID: ${newLead.id}`);
+      console.log(
+        `[Lead Poller] Lead created in database in ${createTime}ms with ID: ${newLead.id}`,
+      );
 
       // Schedule follow-ups for the new lead since it's in PENDING status
-      console.log(`📅 Scheduling follow-ups for lead ${newLead.id}...`);
+      console.log(
+        `[Lead Poller] Scheduling follow-ups for lead ${newLead.id}...`,
+      );
       try {
         await followUpScheduler.scheduleFollowUpsForLead(newLead.id);
-        console.log(`✅ Successfully scheduled follow-ups for lead ${newLead.id}`);
+        console.log(
+          `[Lead Poller] Successfully scheduled follow-ups for lead ${newLead.id}`,
+        );
       } catch (error) {
-        console.error(`⚠️ Failed to schedule follow-ups for lead ${newLead.id}:`, error);
+        console.error(
+          `⚠️ Failed to schedule follow-ups for lead ${newLead.id}:`,
+          error,
+        );
         // Don't fail the import if follow-up scheduling fails
       }
 
-      console.log(`🎉 Successfully imported lead ${legacyLead.ID} with new ID ${newLead.id}`);
+      console.log(
+        `[Lead Poller] Successfully imported lead ${legacyLead.ID} with new ID ${newLead.id}`,
+      );
     } catch (error) {
       console.error(`💥 Failed to import lead ${legacyLead.ID}:`, error);
       throw error;
@@ -311,12 +349,16 @@ export class LeadPoller {
   /**
    * Transform legacy lead data to application format
    */
-  private transformLegacyLead(legacyLead: LegacyLead): Omit<Lead, 'id' | 'createdAt' | 'updatedAt'> {
-    console.log(`🔄 Transforming legacy lead ${legacyLead.ID}...`);
+  private transformLegacyLead(
+    legacyLead: LegacyLead,
+  ): Omit<Lead, "id" | "createdAt" | "updatedAt"> {
+    console.log(`[Lead Poller] Transforming legacy lead ${legacyLead.ID}...`);
 
     // Generate intake token for new leads
     const intakeToken = TokenService.generateToken();
-    console.log(`🎫 Generated intake token for lead ${legacyLead.ID}`);
+    console.log(
+      `[Lead Poller] Generated intake token for lead ${legacyLead.ID}`,
+    );
 
     // Sanitize data
     const sanitizedEmail = this.sanitizeString(legacyLead.Email);
@@ -327,18 +369,27 @@ export class LeadPoller {
     const sanitizedAddress = this.sanitizeString(legacyLead.Address);
     const sanitizedZipCode = this.sanitizeString(legacyLead.ZipCode);
 
-    console.log(`🧹 Data sanitization completed for lead ${legacyLead.ID}:`, {
-      email: sanitizedEmail ? 'present' : 'null',
-      phone: sanitizedPhone ? 'present' : 'null',
-      firstName: sanitizedFirstName ? 'present' : 'null',
-      lastName: sanitizedLastName ? 'present' : 'null',
-      businessName: sanitizedBusinessName ? 'present' : 'null',
-      yearsInBusiness: legacyLead.YearsInBusiness || null,
-      amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
-      monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
-      personalAddress: sanitizedAddress ? 'present' : 'null',
-      personalZip: sanitizedZipCode ? 'present' : 'null'
-    });
+    console.log(
+      `[Lead Poller] Data sanitization completed for lead ${legacyLead.ID}:`,
+      {
+        email: sanitizedEmail ? "present" : "null",
+        phone: sanitizedPhone ? "present" : "null",
+        firstName: sanitizedFirstName ? "present" : "null",
+        lastName: sanitizedLastName ? "present" : "null",
+        businessName: sanitizedBusinessName ? "present" : "null",
+        yearsInBusiness: legacyLead.YearsInBusiness || null,
+        amountNeeded:
+          legacyLead.AmountNeeded != null
+            ? String(legacyLead.AmountNeeded)
+            : null,
+        monthlyRevenue:
+          legacyLead.MonthlyRevenue != null
+            ? String(legacyLead.MonthlyRevenue)
+            : null,
+        personalAddress: sanitizedAddress ? "present" : "null",
+        personalZip: sanitizedZipCode ? "present" : "null",
+      },
+    );
 
     return {
       legacyLeadId: BigInt(legacyLead.ID),
@@ -354,8 +405,14 @@ export class LeadPoller {
       // Business Information (from legacy DB)
       businessName: sanitizedBusinessName,
       yearsInBusiness: legacyLead.YearsInBusiness || null,
-      amountNeeded: legacyLead.AmountNeeded != null ? String(legacyLead.AmountNeeded) : null,
-      monthlyRevenue: legacyLead.MonthlyRevenue != null ? String(legacyLead.MonthlyRevenue) : null,
+      amountNeeded:
+        legacyLead.AmountNeeded != null
+          ? String(legacyLead.AmountNeeded)
+          : null,
+      monthlyRevenue:
+        legacyLead.MonthlyRevenue != null
+          ? String(legacyLead.MonthlyRevenue)
+          : null,
 
       // Personal Address Information (from Leads table)
       // Note: Legacy Address/City/State/ZipCode are personal, not business addresses
@@ -402,7 +459,7 @@ export class LeadPoller {
    * Sanitize string fields
    */
   private sanitizeString(value: string | null | undefined): string | null {
-    if (!value || typeof value !== 'string') {
+    if (!value || typeof value !== "string") {
       return null;
     }
 
@@ -414,12 +471,12 @@ export class LeadPoller {
    * Sanitize and format phone numbers
    */
   private sanitizePhone(phone: string | null | undefined): string | null {
-    if (!phone || typeof phone !== 'string') {
+    if (!phone || typeof phone !== "string") {
       return null;
     }
 
     // Remove all non-digit characters
-    const digitsOnly = phone.replace(/\D/g, '');
+    const digitsOnly = phone.replace(/\D/g, "");
 
     // Return null if no digits or invalid length
     if (digitsOnly.length < 10 || digitsOnly.length > 15) {
@@ -445,7 +502,7 @@ export class LeadPoller {
    */
   async getLeadsNeedingIntakeTokens(): Promise<Lead[]> {
     try {
-      console.log('🔍 Fetching leads that need intake tokens...');
+      console.log("[Lead Poller] Fetching leads that need intake tokens...");
 
       const leads = await prisma.lead.findMany({
         where: {
@@ -453,14 +510,16 @@ export class LeadPoller {
           status: LeadStatus.NEW,
         },
         orderBy: {
-          importedAt: 'desc',
+          importedAt: "desc",
         },
       });
 
-      console.log(`📊 Found ${leads.length} leads needing intake tokens`);
+      console.log(
+        `[Lead Poller] Found ${leads.length} leads needing intake tokens`,
+      );
       return leads;
     } catch (error) {
-      console.error('❌ Failed to fetch leads needing intake tokens:', error);
+      console.error("❌ Failed to fetch leads needing intake tokens:", error);
       throw error;
     }
   }
@@ -468,9 +527,14 @@ export class LeadPoller {
   /**
    * Update lead status to pending and set intake token
    */
-  async updateLeadWithIntakeToken(leadId: number, intakeToken: string): Promise<void> {
+  async updateLeadWithIntakeToken(
+    leadId: number,
+    intakeToken: string,
+  ): Promise<void> {
     try {
-      console.log(`🎫 Updating lead ${leadId} with intake token and setting status to PENDING...`);
+      console.log(
+        `[Lead Poller] Updating lead ${leadId} with intake token and setting status to PENDING...`,
+      );
 
       await prisma.lead.update({
         where: { id: leadId },
@@ -480,9 +544,14 @@ export class LeadPoller {
         },
       });
 
-      console.log(`✅ Successfully updated lead ${leadId} with intake token`);
+      console.log(
+        `[Lead Poller] Successfully updated lead ${leadId} with intake token`,
+      );
     } catch (error) {
-      console.error(`❌ Failed to update lead ${leadId} with intake token:`, error);
+      console.error(
+        `❌ Failed to update lead ${leadId} with intake token:`,
+        error,
+      );
       throw error;
     }
   }
@@ -491,16 +560,22 @@ export class LeadPoller {
 // Factory function to create LeadPoller with default config
 export function createLeadPoller(): LeadPoller {
   const campaignIds = process.env.MERCHANT_FUNDING_CAMPAIGN_IDS
-    ? process.env.MERCHANT_FUNDING_CAMPAIGN_IDS.split(',').map(id => parseInt(id.trim()))
+    ? process.env.MERCHANT_FUNDING_CAMPAIGN_IDS.split(",").map((id) =>
+        parseInt(id.trim()),
+      )
     : [];
 
   if (campaignIds.length === 0) {
-    throw new Error('MERCHANT_FUNDING_CAMPAIGN_IDS environment variable is required');
+    throw new Error(
+      "MERCHANT_FUNDING_CAMPAIGN_IDS environment variable is required",
+    );
   }
 
   return new LeadPoller({
     campaignIds,
-    batchSize: process.env.LEAD_POLLING_BATCH_SIZE ? parseInt(process.env.LEAD_POLLING_BATCH_SIZE) : 100,
+    batchSize: process.env.LEAD_POLLING_BATCH_SIZE
+      ? parseInt(process.env.LEAD_POLLING_BATCH_SIZE)
+      : 100,
   });
 }
 

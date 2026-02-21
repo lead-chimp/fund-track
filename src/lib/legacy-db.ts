@@ -1,4 +1,4 @@
-import sql from 'mssql';
+import sql from "mssql";
 
 export interface LegacyDbConfig {
   server: string;
@@ -59,7 +59,7 @@ class LegacyDatabase {
         return; // Already connected
       }
 
-      console.log('📡 Connecting to legacy database with config:', {
+      console.log("[Legacy DB] Connecting to legacy database with config:", {
         server: this.config.server,
         database: this.config.database,
         port: this.config.port,
@@ -69,10 +69,12 @@ class LegacyDatabase {
 
       this.pool = new sql.ConnectionPool(this.config);
       await this.pool.connect();
-      console.log('✅ Connected to legacy MS SQL Server database');
+      console.log("[Legacy DB] Connected to legacy MS SQL Server database");
     } catch (error) {
-      console.error('❌ Failed to connect to legacy database:', error);
-      throw new Error(`Legacy database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("❌ Failed to connect to legacy database:", error);
+      throw new Error(
+        `Legacy database connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -81,16 +83,19 @@ class LegacyDatabase {
       if (this.pool) {
         await this.pool.close();
         this.pool = null;
-        console.log('Disconnected from legacy MS SQL Server database');
+        console.log("Disconnected from legacy MS SQL Server database");
       }
     } catch (error) {
-      console.error('Error disconnecting from legacy database:', error);
+      console.error("Error disconnecting from legacy database:", error);
     }
   }
 
-  async query<T = any>(queryText: string, parameters?: Record<string, any>): Promise<T[]> {
+  async query<T = any>(
+    queryText: string,
+    parameters?: Record<string, any>,
+  ): Promise<T[]> {
     if (!this.pool) {
-      throw new Error('Database not connected. Call connect() first.');
+      throw new Error("Database not connected. Call connect() first.");
     }
 
     try {
@@ -106,18 +111,20 @@ class LegacyDatabase {
       const result = await request.query(queryText);
       return result.recordset as T[];
     } catch (error) {
-      console.error('Legacy database query failed:', error);
-      throw new Error(`Query execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Legacy database query failed:", error);
+      throw new Error(
+        `Query execution failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
   async testConnection(): Promise<boolean> {
     try {
       await this.connect();
-      await this.query('SELECT 1 as test');
+      await this.query("SELECT 1 as test");
       return true;
     } catch (error) {
-      console.error('Legacy database connection test failed:', error);
+      console.error("Legacy database connection test failed:", error);
       return false;
     }
   }
@@ -133,16 +140,22 @@ let legacyDb: LegacyDatabase | null = null;
 export function getLegacyDatabase(): LegacyDatabase {
   if (!legacyDb) {
     const config: LegacyDbConfig = {
-      server: process.env.LEGACY_DB_SERVER || '',
-      database: process.env.LEGACY_DB_DATABASE || 'LeadData2',
-      user: process.env.LEGACY_DB_USER || '',
-      password: process.env.LEGACY_DB_PASSWORD || '',
-      port: process.env.LEGACY_DB_PORT ? parseInt(process.env.LEGACY_DB_PORT) : 1433,
+      server: process.env.LEGACY_DB_SERVER || "",
+      database: process.env.LEGACY_DB_DATABASE || "LeadData2",
+      user: process.env.LEGACY_DB_USER || "",
+      password: process.env.LEGACY_DB_PASSWORD || "",
+      port: process.env.LEGACY_DB_PORT
+        ? parseInt(process.env.LEGACY_DB_PORT)
+        : 1433,
       options: {
-        encrypt: process.env.LEGACY_DB_ENCRYPT === 'true',
-        trustServerCertificate: process.env.LEGACY_DB_TRUST_CERT === 'true',
-        requestTimeout: process.env.LEGACY_DB_REQUEST_TIMEOUT ? parseInt(process.env.LEGACY_DB_REQUEST_TIMEOUT) : 30000,
-        connectionTimeout: process.env.LEGACY_DB_CONNECTION_TIMEOUT ? parseInt(process.env.LEGACY_DB_CONNECTION_TIMEOUT) : 15000,
+        encrypt: process.env.LEGACY_DB_ENCRYPT === "true",
+        trustServerCertificate: process.env.LEGACY_DB_TRUST_CERT === "true",
+        requestTimeout: process.env.LEGACY_DB_REQUEST_TIMEOUT
+          ? parseInt(process.env.LEGACY_DB_REQUEST_TIMEOUT)
+          : 30000,
+        connectionTimeout: process.env.LEGACY_DB_CONNECTION_TIMEOUT
+          ? parseInt(process.env.LEGACY_DB_CONNECTION_TIMEOUT)
+          : 15000,
         enableArithAbort: true,
         abortTransactionOnError: true,
       },
