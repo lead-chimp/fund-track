@@ -4,7 +4,10 @@ import { notificationService } from "@/services/NotificationService";
 import { TokenService } from "@/services/TokenService";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { validateCronRequest, createUnauthorizedResponse } from "@/lib/cron-auth";
+import {
+  validateCronRequest,
+  createUnauthorizedResponse,
+} from "@/lib/cron-auth";
 
 export async function POST(request: NextRequest) {
   // Validate cron request authentication
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
     // If we have new leads, send notifications
     if (pollingResult.newLeads > 0) {
       logger.info(
-        `Processing notifications for ${pollingResult.newLeads} new leads`
+        `Processing notifications for ${pollingResult.newLeads} new leads`,
       );
 
       // Get newly imported leads that need notifications
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
         const intakeUrl = `${baseUrl}/application/${lead.intakeToken}`;
         const leadName = lead.firstName
           ? lead.firstName.charAt(0).toUpperCase() +
-          lead.firstName.slice(1).toLowerCase()
+            lead.firstName.slice(1).toLowerCase()
           : lead.businessName || "there";
 
         // Send email notification if email exists
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
                 `Email sent successfully`,
                 "email",
                 lead.email,
-                { leadId: lead.id }
+                { leadId: lead.id },
               );
             } else {
               notificationResults.emailErrors++;
@@ -193,7 +196,7 @@ export async function POST(request: NextRequest) {
           error instanceof Error ? error.message : "Unknown error occurred",
         message: "Lead polling process failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

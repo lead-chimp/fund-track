@@ -1,11 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { followUpScheduler } from '@/services/FollowUpScheduler';
-import { logger } from '@/lib/logger';
-import { validateCronRequest, createUnauthorizedResponse } from '@/lib/cron-auth';
+import { NextRequest, NextResponse } from "next/server";
+import { followUpScheduler } from "@/services/FollowUpScheduler";
+import { logger } from "@/lib/logger";
+import {
+  validateCronRequest,
+  createUnauthorizedResponse,
+} from "@/lib/cron-auth";
 
 /**
  * POST /api/cron/send-followups
- * Process the follow-up queue and send due notifications
+ * Process follow-up queue and send due notifications
  */
 export async function POST(request: NextRequest) {
   // Validate cron request authentication
@@ -17,7 +20,7 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    logger.backgroundJob('Starting follow-up processing job', 'follow-ups');
+    logger.backgroundJob("Starting follow-up processing job", "follow-ups");
 
     // Process the follow-up queue
     const result = await followUpScheduler.processFollowUpQueue();
@@ -25,62 +28,75 @@ export async function POST(request: NextRequest) {
     const processingTime = Date.now() - startTime;
 
     if (result.success) {
-      logger.backgroundJob('Follow-up processing completed successfully', 'follow-ups', {
-        processingTime: `${processingTime}ms`,
-        processed: result.processed,
-        sent: result.sent,
-        cancelled: result.cancelled,
-        errors: result.errors.length
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Follow-up processing completed',
-        data: {
+      logger.backgroundJob(
+        "Follow-up processing completed successfully",
+        "follow-ups",
+        {
+          processingTime: `${processingTime}ms`,
           processed: result.processed,
           sent: result.sent,
           cancelled: result.cancelled,
-          processingTime: `${processingTime}ms`,
-          errors: result.errors
-        }
-      }, { status: 200 });
+          errors: result.errors.length,
+        },
+      );
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Follow-up processing completed",
+          data: {
+            processed: result.processed,
+            sent: result.sent,
+            cancelled: result.cancelled,
+            processingTime: `${processingTime}ms`,
+            errors: result.errors,
+          },
+        },
+        { status: 200 },
+      );
     } else {
-      logger.error('Follow-up processing completed with errors', {
+      logger.error("Follow-up processing completed with errors", {
         processingTime: `${processingTime}ms`,
         processed: result.processed,
         sent: result.sent,
         cancelled: result.cancelled,
-        errors: result.errors
+        errors: result.errors,
       });
 
-      return NextResponse.json({
-        success: false,
-        message: 'Follow-up processing completed with errors',
-        data: {
-          processed: result.processed,
-          sent: result.sent,
-          cancelled: result.cancelled,
-          processingTime: `${processingTime}ms`,
-          errors: result.errors
-        }
-      }, { status: 207 }); // 207 Multi-Status for partial success
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Follow-up processing completed with errors",
+          data: {
+            processed: result.processed,
+            sent: result.sent,
+            cancelled: result.cancelled,
+            processingTime: `${processingTime}ms`,
+            errors: result.errors,
+          },
+        },
+        { status: 207 },
+      ); // 207 Multi-Status for partial success
     }
-
   } catch (error) {
     const processingTime = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
-    logger.error('Follow-up processing job failed', {
+    logger.error("Follow-up processing job failed", {
       error: errorMessage,
-      processingTime: `${processingTime}ms`
+      processingTime: `${processingTime}ms`,
     });
 
-    return NextResponse.json({
-      success: false,
-      message: 'Follow-up processing failed',
-      error: errorMessage,
-      processingTime: `${processingTime}ms`
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Follow-up processing failed",
+        error: errorMessage,
+        processingTime: `${processingTime}ms`,
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -92,20 +108,26 @@ export async function GET() {
   try {
     const stats = await followUpScheduler.getFollowUpStats();
 
-    return NextResponse.json({
-      success: true,
-      data: stats
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        data: stats,
+      },
+      { status: 200 },
+    );
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
-    logger.error('Failed to get follow-up stats', { error: errorMessage });
+    logger.error("Failed to get follow-up stats", { error: errorMessage });
 
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to get follow-up statistics',
-      error: errorMessage
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to get follow-up statistics",
+        error: errorMessage,
+      },
+      { status: 500 },
+    );
   }
 }
