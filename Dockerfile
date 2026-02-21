@@ -35,7 +35,8 @@
     ENV PORT=3000
     
     # OpenSSL required by Prisma for DB connections
-    RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+    # curl required by Coolify scheduled tasks to trigger cron endpoints
+    RUN apt-get update -y && apt-get install -y --no-install-recommends openssl curl \
         && rm -rf /var/lib/apt/lists/*
     
     # Create non-root user
