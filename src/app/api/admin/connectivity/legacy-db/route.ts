@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
-
+import { UserRole } from '@prisma/client';
 import { getLegacyDatabase } from '@/lib/legacy-db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await auth();
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.SYSTEM_ADMIN) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
