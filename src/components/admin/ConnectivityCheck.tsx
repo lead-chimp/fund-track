@@ -28,7 +28,9 @@ export function ConnectivityCheck() {
   const checkLegacyDbConnection = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/connectivity/legacy-db');
+      const response = await fetch('/api/admin/connectivity/legacy-db', {
+        credentials: 'include',
+      });
       const data = await response.json();
       
       if (!response.ok) {

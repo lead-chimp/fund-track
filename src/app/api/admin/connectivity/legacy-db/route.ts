@@ -3,14 +3,24 @@ import { auth } from "@/lib/auth";
 
 import { getLegacyDatabase } from '@/lib/legacy-db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await auth();
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - No session found' },
         { status: 401 }
+      );
+    }
+    
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 
